@@ -1,0 +1,6 @@
+lower
+trim
+lpad?
+split?
+regex match ?
+

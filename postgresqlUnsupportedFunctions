@@ -1,0 +1,12 @@
+1. cube root
+2. radians->degrees
+3. exp
+4. log
+5. ln
+6. degrees->radians
+7. power not completely supported
+8. round
+9. sqrt
+10. scale
+11. truncate (truncating to decimal places not supported)
+
