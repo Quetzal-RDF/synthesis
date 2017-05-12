@@ -3,8 +3,17 @@
 ;(error-print-width 10000000000)
 
 (current-bitwidth #f)
+(require math/base)
+(require math/statistics)
 
 (define vals (make-hash))
+
+(define (sign b)
+  (cond
+    [(positive? b) 1]
+    [(zero? b) 0]
+    [(negative? b) -1]
+))
 
 (define (id pos)
   (format "~S" pos))
@@ -30,6 +39,12 @@
       (let ((m1 (val (cons 'm1 pos) boolean?))
             (m2 (val (cons 'm2 pos) boolean?)))
             (list (if m1 (if m2 '+ '-) (if m2 '* '/)) l r)))
+
+    (define/public (basic-num-functions pos v)
+      (let ((m1 (val (cons 'm1 pos) boolean?))
+            (m2 (val (cons 'm2 pos) boolean?))
+            (m3 (val (cons 'm3 pos) boolean?)))
+            (list (if m1 (if m2 (if m3 'abs 'truncate) (if m3 'sign 'ceiling)) 'floor) v)))
     
     (define/public (index-of pos l r)
       (list 'index-of l r))
@@ -73,6 +88,14 @@
             ((if m1 (if m2 + -) (if (or (= r 0) m2) * /)) l r))
           'invalid))
 
+    (define/public (basic-num-functions pos v)
+      (if (number? v)
+          (let ((m1 (val (cons 'm1 pos) boolean?))
+                (m2 (val (cons 'm2 pos) boolean?))
+                (m3 (val (cons 'm3 pos) boolean?)))
+            ((if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) floor) v))
+          'invalid))
+    
     (define/public (index-of pos l r)
       (if (and (string? l) (string? r) (<= (string-length r) (string-length l)))
           (string-index-of l r)
@@ -126,7 +149,11 @@
     (define/public (symbolic pos type)
       (for/list ([p processors])
         (send p symbolic pos type)))
-   
+
+    (define/public (basic-num-functions pos v)
+      (for/list ([p processors] [vs v])
+        (send p basic-num-functions pos vs)))
+
     (define/public (basic-math pos left right)
       (for/list ([p processors] [l left] [r right])
         (send p basic-math pos l r)))
@@ -172,6 +199,7 @@
   (do-in3 size pos p f)
   (do-intv size pos p f)
   (do-basic-math size pos p f)
+  (do-basic-num-functions size pos p f)
   (do-index-of size pos p f)
   (do-length size pos p f))
 
@@ -237,6 +265,9 @@
 (define (do-basic-math size pos p f)
   (do-binary-op do-all-int do-all-int 'basic-math size pos p f))
 
+(define (do-basic-num-functions size pos p f)
+  (do-unary-op do-all-int 'basic-num-functions size pos p f))
+
 (define (do-index-of size pos p f)
   (do-binary-op do-all-str do-all-str 'index-of size pos p f))
 
@@ -267,7 +298,7 @@
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
       ((let ((v (car (car inputs))))
          (cond ((boolean? v) do-all-bool)
-               ((integer? v) do-all-int)
+               ((number? v) do-all-int)
                (#t do-all-str)))
        ; do-all-bool/do-all-int etc will be called with limit, an empty list (list) to indicate the root node of the expression tree we are developing
        ; a list of processors which include 1 for printing (doc-processor) and 1 expression processor initialized with inputs per row (cdr inputs discards
@@ -308,7 +339,8 @@
                (set! models (cons (cons (car y) result) models))
                (set! goal (- goal 1))
                (when (= goal 0)
-                 (raise models))))))))))
+                 (raise models)))))))
+      (list))))
 
 (define (aggregate limit results . inputs)
   (let ((solver (current-solver))
@@ -359,15 +391,19 @@
          (model (cdr solution)))
     (letrec ((print-tree
               (lambda (node)
-                (cond [(list? node) (map print-tree node)]
-                      [(symbolic? node) (let ((result (evaluate node model))) (if (symbolic? result) (print (map cdr (union-contents result))) (print result)))]
-                      [#t (print node)]))))
-      (print-tree tree)
-      solution)))
+                (cond [(and (list? node) (equal? (car node) 'sym)) (evaluate (apply val (cdr node)) model)]
+                      [(list? node) (map print-tree node)]
+                      [(symbolic? node) (let ((result (evaluate node model))) (if (symbolic? result) (map cdr (union-contents result)) result))]
+                      [#t node]))))
+      (print-tree tree))))
+
 
 (define (test op limit inputs)
-  (let ((out (apply analyze limit inputs)))
-    (map render out))
-)
+  (letrec ((try-depth
+            (lambda(v)
+              (let ((out (apply analyze v inputs)))
+                (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
+    (try-depth 2)))
+    
 
 (provide analyze aggregate)
