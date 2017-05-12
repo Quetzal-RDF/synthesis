@@ -27,13 +27,17 @@
       (list 'sym pos type))
     
     (define/public (basic-math pos l r)
-      (list '- l r))
+      (let ((m1 (val (cons 'm1 pos) boolean?))
+            (m2 (val (cons 'm2 pos) boolean?)))
+            (list (if m1 (if m2 '+ '-) (if m2 '* '/)) l r)))
     
     (define/public (index-of pos l r)
       (list 'index-of l r))
     
     (define/public (compare-to pos l r)
-      (list '< l r))
+      (let ((islt (val (cons 'islt pos) boolean?))
+            (iseq (val (cons 'iseq pos) boolean?)))
+        (list (if iseq (if islt '<= '>=) (if islt '< '>)) l r)))
     
     (define/public (strlength pos str)
       (list 'length str))
@@ -174,6 +178,7 @@
 (define (do-all-bool size pos p f)
   (do-compare-to size pos p f))
 
+; send p in 1 returns the first element of the columns where p is a compound processor and it returns a list of all first elements of a row
 (define (do-in1 size pos p f) (f size (send p in 1)))
 
 (define (do-in2 size pos p f) (f size (send p in 2)))
@@ -266,7 +271,7 @@
                (#t do-all-str)))
        ; do-all-bool/do-all-int etc will be called with limit, an empty list (list) to indicate the root node of the expression tree we are developing
        ; a list of processors which include 1 for printing (doc-processor) and 1 expression processor initialized with inputs per row (cdr inputs discards
-       ; first element which is the output)
+       ; first element which is the output), so we now have 1 expression processor per row.
        ; and a lambda function is a callback function that gets invoked on y which is a list of expressions that the expression processor comes up with in the search
        ; Note the first expression in y is discarded in processing for formulas because it reflects the output of the doc processor
        limit (list)
@@ -348,5 +353,21 @@
                  (set! goal (- goal 1))
                  (when (= goal 0)
                    (raise models)))))))))))
+
+(define (render solution)
+  (let* ((tree (car solution))
+         (model (cdr solution)))
+    (letrec ((print-tree
+              (lambda (node)
+                (cond [(list? node) (map print-tree node)]
+                      [(symbolic? node) (let ((result (evaluate node model))) (if (symbolic? result) (print (map cdr (union-contents result))) (print result)))]
+                      [#t (print node)]))))
+      (print-tree tree)
+      solution)))
+
+(define (test op limit inputs)
+  (let ((out (apply analyze limit inputs)))
+    (map render out))
+)
 
 (provide analyze aggregate)
