@@ -84,10 +84,10 @@
 
     (define/public (basic-math pos l r)
       (if (and (number? l) (number? r))
-          (let ((m1 (val (cons 'm1 pos) boolean?))
-                (m2 (val (cons 'm2 pos) boolean?))
-                (m3 (val (cons 'm3 pos) boolean?)))
-            ((if m1 (if m2 (if m3 '+ -) (if (or (= r 0) m3) * /)) (if m2 quotient remainder)) l r))
+              (let ((m1 (val (cons 'm1 pos) boolean?))
+                    (m2 (val (cons 'm2 pos) boolean?))
+                    (m3 (val (cons 'm3 pos) boolean?)))
+                ((if m1 (if m2 (if m3 + -) (if (or (= r 0) m3) * /)) (if m2 quotient remainder)) l r))
           'invalid))
 
     (define/public (basic-num-functions pos v)
@@ -340,7 +340,7 @@
              ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
              ; has bugs so check.
              (when (and (sat? result) (evaluate formula result))
-               (set! models (cons (cons (car y) result) models))
+               (set! models (cons (list (car y) result null) models))
                (set! goal (- goal 1))
                (when (= goal 0)
                  (raise models)))))))
@@ -374,6 +374,14 @@
                                    (v2 (constant 'agg2 boolean?)))
                                (if v1 (if v2 + max) min))) 
                             (#t string-append)))
+                   (strop (cond ((boolean? (car results))
+                             (let ((v (constant 'agg boolean?)))
+                               (lambda (x y) (if v ('and) ('or)))))
+                            ((number? (car results))
+                             (let ((v1 (constant 'agg1 boolean?))
+                                   (v2 (constant 'agg2 boolean?)))
+                               (if v1 (if v2 '+ 'max) 'min))) 
+                            (#t 'string-append)))
                   (formula
                    (for/fold ([formula null])
                              ([result results]
@@ -385,26 +393,30 @@
              (solver-assert solver (cdr formula))
              (let* ((result (solver-check solver)))
                (when (and (sat? result) (evaluate formula result))
-                 (set! models (cons (cons (car y) result) models))
+                 (set! models (cons (list (car y) result strop) models))
                  (set! goal (- goal 1))
                  (when (= goal 0)
                    (raise models)))))))))))
 
 (define (render solution)
-  (let* ((tree (car solution))
-         (model (cdr solution)))
+  (let* ((tree (list-ref solution 0))
+         (model (list-ref solution 1))
+         (agg (list-ref solution 2)))
+    (cons (if (not (null? agg)) (evaluate agg model) 'notagg)
     (letrec ((print-tree
               (lambda (node)
                 (cond [(and (list? node) (equal? (car node) 'sym)) (evaluate (apply val (cdr node)) model)]
                       [(list? node) (map print-tree node)]
                       [(symbolic? node) (let ((result (evaluate node model))) (if (symbolic? result) (map cdr (union-contents result)) result))]
                       [#t node]))))
-      (print-tree tree))))
+      (print-tree tree)))))
 
 (define (check-operation l op)
-  (println (car (car l)))
+  (println l)
   (when (list? l)
-      (assert (equal? op (car (car l))))))
+    (if (equal? (car (car l)) 'notagg)
+      (assert (equal? op (list-ref (car l) 1)))
+      (assert (equal? op (car (car l)))))))
 
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
