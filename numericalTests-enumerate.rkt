@@ -51,4 +51,4 @@
 
 (define (num-testAll)
   (begin (num-test8) (num-test9) (num-test10) (num-test11) (num-test12) (num-test13) (agg-1)
-       (agg-2) (agg-3) (agg-4))) 
+       (agg-2) (agg-3) (agg-4) (agg-5))) 
