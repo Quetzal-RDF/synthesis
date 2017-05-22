@@ -39,7 +39,14 @@
       (let ((m1 (val (cons 'm1 pos) boolean?))
             (m2 (val (cons 'm2 pos) boolean?))
             (m3 (val (cons 'm3 pos) boolean?)))
-            (list (if m1 (if m2 (if m3 '+ '-) (if m3 '* '/)) (if m2 'quotient 'remainder)) l r)))
+            (list
+             (cond [(and m1 m2 m3) '+]
+                          [(and m1 m2 (not m3)) '-]
+                          [(and m1 (not m2) (m3)) '*]
+                          [(and m1 (not m2) (not m3)) '/]
+                          [(and (not m1) m2 m3) 'quotient]
+                          [(and (not m1) (not m2) m3) 'remainder]
+                          ) l r)))
 
     (define/public (basic-num-functions pos v)
       (let ((m1 (val (cons 'm1 pos) boolean?))
@@ -84,10 +91,23 @@
 
     (define/public (basic-math pos l r)
       (if (and (number? l) (number? r))
-              (let ((m1 (val (cons 'm1 pos) boolean?))
-                    (m2 (val (cons 'm2 pos) boolean?))
-                    (m3 (val (cons 'm3 pos) boolean?)))
-                ((if m1 (if m2 (if m3 + -) (if (or (= r 0) m3) * /)) (if m2 quotient remainder)) l r))
+                ((if (= r 0)
+                      (let ((m1 (val (cons 'm1 pos) boolean?))
+                            (m2 (val (cons 'm2 pos) boolean?)))
+                        (cond [(and m1 m2) +]
+                              [(and m1 (not m2)) -]
+                              [(and (not m1) (not m2)) *]))
+
+                      (let ((m1 (val (cons 'm1 pos) boolean?))
+                            (m2 (val (cons 'm2 pos) boolean?))
+                            (m3 (val (cons 'm3 pos) boolean?)))
+                        (cond [(and m1 m2 m3) +]
+                          [(and m1 m2 (not m3)) -]
+                          [(and m1 (not m2) (m3)) *]
+                          [(and m1 (not m2) (not m3)) /]
+                          [(and (not m1) (integer? r) m2 m3) quotient]
+                          [(and (not m1) (integer? r) (not m2) m3) remainder]
+                          ))) l r)
           'invalid))
 
     (define/public (basic-num-functions pos v)
@@ -396,7 +416,8 @@
                  (set! models (cons (list (car y) result strop) models))
                  (set! goal (- goal 1))
                  (when (= goal 0)
-                   (raise models)))))))))))
+                   (raise models))))))))
+      (list))))
 
 (define (render solution)
   (let* ((tree (list-ref solution 0))
@@ -411,12 +432,16 @@
                       [#t node]))))
       (print-tree tree)))))
 
+(define (testListMembers l1 l2)
+  (if (equal? l1 '())
+      '()
+     (begin (assert (member (car l1) l2))
+     (testListMembers (cdr l1) l2))))
+
 (define (check-operation l op)
   (println l)
   (when (list? l)
-    (if (equal? (car (car l)) 'notagg)
-      (assert (equal? op (list-ref (car l) 1)))
-      (assert (equal? op (car (car l)))))))
+    testListMembers op l))
 
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
