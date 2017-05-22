@@ -74,6 +74,32 @@
     (define/public (get-digits pos str)
       (list 'get-digits str))))
 
+(define (basic-math-op r pos + - * / quotient remainder)
+  (if (= r 0)
+      (let ((m1 (val (cons 'm1 pos) boolean?))
+            (m2 (val (cons 'm2 pos) boolean?)))
+        (cond [(and m1 m2) +]
+              [(and m1 (not m2)) -]
+              [#t *]))
+                      
+      (if (integer? r)
+          (let ((m1 (val (cons 'm1 pos) boolean?))
+                (m2 (val (cons 'm2 pos) boolean?))
+                (m3 (val (cons 'm3 pos) boolean?)))
+            (cond [(and m1 m2 m3) +]
+                  [(and m1 m2 (not m3)) -]
+                  [(and m1 (not m2) (m3)) *]
+                  [(and m1 (not m2) (not m3)) /]
+                  [(and (not m1) m2 m3) quotient]
+                  [#t remainder]
+                  ))
+          (let ((m1 (val (cons 'm1 pos) boolean?))
+                (m2 (val (cons 'm2 pos) boolean?)))
+            (cond [(and m1 m2) +]
+                  [(and m1 (not m2)) -]
+                  [(and (not m1) m2) *]
+                  [#t /])))))
+
 (define expr-processor%
   (class object%
     (init inputs)
@@ -91,23 +117,7 @@
 
     (define/public (basic-math pos l r)
       (if (and (number? l) (number? r))
-                ((if (= r 0)
-                      (let ((m1 (val (cons 'm1 pos) boolean?))
-                            (m2 (val (cons 'm2 pos) boolean?)))
-                        (cond [(and m1 m2) +]
-                              [(and m1 (not m2)) -]
-                              [(and (not m1) (not m2)) *]))
-
-                      (let ((m1 (val (cons 'm1 pos) boolean?))
-                            (m2 (val (cons 'm2 pos) boolean?))
-                            (m3 (val (cons 'm3 pos) boolean?)))
-                        (cond [(and m1 m2 m3) +]
-                          [(and m1 m2 (not m3)) -]
-                          [(and m1 (not m2) (m3)) *]
-                          [(and m1 (not m2) (not m3)) /]
-                          [(and (not m1) (integer? r) m2 m3) quotient]
-                          [(and (not m1) (integer? r) (not m2) m3) remainder]
-                          ))) l r)
+                ((basic-math-op r pos + - * / quotient remainder) l r)
           'invalid))
 
     (define/public (basic-num-functions pos v)
