@@ -42,8 +42,8 @@
    (println (analyze 3 '((3.2) (2.0)) '((32)(20))
 )))
 
-; test nested Ifs with numerical operations.  If (Col1 is "F" then Col2 else 0) else if (Col2 is "D" then Col 3*Col4 + Col5 else 0) 
-; else if (Col1 is "E" then Col6 + Col7 + Col8 + Col5) else 0
+; test nested Ifs with numerical operations.  If (Col1 is "F" then Col2 else 0) + if (Col2 is "D" then Col 3*Col4 + Col5 else 0) 
+; + if (Col1 is "E" then Col6 + Col7 + Col8 + Col5)
 (define (nested-if-numerical-ops)
    (println (analyze 3 '((3) (15) (23) (0)) '(("F" 3 3 2 4 10 11 12)("D" 3 5 3 6 6 7 8)("E" 1 2 3 4 5 7 7)("G" 1 2 3 4 5 7 7))
 )))
