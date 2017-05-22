@@ -39,14 +39,14 @@
       (let ((m1 (val (cons 'm1 pos) boolean?))
             (m2 (val (cons 'm2 pos) boolean?))
             (m3 (val (cons 'm3 pos) boolean?)))
-            (list
-             (cond [(and m1 m2 m3) '+]
-                          [(and m1 m2 (not m3)) '-]
-                          [(and m1 (not m2) (m3)) '*]
-                          [(and m1 (not m2) (not m3)) '/]
-                          [(and (not m1) m2 m3) 'quotient]
-                          [(and (not m1) (not m2) m3) 'remainder]
-                          ) l r)))
+        (list
+         (cond [(and m1 m2 m3) 'quotient]
+               [(and m1 m2 (not m3)) 'remainder]
+               [(and m1 (not m2) m3) '/]
+               [(and m1 (not m2) (not m3)) '*]
+               [(and (not m1) m2 m3) '-]
+               [#t '+])
+         l r)))
 
     (define/public (basic-num-functions pos v)
       (let ((m1 (val (cons 'm1 pos) boolean?))
@@ -75,30 +75,15 @@
       (list 'get-digits str))))
 
 (define (basic-math-op r pos + - * / quotient remainder)
-  (if (= r 0)
-      (let ((m1 (val (cons 'm1 pos) boolean?))
-            (m2 (val (cons 'm2 pos) boolean?)))
-        (cond [(and m1 m2) +]
-              [(and m1 (not m2)) -]
-              [#t *]))
-                      
-      (if (integer? r)
-          (let ((m1 (val (cons 'm1 pos) boolean?))
-                (m2 (val (cons 'm2 pos) boolean?))
-                (m3 (val (cons 'm3 pos) boolean?)))
-            (cond [(and m1 m2 m3) +]
-                  [(and m1 m2 (not m3)) -]
-                  [(and m1 (not m2) (m3)) *]
-                  [(and m1 (not m2) (not m3)) /]
-                  [(and (not m1) m2 m3) quotient]
-                  [#t remainder]
-                  ))
-          (let ((m1 (val (cons 'm1 pos) boolean?))
-                (m2 (val (cons 'm2 pos) boolean?)))
-            (cond [(and m1 m2) +]
-                  [(and m1 (not m2)) -]
-                  [(and (not m1) m2) *]
-                  [#t /])))))
+  (let ((m1 (val (cons 'm1 pos) boolean?))
+        (m2 (val (cons 'm2 pos) boolean?))
+        (m3 (val (cons 'm3 pos) boolean?)))
+    (cond [(and m1 m2 m3 (integer? r) (not (= r 0))) quotient]
+          [(and m1 m2 (not m3) (integer? r) (not (= r 0))) remainder]
+          [(and m1 (not m2) m3 (not (= r 0))) /]
+          [(and m1 (not m2) (not m3)) *]
+          [(and (not m1) m2 m3) -]
+          [#t +])))
 
 (define expr-processor%
   (class object%
@@ -438,7 +423,11 @@
               (lambda (node)
                 (cond [(and (list? node) (equal? (car node) 'sym)) (evaluate (apply val (cdr node)) model)]
                       [(list? node) (map print-tree node)]
-                      [(symbolic? node) (let ((result (evaluate node model))) (if (symbolic? result) (map cdr (union-contents result)) result))]
+                      [(symbolic? node)
+                       (let ((result (evaluate node model)))
+                         (if (symbolic? result)
+                             (map cdr (union-contents result))
+                             result))]
                       [#t node]))))
       (print-tree tree)))))
 
