@@ -88,6 +88,10 @@
 (define (test-logic-or)
   (test analyze '('or '==) 5 '(#t #t #t #f) '(("A" "D")("A" "G")("F" "D")("F" "G"))))
 
+; if then else expression
+(define (test-if-then-else1)
+  (test analyze '('== 'if) 5 '("C" "D") '(("A")("B"))))
+
 (define (num-testAll)
   (begin (num-test1) (num-test2) (num-test3) (num-test4) (num-test5) (num-test6) (num-test7) (num-test8) (num-test9) (num-test10) (num-test11) (num-test12) (num-test13) (agg-1)
-       (agg-2) (agg-3) (agg-4) (agg-5) (test-str1) (test-logic-and) (test-logic-or))) 
+       (agg-2) (agg-3) (agg-4) (agg-5) (test-str1) (test-logic-and) (test-logic-or)(test-if-then-else1))) 
