@@ -61,6 +61,13 @@
       (let ((islt (val (cons 'islt pos) boolean?))
             (iseq (val (cons 'iseq pos) boolean?)))
         (list (if iseq (if islt '<= '>=) (if islt '< '>)) l r)))
+
+    (define/public (compare-to-str pos l r)
+        (list '== l r))
+    
+    (define/public (logic-op pos l r)
+      (let ((isand (val (cons 'isand pos) boolean?)))
+        (list (if isand 'and 'or) l r)))
     
     (define/public (strlength pos str)
       (list 'length str))
@@ -125,6 +132,17 @@
             (if iseq (if islt (<= l r) (>= l r)) (if islt (< l r) (> l r))))
           'invalid))
 
+    (define/public (compare-to-str pos l r)
+      (if (and (string? l) (string? r))
+          (equal? l r)
+          'invalid))
+    
+    (define/public (logic-op pos l r)
+      (if (and (boolean? l) (boolean? r))
+          (let ((isand (val (cons 'isand pos) boolean?)))
+            (if isand (and l r) (or l r)))
+           'invalid))
+
     (define/public (strlength pos str)
       (if (string? str)
           (string-length str)
@@ -182,6 +200,14 @@
     (define/public (compare-to pos left right)
       (for/list ([p processors] [l left] [r right])
         (send p compare-to pos l r)))
+
+    (define/public (compare-to-str pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p compare-to-str pos l r)))
+    
+    (define/public (logic-op pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p logic-op pos l r)))
     
     (define/public (strlength pos strs)
       (for/list ([p processors] [str strs])
@@ -221,7 +247,9 @@
   (do-length size pos p f))
 
 (define (do-all-bool size pos p f)
-  (do-compare-to size pos p f))
+  (do-compare-to size pos p f)
+  (do-compare-to-str size pos p f)
+  (do-logic-op size pos p f))
 
 ; send p in 1 returns the first element of the columns where p is a compound processor and it returns a list of all first elements of a row
 (define (do-in1 size pos p f) (f size (send p in 1)))
@@ -290,6 +318,12 @@
 
 (define (do-compare-to size pos p f)
   (do-binary-op do-all-int do-all-int 'compare-to size pos p f))
+
+(define (do-compare-to-str size pos p f)
+  (do-binary-op do-all-str do-all-str 'compare-to-str size pos p f))
+
+(define (do-logic-op size pos p f)
+  (do-binary-op do-all-bool do-all-bool 'logic-op size pos p f))
 
 (define (do-length size pos p f)
   (do-unary-op do-all-str 'strlength size pos p f))

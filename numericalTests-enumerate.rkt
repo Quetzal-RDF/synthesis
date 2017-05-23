@@ -1,6 +1,33 @@
 #lang rosette
 
 (require "interp-enumerate.rkt")
+; multiply
+(define (num-test1)
+  (test analyze '('*) 5 '(8 2) '((40 .2)(20 .1))))
+
+; divide
+(define (num-test2)
+  (test analyze '('/) 5 '(4.04 2) '((40.4 10)(18 9))))
+
+; divide
+(define (num-test3)
+  (test analyze '('+) 5 '(50.4 27) '((40.4 10)(18 9))))
+
+; subtract
+(define (num-test4)
+  (test analyze '('-) 5 '(30.4 9) '((40.4 10)(18 9))))
+
+; 3*Col1 + Col2
+(define (num-test5)
+  (test analyze '('* '+) 5 '(13 18) '((3 4)(4 6))))
+
+; (Col1 + Col2) * Col3
+(define (num-test6)
+  (test analyze '('* '+) 5 '(60 20) '((10 20 2)(4 6 2))))
+
+; (Col1 + Col2) * 5
+(define (num-test7)
+  (test analyze '('* '+) 5 '(150 50) '((10 20)(4 6))))
 
 ; ceiling
 (define (num-test8)
@@ -50,5 +77,5 @@
 ;(println (aggregate 5 '(9.45 27.05) '(10 .1 .05) '(20 .2 .1)))
 
 (define (num-testAll)
-  (begin (num-test8) (num-test9) (num-test10) (num-test11) (num-test12) (num-test13) (agg-1)
+  (begin (num-test1) (num-test2) (num-test3) (num-test4) (num-test5) (num-test6) (num-test7) (num-test8) (num-test9) (num-test10) (num-test11) (num-test12) (num-test13) (agg-1)
        (agg-2) (agg-3) (agg-4) (agg-5))) 
