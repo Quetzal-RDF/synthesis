@@ -233,7 +233,7 @@
   (do-concat size pos p f)
   (do-substring size pos p f)
   (do-get-digits size pos p f)
-  ; (do-strv size pos p f)
+  (do-strv size pos p f)
   )
 
 (define (do-all-int size pos p f)
@@ -247,9 +247,10 @@
   (do-length size pos p f))
 
 (define (do-all-bool size pos p f)
+  (do-logic-op size pos p f)
   (do-compare-to size pos p f)
   (do-compare-to-str size pos p f)
-  (do-logic-op size pos p f))
+  )
 
 ; send p in 1 returns the first element of the columns where p is a compound processor and it returns a list of all first elements of a row
 (define (do-in1 size pos p f) (f size (send p in 1)))
