@@ -68,6 +68,9 @@
     (define/public (logic-op pos l r)
       (let ((isand (val (cons 'isand pos) boolean?)))
         (list (if isand 'and 'or) l r)))
+
+    (define/public (if-then-else case l r)
+      (list 'if case l r))
     
     (define/public (strlength pos str)
       (list 'length str))
@@ -142,6 +145,11 @@
           (let ((isand (val (cons 'isand pos) boolean?)))
             (if isand (and l r) (or l r)))
            'invalid))
+    
+    (define/public (if-then-else case l r)
+      (if (and (boolean? case))
+          (if case l r)
+           'invalid))
 
     (define/public (strlength pos str)
       (if (string? str)
@@ -204,6 +212,10 @@
     (define/public (compare-to-str pos left right)
       (for/list ([p processors] [l left] [r right])
         (send p compare-to-str pos l r)))
+
+    (define/public (if-then-else cases left right)
+      (for/list ([p processors] [case cases] [l left] [r right])
+        (send p if-then-else case l r)))
     
     (define/public (logic-op pos left right)
       (for/list ([p processors] [l left] [r right])
@@ -234,6 +246,7 @@
   (do-substring size pos p f)
   (do-get-digits size pos p f)
   (do-strv size pos p f)
+  (do-if-then-op size pos p f)
   )
 
 (define (do-all-int size pos p f)
@@ -244,7 +257,9 @@
   (do-basic-math size pos p f)
   (do-basic-num-functions size pos p f)
   (do-index-of size pos p f)
-  (do-length size pos p f))
+  (do-length size pos p f)
+  (do-if-then-op size pos p f)
+  )
 
 (define (do-all-bool size pos p f)
   (do-logic-op size pos p f)
@@ -325,6 +340,10 @@
 
 (define (do-logic-op size pos p f)
   (do-binary-op do-all-bool do-all-bool 'logic-op size pos p f))
+
+(define (do-if-then-op size pos p f)
+  (do-ternary-op do-all-bool do-all-str do-all-str 'if-then-else size pos p f)
+  (do-ternary-op do-all-bool do-all-int do-all-int 'if-then-else size pos p f))
 
 (define (do-length size pos p f)
   (do-unary-op do-all-str 'strlength size pos p f))
@@ -488,4 +507,4 @@
     (let ((o (try-depth 2))) (check-operation o op))))
     
 
-(provide analyze aggregate test)
+(provide analyze render aggregate test)
