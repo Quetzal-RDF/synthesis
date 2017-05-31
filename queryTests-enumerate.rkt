@@ -19,7 +19,7 @@
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
-  (test analyze '* 5 '(2.4 2.469) '((4 .6)(8.23 .3))))
+  (test analyze '('*) 5 '(2.4 2.469) '((4 .6)(8.23 .3))))
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)

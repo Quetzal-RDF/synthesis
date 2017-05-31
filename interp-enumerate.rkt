@@ -486,15 +486,16 @@
       (print-tree tree)))))
 
 (define (testListMembers l1 l2)
-  (if (equal? l1 '())
+  (if (equal? l2 '())
       '()
-     (begin (assert (member (car l1) l2))
-     (testListMembers (cdr l1) l2))))
+     (begin
+       (assert (list? (member (car l2) (flatten l1))))
+       (testListMembers l1 (cdr l2)))))
 
 (define (check-operation l op)
   (println l)
   (when (list? l)
-    testListMembers op l))
+    (testListMembers l op)))
 
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
