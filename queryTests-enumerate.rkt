@@ -4,11 +4,9 @@
 ; Need the following sets of features:
 ; 1. Ability to get a different solution if this one does not work
 ; 2. Ability to deal with reals properly
-; 3. Add logical not to the sets of operations we need
 ; 4. Add a solution to: solution: unrecognized solver output: (error line 7404 column 10: model is not available)
 ; 5. Need to extend to more columns
 ; 6. Fix division by zero problem with simple-multiply2
-; 7. fix assertions
 ; 8. if then else wont work if we have multiple conditions (case statement for a whole set of conds
 
 
@@ -19,7 +17,7 @@
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
-  (test analyze '* 5 '(2.4 2.469) '((4 .6)(8.23 .3))))
+  (test analyze '('*) 5 '(2.4 2.469) '((4 .6)(8.23 .3))))
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)
