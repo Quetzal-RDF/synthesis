@@ -69,6 +69,9 @@
       (let ((isand (val (cons 'isand pos) boolean?)))
         (list (if isand 'and 'or) l r)))
 
+    (define/public (logic-op-not pos v)
+        (list 'not v))
+
     (define/public (if-then-else case l r)
       (list 'if case l r))
     
@@ -139,7 +142,10 @@
       (if (and (string? l) (string? r))
           (equal? l r)
           'invalid))
-    
+
+    (define/public (logic-op-not pos v)
+        (not v))
+  
     (define/public (logic-op pos l r)
       (if (and (boolean? l) (boolean? r))
           (let ((isand (val (cons 'isand pos) boolean?)))
@@ -213,6 +219,10 @@
       (for/list ([p processors] [l left] [r right])
         (send p compare-to-str pos l r)))
 
+    (define/public (logic-op-not pos v)
+      (for/list ([p processors] [vs v])
+        (send p logic-op-not pos vs)))
+  
     (define/public (if-then-else cases left right)
       (for/list ([p processors] [case cases] [l left] [r right])
         (send p if-then-else case l r)))
@@ -263,6 +273,7 @@
 
 (define (do-all-bool size pos p f)
   (do-logic-op size pos p f)
+  (do-logic-op-not size pos p f)
   (do-compare-to size pos p f)
   (do-compare-to-str size pos p f)
 )
@@ -340,6 +351,9 @@
 
 (define (do-logic-op size pos p f)
   (do-binary-op do-all-bool do-all-bool 'logic-op size pos p f))
+
+(define (do-logic-op-not size pos p f)
+  (do-unary-op do-all-bool 'logic-op-not size pos p f))
 
 (define (do-if-then-op size pos p f)
   (do-ternary-op do-all-bool do-all-str do-all-str 'if-then-else size pos p f)

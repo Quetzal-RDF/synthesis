@@ -4,11 +4,9 @@
 ; Need the following sets of features:
 ; 1. Ability to get a different solution if this one does not work
 ; 2. Ability to deal with reals properly
-; 3. Add logical not to the sets of operations we need
 ; 4. Add a solution to: solution: unrecognized solver output: (error line 7404 column 10: model is not available)
 ; 5. Need to extend to more columns
 ; 6. Fix division by zero problem with simple-multiply2
-; 7. fix assertions
 ; 8. if then else wont work if we have multiple conditions (case statement for a whole set of conds
 
 
