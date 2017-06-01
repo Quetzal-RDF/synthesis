@@ -25,6 +25,57 @@
         (hash-set! vals pos v)
         v)))
 
+(define logging-processor%
+  (class object%
+    (super-new)
+    
+    (define/public (in v)
+      (cond ((= v 1) (list do-in1))
+	    ((= v 2) (list do-in2))
+	    ((= v 3) (list do-in3))))
+      	    
+    (define/public (symbolic pos type)
+      (list
+       (if (equal? type integer?)
+	   do-intv
+	   do-strv)))
+    
+    (define/public (basic-math pos l r)
+      (cons do-basic-math (append l r)))
+
+    (define/public (basic-num-functions pos v)
+      (cons do-basic-num-functions v))
+    
+    (define/public (index-of pos l r)
+      (cons do-index-of (append l r)))
+    
+    (define/public (compare-to pos l r)
+      (cons do-compare-to (append l r)))
+
+    (define/public (compare-to-str pos l r)
+      (cons do-compare-to-str (append l r)))
+    
+    (define/public (logic-op pos l r)
+      (cons do-logic-op (append l r)))
+
+    (define/public (logic-op-not pos v)
+      (cons do-logic-op-not v))
+
+    (define/public (if-then-else case l r)
+      (cons do-if-then-op (append case l r)))
+    
+    (define/public (strlength pos str)
+      (cons do-length str))
+    
+    (define/public (substr str l r)
+      (cons do-substring (append str l r)))
+
+    (define/public (concat pos left right)
+      (cons do-concat (append left right)))
+
+    (define/public (get-digits pos str)
+      (cons do-get-digits str))))
+
 (define doc-processor%
   (class object%
     (super-new)
@@ -185,12 +236,17 @@
 
 (define compound-processor%
   (class object%
-    (init children)
+    (init children ordering-function)
 
     (super-new)
     
     (define processors children)
 
+    (define ordering ordering-function)
+
+    (define/public (get-ordering-function)
+      ordering)
+    
     (define/public (in v)
       (for/list ([p processors])
         (send p in v)))
@@ -247,36 +303,24 @@
       (for/list ([p processors] [s strs])
         (send p get-digits pos s)))))
 
+(define (do-all ops size pos p f)
+  (for ([op ((send p get-ordering-function) ops)])
+    (op size pos p f)))
 
 (define (do-all-str size pos p f)
-  (do-in1 size pos p f)
-  (do-in2 size pos p f)
-  (do-in3 size pos p f)
-  (do-concat size pos p f)
-  (do-substring size pos p f)
-  (do-get-digits size pos p f)
-  (do-strv size pos p f)
-  (do-if-then-op size pos p f)
-  )
+  (do-all
+   (list do-in1 do-in2 do-in3 do-concat do-substring do-get-digits do-strv do-if-then-op)
+   size pos p f))
 
 (define (do-all-int size pos p f)
-  (do-in1 size pos p f)
-  (do-in2 size pos p f)
-  (do-in3 size pos p f)
-  (do-intv size pos p f)
-  (do-basic-math size pos p f)
-  (do-basic-num-functions size pos p f)
-  (do-index-of size pos p f)
-  (do-length size pos p f)
-  (do-if-then-op size pos p f)
-  )
+  (do-all
+   (list do-in1 do-in2 do-in3 do-intv do-basic-math do-basic-num-functions do-index-of do-length do-if-then-op)
+   size pos p f))
 
 (define (do-all-bool size pos p f)
-  (do-logic-op size pos p f)
-  (do-logic-op-not size pos p f)
-  (do-compare-to size pos p f)
-  (do-compare-to-str size pos p f)
-  )
+  (do-all
+   (list do-logic-op do-logic-op-not do-compare-to do-compare-to-str)
+   size pos p f))
 
 ; send p in 1 returns the first element of the columns where p is a compound processor and it returns a list of all first elements of a row
 (define (do-in1 size pos p f) (f size (send p in 1)))
@@ -371,7 +415,7 @@
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
 ; inputs -  a list of rows such as (6 3 3) (9 6 3) with 3 columns per row
-(define (analyze limit outputs . inputs)
+(define (analyze white black limit outputs . inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
   (let ((solver (current-solver))
@@ -392,21 +436,29 @@
        ; Note the first expression in y is discarded in processing for formulas because it reflects the output of the doc processor
        limit (list)
        (new compound-processor%
+            [ordering-function
+             (lambda (ops)
+               (append
+                (filter (lambda (op) (member op white)) ops)
+                (filter (lambda (op) (not (member op (append black white)))) ops)
+                (filter (lambda (op) (member op black)) ops)))]
             [children
              (cons
               (new doc-processor%)
-              (for/list ([input inputs])
-                ; initialize the field inputs in the expr-processor object with current row inputs.  Note the inputs in the following
-                ; line does not refer to the parameter passed into this function
-                (new expr-processor% [inputs input])))])
+              (cons
+               (new logging-processor%)
+               (for/list ([input inputs])
+                 ; initialize the field inputs in the expr-processor object with current row inputs.  Note the inputs in the following
+                 ; line does not refer to the parameter passed into this function
+                 (new expr-processor% [inputs input]))))])
        (lambda (x y)
          (solver-clear solver)
          (set! i (+ i 1))
          (let ((formula
                 (for/fold ([formula #t])
                           ([out outputs]
-                           [in (cdr y)])
-                  ; collect up all expressions generated by the expression processor in y (cdr y)
+                           [in (cddr y)])
+                  ; collect up all expressions generated by the expression processor in y (cddr y)
                   ; and create a single condition in formula for a solver to assert on with ANDs linking across rows.
                    (and
                     formula
@@ -423,7 +475,7 @@
              ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
              ; has bugs so check.
              (when (and (sat? result) (evaluate formula result))
-               (set! models (cons (list (car y) result null) models))
+               (set! models (cons (list (car y) (remove-duplicates (cadr y)) result null) models))
                (set! goal (- goal 1))
                (when (= goal 0)
                  (raise models)))))))
