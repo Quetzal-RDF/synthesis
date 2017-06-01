@@ -53,6 +53,10 @@
 (define (num-test13)
   (test analyze '(remainder) 5 '(2 3) '((20 3)(13 5))))
 
+; test whether floats are dealt with correctly
+(define (num-test14)
+  (test analyze '(*) 5 '(60.77916 1.485) '((4.563 13.32) (4.5 .33))))
+  
 ; max
 (define (agg-1)
   (test aggregate '(max) 5 '(1 2 3) '((1)(2)(3))))
@@ -97,5 +101,5 @@
   (test analyze '(not ==) 5 '(#t #t #f) '(("C")("B")("A"))))
 
 (define (num-testAll)
-  (begin (num-test1) (num-test2) (num-test3) (num-test4) (num-test5) (num-test6) (num-test7) (num-test8) (num-test9) (num-test10) (num-test11) (num-test12) (num-test13) (agg-1)
+  (begin (num-test1) (num-test2) (num-test3) (num-test4) (num-test5) (num-test6) (num-test7) (num-test8) (num-test9) (num-test10) (num-test11) (num-test12) (num-test13) (num-test14) (agg-1)
        (agg-2) (agg-3) (agg-4) (agg-5) (test-str1) (test-logic-and) (test-logic-or)(test-if-then-else1))) 

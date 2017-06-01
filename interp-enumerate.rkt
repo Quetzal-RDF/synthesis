@@ -368,10 +368,18 @@
 (define (symbolic? x) 
   (or (union? x) (term? x)))
 
+(define (convert-to-rational v)
+  (if (real? v)
+    (letrec ((mult (lambda (m n)
+      (if (equal? m (truncate m)) (/ (inexact->exact m) (expt 10 n)) (mult (* 10 m) (+ 1 n))))))
+      (mult v 0)) v))
+
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
 ; inputs -  a list of rows such as (6 3 3) (9 6 3) with 3 columns per row
 (define (analyze limit outputs . inputs)
+  ; convert all reals to rational numbers in case we have any
+  (map (lambda(x) (map convert-to-rational x)) inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
   (let ((solver (current-solver))
