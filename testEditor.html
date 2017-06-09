@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<head>
+<script   src="https://code.jquery.com/jquery-1.12.4.min.js"   integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="   crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.3.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.2.2/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.15/js/dataTables.material.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.1.1/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/keytable/2.2.1/js/dataTables.keyTable.min.js"></script>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.2.2/css/select.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="Editor-1/css/editor.dataTables.css">
+<script type="text/javascript" src="Editor-1/js/dataTables.editor.js"></script>
+
+
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/dataTables.material.min.css" type="text/css">
+
+<style>
+table.dataTable thead .sorting, 
+table.dataTable thead .sorting_asc, 
+table.dataTable thead .sorting_desc {
+    background : none;
+}
+</style>
+
+
+
+<script>
+var editor; // use a global for the submit and return data rendering in the examples
+
+
+$(document).ready(function() {
+    editor = new $.fn.dataTable.Editor( {
+        table: "#example",
+        fields: [ {
+                label: "String1",
+                name: "string1"
+            }, {
+                label: "String2",
+                name: "string2"
+            }, {
+                label: "int1",
+                name: "int1"
+            }, {
+                label: "int2",
+                name: "int2"
+            }, {
+                label: "int3",
+                name: "int3"
+            }, {
+                label: "int4",
+                name: "int4"
+            }, {
+                label: "int5",
+                name: "int5"
+            }, {
+                label: "int6",
+                name: "int6"
+            }, {
+                label: "int7",
+                name: "int7"
+            }, {
+                label: "output",
+                name: "output"
+            }
+        ],
+        formOptions: {
+            inline: {
+                onBlur: 'submit'
+            }
+        }
+    } );
+ 
+
+    var colTypes = ['string', 'string', 'string', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'];
+ 
+    var table = $('#example').DataTable( {
+        dom: "Bfrtip",
+        ajax: "copy.json",
+        columns: [
+            {
+                data: null,
+                defaultContent: '',
+                className: 'select-checkbox',
+                orderable: false
+            },
+            { data: "string1" , defaultContent:'', orderable: false},
+            { data: "string2", defaultContent:'',orderable: false },
+            { data: "int1" , defaultContent:'', orderable: false},
+            { data: "int2" ,defaultContent:'',orderable: false },
+            { data: "int3", defaultContent:'',orderable: false},
+            { data: "int4" , defaultContent:'', orderable: false},
+            { data: "int5" , defaultContent:'', orderable: false},
+            { data: "int6", defaultContent:'', orderable: false},
+            { data: "int7", defaultContent:'',orderable: false},
+            { data: "output", defaultContent:'', orderable: false}
+        ],
+        select: {
+            style:    'os',
+            selector: 'td:first-child'
+        },
+        keys: {
+            columns: ':not(:first-child)',
+            keys: [ 9 ]
+        },
+        buttons: [
+            { extend: "create", editor: editor },
+            { extend: "remove", editor: editor }
+        ]
+    } );
+
+    // Inline editing on click
+    $('#example').on( 'click', 'tbody td:not(:first-child)', function (e) {
+        editor.inline( this );
+    } );
+ 
+    // Inline editing on tab focus
+    table.on( 'key-focus', function ( e, datatable, cell ) {
+        editor.inline( cell.index() );
+    } );
+
+    $('button.createQuery').on( 'click', function (e) {
+        e.preventDefault();
+        console.log(table);
+        var inputstr = "(";
+        var outputstr = "(";
+
+        for (var i = 0; i < table.data().length; i++) {
+            var row = table.data()[i];
+            console.log(row);
+            var k = 1;
+            var s;
+            // check if row needs to be filtered
+            var keeprow = false;
+            for (var j in row) {
+                if (row[j] != "" && j != "DT_RowId") {
+                    keeprow = true;
+                }
+            }
+
+            if (!keeprow) {
+                continue;
+            }
+
+            inputstr = inputstr + " (";
+
+            for (var j in row) {
+                if (row[j] == "" || j == "DT_RowId") {
+                    continue;
+                }
+                if (colTypes[k] == "string" || colTypes[k] == "date") {
+                    s = '"' + row[j] + '"' + " ";
+                } else {
+                    s = row[j] + " ";
+                }
+                if (j == "output") {
+                    outputstr = outputstr + s;     
+                } else {
+                    inputstr = inputstr + s;
+                }
+                k++;
+            }
+            inputstr = inputstr + ")";
+        }
+
+        inputstr = inputstr + ")";
+        outputstr = outputstr + ")";
+
+        var poststr = '{"input": "' + inputstr + '", "output":' + outputstr + '"}';
+        $.ajax({
+            type: 'POST',
+            url: './synthesis',
+            data: poststr, // or JSON.stringify ({name: 'jonas'}),
+            success: function(data) { alert('data: ' + data); },
+            contentType: "application/json",
+            dataType: 'json'
+        });
+
+        console.log('input:' + inputstr);
+        console.log('output' + outputstr);
+    } );
+
+
+    $('a.toggle-vis').on( 'click', function (e) {
+        e.preventDefault();
+ 
+        // Get the column API object
+        var column = table.column( $(this).attr('data-column') );
+ 
+        // Toggle the visibility
+        column.visible( ! column.visible() );
+    } );
+} );
+</script>
+</head>
+<body>
+<div>
+  Toggle column: <a class="toggle-vis" data-column="1">string1</a> - <a class="toggle-vis" data-column="2">string2</a> - <a class="toggle-vis" data-column="3">int1</a> - <a class="toggle-vis" data-column="4">int2</a> - <a class="toggle-vis" data-column="5">int3</a> - <a class="toggle-vis" data-column="6">int4</a>
+- <a class="toggle-vis" data-column="7">int5</a>- <a class="toggle-vis" data-column="8">int6</a>- <a class="toggle-vis" data-column="9">int7</a>- <a class="toggle-vis" data-column="10">output</a>
+</div>
+
+  <button type="button" class="createQuery">Create Query</button>
+<table id="example" class="display responsive nowrap" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th></th>
+                <th>String1</th>
+                <th>String2</th>
+                <th>int1</th>
+                <th>int2</th>
+                <th>int3</th>
+                <th>int4</th>
+                <th>int5</th>
+                <th>int6</th>
+                <th>int7</th>
+                <th>output</th>
+            </tr>
+        </thead>
+    </table>
+</body>
+</html>

@@ -9,8 +9,6 @@
 ; 6. Fix division by zero problem with simple-multiply2
 ; 8. if then else wont work if we have multiple conditions (case statement for a whole set of conds
 
-
-
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1)
   (test analyze '< 5 '(5 0) '(("A" 5)("B" 7))))  

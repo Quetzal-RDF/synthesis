@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "DT_RowId": "row_1",
+      "string1": "str",
+      "string2": "str",
+      "int1": "1",
+      "int2": "1",
+      "int3": "1",
+      "int4": "1",
+      "int5": "1",
+      "int6": "1",
+      "int7": "1",
+      "output": "1"
+    }
+]
+}
