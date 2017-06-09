@@ -29,10 +29,8 @@
   (class object%
     (super-new)
     
-    (define/public (in v)
-      (cond ((= v 1) (list do-in1))
-	    ((= v 2) (list do-in2))
-	    ((= v 3) (list do-in3))))
+    (define/public (in pos)
+      (list do-in))
       	    
     (define/public (symbolic pos type)
       (list
@@ -62,7 +60,7 @@
       (cons do-logic-op-not v))
 
     (define/public (if-then-else case l r)
-      (cons do-if-then-op (append case l r)))
+      (cons (if (integer? l) do-if-then-int do-if-then-str) (append case l r)))
     
     (define/public (strlength pos str)
       (cons do-length str))
@@ -80,11 +78,12 @@
   (class object%
     (super-new)
     
-    (define/public (in v)
-      (list 'in v))
+    (define/public (in pos)
+     (let ((m (val (cons 'argn pos) integer?)))
+       (list 'in m)))
     
     (define/public (symbolic pos type)
-      (list 'sym pos type))
+      (val pos type))
     
     (define/public (basic-math pos l r)
       (let ((m1 (val (cons 'm1 pos) boolean?))
@@ -157,9 +156,10 @@
     
     (define input-vals inputs)
     
-    (define/public (in v)
-      (when (< (- v 1) (length input-vals))
-        (list-ref input-vals (- v 1))))
+    (define/public (in pos)
+      (let ((m (val (cons 'argn pos) integer?)))
+        (when (< (- m 1) (length input-vals))
+          (list-ref input-vals (- m 1)))))
 
     (define/public (symbolic pos type)
       (val pos type))
@@ -247,9 +247,9 @@
     (define/public (get-ordering-function)
       ordering)
     
-    (define/public (in v)
+    (define/public (in pos)
       (for/list ([p processors])
-        (send p in v)))
+        (send p in pos)))
 
     (define/public (symbolic pos type)
       (for/list ([p processors])
@@ -309,12 +309,12 @@
 
 (define (do-all-str size pos p f)
   (do-all
-   (list do-in1 do-in2 do-in3 do-concat do-substring do-get-digits do-strv do-if-then-op)
+   (list do-in do-concat do-substring do-get-digits do-strv do-if-then-str)
    size pos p f))
 
 (define (do-all-int size pos p f)
   (do-all
-   (list do-in1 do-in2 do-in3 do-intv do-basic-math do-basic-num-functions do-index-of do-length do-if-then-op)
+   (list do-in do-intv do-basic-math do-basic-num-functions do-index-of do-length do-if-then-int)
    size pos p f))
 
 (define (do-all-bool size pos p f)
@@ -322,12 +322,7 @@
    (list do-logic-op do-logic-op-not do-compare-to do-compare-to-str)
    size pos p f))
 
-; send p in 1 returns the first element of the columns where p is a compound processor and it returns a list of all first elements of a row
-(define (do-in1 size pos p f) (f size (send p in 1)))
-
-(define (do-in2 size pos p f) (f size (send p in 2)))
-
-(define (do-in3 size pos p f) (f size (send p in 3)))
+(define (do-in size pos p f) (f size (send p in pos)))
 
 (define (do-intv size pos p f) (f size (send p symbolic (cons 'int pos) integer?)))
 
@@ -399,8 +394,10 @@
 (define (do-logic-op-not size pos p f)
   (do-unary-op do-all-bool 'logic-op-not size pos p f))
 
-(define (do-if-then-op size pos p f)
-  (do-ternary-op do-all-bool do-all-str do-all-str 'if-then-else size pos p f)
+(define (do-if-then-str size pos p f)
+  (do-ternary-op do-all-bool do-all-str do-all-str 'if-then-else size pos p f))
+
+(define (do-if-then-int size pos p f)
   (do-ternary-op do-all-bool do-all-int do-all-int 'if-then-else size pos p f))
 
 (define (do-length size pos p f)
@@ -419,7 +416,7 @@
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
   (let ((solver (current-solver))
-        (goal 2)
+        (goal 5)
         (models (list))
         (i 0))
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
@@ -454,6 +451,7 @@
                   ; line does not refer to the parameter passed into this function
                   (new expr-processor% [inputs input])))))])
        (lambda (x y)
+         (with-handlers ([exn:fail? (lambda (e) '())])
          (solver-clear solver)
          (set! i (+ i 1))
          (let ((formula
@@ -480,7 +478,7 @@
                (set! models (cons (list (car y) (remove-duplicates (cadr y)) (caddr y) result null) models))
                (set! goal (- goal 1))
                (when (= goal 0)
-                 (raise models)))))))
+                 (raise models))))))))
       (list))))
 
 (define (aggregate limit results . inputs)
@@ -538,9 +536,9 @@
 
 (define (render solution)
   (let* ((tree (list-ref solution 0))
-         (model (list-ref solution 1))
-         (agg (list-ref solution 2)))
-    (cons (if (not (null? agg)) (evaluate agg model) 'notagg)
+         (model (list-ref solution 3))
+         (agg (list-ref solution 4)))
+    (cons (if (not (list? agg)) (evaluate agg model) 'notagg)
     (letrec ((print-tree
               (lambda (node)
                 (cond [(and (list? node) (equal? (car node) 'sym)) (evaluate (apply val (cdr node)) model)]
