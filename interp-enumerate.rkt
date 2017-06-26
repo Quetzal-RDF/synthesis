@@ -563,7 +563,7 @@
                              (map cdr (union-contents result))
                              result))]
                       [#t node]))))
-      (print-tree tree)))))
+      (list (print-tree tree) (list-ref solution 1))))))
 
 (define (testListMembers l1 l2)
   (if (equal? l2 '())
