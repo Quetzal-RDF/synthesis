@@ -419,6 +419,11 @@
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
 ; inputs -  a list of rows such as (6 3 3) (9 6 3) with 3 columns per row
+; symbolic - a symbolic formula that defines the formula which defines our result, which will be ultimately
+; be used to create rows that either fit the formula or dont
+; white - white list of functions
+; black - black list of functions
+
 (define (analyze white black limit outputs symbolic . inputs)
     ; convert all reals to rational numbers in case we have any
   (map (lambda(x) (map convert-to-rational x)) inputs)
@@ -551,9 +556,8 @@
     (cons (if (not (list? agg)) (evaluate agg model) 'notagg)
     (letrec ((print-tree
               (lambda (node)
-                (cond [(and (list? node) (equal? (car node) 'sym)) (evaluate (apply val (cdr node)) model)]
-                      [(list? node) (map print-tree node)]
-                      [(symbolic? node)
+                (cond [(list? node) (map print-tree node)]
+                      [(symbolic? node)     ; symbolic variables
                        (let ((result (evaluate node model)))
                          (if (symbolic? result)
                              (map cdr (union-contents result))
