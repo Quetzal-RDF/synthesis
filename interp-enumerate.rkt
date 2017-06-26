@@ -588,4 +588,4 @@
     (let ((o (try-depth 2))) (check-operation o op))))
     
 
-(provide analyze render aggregate test)
+(provide analyze render aggregate test val)
