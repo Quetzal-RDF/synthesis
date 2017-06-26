@@ -158,8 +158,9 @@
     
     (define/public (in pos)
       (let ((m (val (cons 'argn pos) integer?)))
-        (when (< (- m 1) (length input-vals))
-          (list-ref input-vals (- m 1)))))
+        (if (and (>= m 1) (< (- m 1) (length input-vals)))
+            (list-ref input-vals (- m 1))
+            'invalid)))
 
     (define/public (symbolic pos type)
       (val pos type))
