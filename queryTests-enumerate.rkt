@@ -9,17 +9,23 @@
 ; 6. Fix division by zero problem with simple-multiply2
 ; 8. if then else wont work if we have multiple conditions (case statement for a whole set of conds
 
+(define-symbolic i1 integer?)
+(define-symbolic i2 integer?)
+(define-symbolic s1 string?)
+(define-symbolic r1 real?)
+(define-symbolic r2 real?)
+
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1)
-  (test analyze '< 5 '(5 0) '(("A" 5)("B" 7))))  
+  (test analyze '(if) '() '(do-index-of) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 7))))  
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
-  (test analyze '('*) 5 '(2.4 2.469) '((4 .6)(8.23 .3))))
+  (test analyze '(*) '() '() 3 '(2.4 2.469) (list r1 r2) '((4 .6)(8.23 .3))))
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)
-  (test analyze '* 5 '(.008 .016) '((4)(8)))) 
+  (test analyze '(*) '() '() 3 '(.008 .016) (list i1 i2) '((4)(8)))) 
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)

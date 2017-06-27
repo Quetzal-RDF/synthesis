@@ -452,8 +452,7 @@
              (lambda (ops)
                (append
                 (filter (lambda (op) (member op white)) ops)
-                (filter (lambda (op) (not (member op (append black white)))) ops)
-                (filter (lambda (op) (member op black)) ops)))]
+                (filter (lambda (op) (not (member op (append black white)))) ops)))]
             [children
              (cons
               (new doc-processor%)
@@ -496,7 +495,7 @@
                  (raise models))))))))
       (list))))
 
-(define (aggregate limit results . inputs)
+(define (aggregate white black limit results symbolic . inputs)
   (let ((solver (current-solver))
         (goal 1)
         (models (list))
@@ -585,7 +584,9 @@
             (lambda(v)
               (let ((out (apply func white black v outputs symbolic inputs)))
                 (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
-    (let ((o (try-depth 2))) (check-operation o op))))
+    (let ((o (try-depth 2)))
+      (print o)
+      (check-operation o op))))
     
 
-(provide analyze render aggregate test)
+(provide analyze render aggregate test val)
