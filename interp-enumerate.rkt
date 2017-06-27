@@ -580,10 +580,10 @@
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
 ; op is the top level node for the expression tree (for now) - to check if we got the right operation
-(define (test func op limit outputs inputs)
+(define (test func op white black limit outputs symbolic inputs)
   (letrec ((try-depth
             (lambda(v)
-              (let ((out (apply func v outputs inputs)))
+              (let ((out (apply func white black v outputs symbolic inputs)))
                 (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
     (let ((o (try-depth 2))) (check-operation o op))))
     
