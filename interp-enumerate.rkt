@@ -412,9 +412,12 @@
 
 (define (convert-to-rational v)
   (if (real? v)
-    (letrec ((mult (lambda (m n)
-      (if (equal? m (truncate m)) (/ (inexact->exact m) (expt 10 n)) (mult (* 10 m) (+ 1 n))))))
-      (mult v 0)) v))
+      (let ((parts (string-split (~v v) ".")))
+        (if (= (length parts) 1)
+            v
+            (/ (with-input-from-string (apply string-append parts) (lambda () (read)))
+               (expt 10 (string-length (cadr parts))))))
+      v))
 
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
