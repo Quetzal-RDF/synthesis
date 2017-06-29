@@ -412,9 +412,14 @@
 
 (define (convert-to-rational v)
   (if (real? v)
-    (letrec ((mult (lambda (m n)
-      (if (equal? m (truncate m)) (/ (inexact->exact m) (expt 10 n)) (mult (* 10 m) (+ 1 n))))))
-      (mult v 0)) v))
+      (letrec ((mult (lambda (m n)
+                       (println m)
+                       (println n)
+                       (if (= m (truncate m))
+                           (/ (inexact->exact (truncate m)) n)
+                           (mult (* 10 m) (* 10 n))))))
+        (mult v 1))
+      v))
 
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
@@ -425,9 +430,6 @@
 ; black - black list of functions
 
 (define (analyze white black limit outputs symbolic . inputs)
-    ; convert all reals to rational numbers in case we have any
-  (map (lambda(x) (map convert-to-rational x)) inputs)
-
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
   (let ((solver (current-solver))
@@ -579,14 +581,17 @@
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
 ; op is the top level node for the expression tree (for now) - to check if we got the right operation
-(define (test func op white black limit outputs symbolic inputs)
-  (letrec ((try-depth
-            (lambda(v)
-              (let ((out (apply func white black v outputs symbolic inputs)))
-                (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
-    (let ((o (try-depth 2)))
-      (print o)
-      (check-operation o op))))
+(define (test func op white black limit raw-outputs symbolic raw-inputs)
+   ; convert all reals to rational numbers in case we have any
+  (let ((inputs (map (lambda(x) (map convert-to-rational x)) raw-inputs))
+        (outputs (map convert-to-rational raw-outputs)))
+    (letrec ((try-depth
+              (lambda(v)
+                (let ((out (apply func white black v outputs symbolic inputs)))
+                  (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
+      (let ((o (try-depth 2)))
+        (print o)
+        (check-operation o op)))))
     
 
 (provide analyze render aggregate test val)
