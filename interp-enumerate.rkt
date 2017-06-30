@@ -16,7 +16,7 @@
 ))
 
 (define (id pos)
-  (format "~S" pos))
+  (string->symbol (format "~S" pos)))
 
 (define (val pos type)
   (if (hash-has-key? vals pos)
@@ -421,20 +421,17 @@
 
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
-; inputs -  a list of rows such as (6 3 3) (9 6 3) with 3 columns per row
+; inputs -  a list of rows such as (6 3 3) (9 6 3)
 ; symbolic - a symbolic formula that defines the formula which defines our result, which will be ultimately
 ; be used to create rows that either fit the formula or dont
 ; white - white list of functions
 ; black - black list of functions
 
 (define (analyze white black limit outputs symbolic . inputs)
-    ; convert all reals to rational numbers in case we have any
-  (map (lambda(x) (map convert-to-rational x)) inputs)
-
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
   (let ((solver (current-solver))
-        (goal 5)
+        (goal 1)
         (models (list))
         (i 0))
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
@@ -500,7 +497,7 @@
 
 (define (aggregate white black limit results symbolic . inputs)
   (let ((solver (current-solver))
-        (goal 1)
+        (goal 2)
         (models (list))
         (i 0))
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
@@ -561,7 +558,7 @@
                 (cond [(list? node) (map print-tree node)]
                       [(symbolic? node)     ; symbolic variables
                        (let ((result (evaluate node model)))
-                         (if (symbolic? result)
+                         (if (union? result)
                              (map cdr (union-contents result))
                              result))]
                       [#t node]))))
@@ -582,14 +579,17 @@
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
 ; op is the top level node for the expression tree (for now) - to check if we got the right operation
-(define (test func op white black limit outputs symbolic inputs)
-  (letrec ((try-depth
-            (lambda(v)
-              (let ((out (apply func white black v outputs symbolic inputs)))
-                (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
-    (let ((o (try-depth 2)))
-      (print o)
-      (check-operation o op))))
+(define (test func op white black limit raw-outputs symbolic raw-inputs)
+   ; convert all reals to rational numbers in case we have any
+  (let ((inputs (map (lambda(x) (map convert-to-rational x)) raw-inputs))
+        (outputs (map convert-to-rational raw-outputs)))
+    (letrec ((try-depth
+              (lambda(v)
+                (let ((out (apply func white black v outputs symbolic inputs)))
+                  (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
+      (let ((o (try-depth 2)))
+        (print o)
+        (check-operation o op)))))
     
 
-(provide analyze render aggregate test val)
+(provide analyze render aggregate test val do-strv do-intv do-basic-num-functions do-index-of do-basic-math do-substring)

@@ -11,47 +11,66 @@
 
 (define-symbolic i1 integer?)
 (define-symbolic i2 integer?)
+(define-symbolic i3 integer?)
 (define-symbolic s1 string?)
+(define-symbolic s2 string?)
 (define-symbolic r1 real?)
 (define-symbolic r2 real?)
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1)
-  (test analyze '(if) '() '(do-index-of) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 7))))  
+  (test analyze '(if) '() (list do-index-of do-basic-math) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 7))))  
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
   (test analyze '(*) '() '() 3 '(2.4 2.469) (list r1 r2) '((4 .6)(8.23 .3))))
 
-; test a simple multiply - by a constant
-(define (simple-multiply2)
-  (test analyze '(*) '() '() 3 '(.008 .016) (list i1 i2) '((4)(8)))) 
+; test simple boolean expression - Return expression Col1 < Col2
+(define (simple-boolean1)
+  (test analyze '(>) '() '() 5 '(#t #f #f) (list s1 i1 i2) '(("A" 5 7)("B" 7 5)("C" 5 5))))
 
-; test combination of ANDs, NOTs, and arithmetic operations
-(define (simple-test1)
-  (test analyze '* 5 '(2.6 0 0) '(("A" "FOO" 5 4 .6)("A" "G" 4 8.23 .3)("B" "G" 4 8.23 .3))))
-
-; if col1="" then take col3 else col2
-(define (simple-test2)
-   (test analyze '< 5 '(5 0) '(("A" 5)("" 7))))
+; test simple boolean expression - Return expression Col3 > Col2 and Col1 == "A"
+(define (simple-boolean2)
+  (test analyze '(> ==) '() (list do-substring do-index-of) 5 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
 
 ; define (col1 + col2) / col3
-(define (simple-test3)
-   (test analyze '< 5 '(3.55 3.85) '((4.3 2.8 2)(3.5 4.2 2))))
+(define (simple-math1)
+  (test analyze '(+) '() (list do-strv do-intv do-basic-num-functions) 5 '(2 4 4) (list i1 i2 i3) '((1 1 1)(9 7 4)(3 5 2))))
+
+; if col1="" then take col3 else 0
+(define (simple-eq1)
+  (test analyze '(==) '() (list do-index-of do-basic-math) 5 '(5 0 13) (list s1 i1) '(("A" 5)("" 7)("A" 13))))
 
 ; and (col1 > col2, col3 = "A")
-(define (simple-test4)
-  (test analyze '('AND '> '=) 5 '(#t #f #f #f) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+(define (simple-compare1)
+  (test analyze '(and > ==) '() (list do-index-of do-substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 ; test if col1 > .33
 (define (simple-test5)
-  (test analyze '('AND '> '=) 5 '(#t #t #f) '((.44)(.34)(.33))))
+  (test analyze '(>=) '() '() 5 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
+
+; test a simple multiply - by a constant
+(define (simple-multiply2)
+  (test analyze '(/) '() '() 3 '(.008 .016) (list i1 i2) '((4)(8)))) 
+
+
+
+; test combination of ANDs, NOTs, and arithmetic operations
+(define (simple-test1)
+  (test analyze '(*) '() '() 5 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 4 8.23 .3)("B" "G" 4 8.23 .3))))
+
+; if col1="" then take col3 else col2
+(define (simple-test2)
+   (test analyze '(=) '() '() '(5 0) (list s1 i1) '(("A" 5)("" 7))))
+
+; define (col1 + col2) / col3
+(define (simple-test3)
+   (test analyze '(<) '() '() 3 '(3.55 3.85) '((4.3 2.8 2)(3.5 4.2 2))))
+
+; and (col1 > col2, col3 = "A")
+(define (simple-test4)
+  (test analyze '(AND > =) 5 '(#t #f #f #f) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 ; test if (col1 > col2) and (col2 < col3) and (col4 = "C" or col4 = "D")
 (define (simple-test6)
   (test analyze '('AND '> '=) 5 '(#t #f #f #t #f) '((5 2 4 "C")(5 2 1 "C")(1 2 4 "C")(8 1 5 "D")(5 2 4 "M"))))
-
-; test simple boolean expression - Return expression Col1 < Col2
-(define (simple-boolean1)
-(test analyze '< 5 '(#t #f #f) '(("A" 5 7)("B" 7 5)("C" 5 5))))
-
