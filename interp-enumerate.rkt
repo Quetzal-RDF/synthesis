@@ -473,6 +473,7 @@
        (lambda (x y)
          (with-handlers ([exn:fail? (lambda (e) '())])
            (let ((solver (z3)))
+             (solver-clear solver)
              (set! i (+ i 1))
              (let ((formula
                     (for/fold ([formula #t])
