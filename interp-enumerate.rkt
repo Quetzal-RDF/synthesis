@@ -29,8 +29,10 @@
   (class object%
     (super-new)
     
-    (define/public (in pos)
-      (list do-in))
+    (define/public (in pos type-f)
+      (if (eq? type-f number?)
+          (list do-in-int)
+          (list do-in-str)))
       	    
     (define/public (symbolic pos type)
       (list
@@ -60,7 +62,7 @@
       (cons do-logic-op-not v))
 
     (define/public (if-then-else case l r)
-      (cons (if (integer? l) do-if-then-int do-if-then-str) (append case l r)))
+      (cons (if (number? l) do-if-then-int do-if-then-str) (append case l r)))
     
     (define/public (strlength pos str)
       (cons do-length str))
@@ -78,7 +80,7 @@
   (class object%
     (super-new)
     
-    (define/public (in pos)
+    (define/public (in pos type-f)
      (let ((m (val (cons 'argn pos) integer?)))
        (list 'in m)))
     
@@ -156,10 +158,13 @@
     
     (define input-vals inputs)
     
-    (define/public (in pos)
+    (define/public (in pos type-f)
       (let ((m (val (cons 'argn pos) integer?)))
         (if (and (>= m 1) (< (- m 1) (length input-vals)))
-            (list-ref input-vals (- m 1))
+            (let ((v (list-ref input-vals (- m 1))))
+              (if (type-f v)
+                  v
+                  'invalid))
             'invalid)))
 
     (define/public (symbolic pos type)
@@ -248,9 +253,9 @@
     (define/public (get-ordering-function)
       ordering)
     
-    (define/public (in pos)
+    (define/public (in pos type-f)
       (for/list ([p processors])
-        (send p in pos)))
+        (send p in pos type-f)))
 
     (define/public (symbolic pos type)
       (for/list ([p processors])
@@ -310,20 +315,22 @@
 
 (define (do-all-str size pos p f)
   (do-all
-   (list do-in do-concat do-substring do-get-digits do-strv do-if-then-str)
+   (list do-in-str do-strv do-if-then-str do-concat do-substring do-get-digits)
    size pos p f))
 
 (define (do-all-int size pos p f)
   (do-all
-   (list do-in do-intv do-basic-math do-basic-num-functions do-index-of do-length do-if-then-int)
+   (list do-in-int do-intv do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
    size pos p f))
 
 (define (do-all-bool size pos p f)
   (do-all
-   (list do-logic-op do-logic-op-not do-compare-to do-compare-to-str)
+   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not)
    size pos p f))
 
-(define (do-in size pos p f) (f size (send p in pos)))
+(define (do-in-int size pos p f) (f size (send p in pos number?)))
+
+(define (do-in-str size pos p f) (f size (send p in pos string?)))
 
 (define (do-intv size pos p f) (f size (send p symbolic (cons 'int pos) integer?)))
 
@@ -488,7 +495,8 @@
            (let* ((result (solver-check solver)))
              ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
              ; has bugs so check.
-             (when (and (sat? result) (evaluate formula result))
+             (when (and (sat? result) (eq? #t (evaluate formula result)))
+               (println result)
                (set! models (cons (list (car y) (remove-duplicates (cadr y)) (caddr y) result null) models))
                (set! goal (- goal 1))
                (when (= goal 0)
@@ -592,4 +600,4 @@
         (check-operation o op)))))
     
 
-(provide analyze render aggregate test val do-strv do-intv do-basic-num-functions do-index-of do-basic-math do-substring)
+(provide analyze render aggregate test val do-strv do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length)
