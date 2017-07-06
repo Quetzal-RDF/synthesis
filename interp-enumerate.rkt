@@ -597,10 +597,14 @@
     (letrec ((try-depth
               (lambda(v)
                 (let ((out (apply func white black v outputs symbolic inputs)))
-                  (if (null? out) (when (< v limit) (try-depth (+ 1 v))) (map render out))))))
+                  (if (not (null? out))
+                      (map render out)
+                      (when (< v limit)
+                        (try-depth (+ 1 v))))))))
       (let ((o (try-depth 2)))
         (print o)
-        (check-operation o op)))))
+        (check-operation o op)
+        o))))
     
 
 (provide analyze render aggregate test val do-strv do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length)
