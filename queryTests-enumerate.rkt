@@ -19,7 +19,22 @@
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1)
-  (test analyze '(if) '() (list do-index-of do-basic-math) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 7))))  
+  (test analyze '(if) '() '(index-of) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 5))))
+
+(define (simple-selection1a)
+  (test analyze '(if) '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))
+
+; test selection of a certain column based on its string
+(define (simple-selection2)
+  (test analyze '() '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050) ("Custom" 1050))))
+
+; test multiplication of 2 columns based on string in the first column - return Col 2 * Col 3 if Col1 = "Committed"
+(define (simple-selection3)
+  (test analyze '() '() '(quotient) 3 '(10.5 0) (list s1 i1) '(("Committed" 1050 .01) ("Custom" 1050 .5))))
+
+; test if Col1 is "Committed" AND Col2 is not blank, then Col3 - (Col4 * Col5)
+(define (simple-selection4)
+  (test analyze '() '() '(quotient) 3 '(5000 0 0) (list s1 i1) '(("Committed" 25 1050 10000 100 50) ("Committed" '() 1050 10000 100 50) ("Custom" 23 1050 12345 100 50))))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1a)
@@ -35,19 +50,19 @@
 
 ; test simple boolean expression - Return expression Col3 > Col2 and Col1 == "A"
 (define (simple-boolean2)
-  (test analyze '(> ==) '() (list do-substring do-index-of) 5 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
+  (test analyze '(> ==) '() '(index-of substring) 5 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
 
 ; define (col1 + col2) / col3
 (define (simple-math1)
-  (test analyze '(+) '() (list do-strv do-intv do-basic-num-functions) 5 '(2 4 4) (list i1 i2 i3) '((1 1 1)(9 7 4)(3 5 2))))
+  (test analyze '(+) '() '(if) 5 '(2 4 4) (list i1 i2 i3) '((1 1 1)(9 7 4)(3 5 2))))
 
-; if col1="" then take col3 else 0
+; if col1="A" then take col2 else 0
 (define (simple-eq1)
-  (test analyze '(==) '() (list do-index-of do-basic-math) 5 '(5 0 13) (list s1 i1) '(("A" 5)("" 7)("A" 13))))
+  (test analyze '(if ==) '() '() 5 '(5 0 13) (list s1 i1) '(("A" 5)("" 7)("A" 13))))
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-compare1)
-  (test analyze '(and > ==) '() (list do-index-of do-substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+  (test analyze '(and > ==) '() '(index-of substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 ; test if col1 > .33
 (define (simple-test5)

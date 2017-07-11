@@ -590,10 +590,11 @@
 ; func is the function to use - analyze or aggregates
 ; limit determines the total num of expressions it can use
 ; op is the top level node for the expression tree (for now) - to check if we got the right operation
-(define (test func op white black limit raw-outputs symbolic raw-inputs)
+(define (test func op white raw-black limit raw-outputs symbolic raw-inputs)
    ; convert all reals to rational numbers in case we have any
   (let ((inputs (map (lambda(x) (map convert-to-rational x)) raw-inputs))
-        (outputs (map convert-to-rational raw-outputs)))
+        (outputs (map convert-to-rational raw-outputs))
+        (black (flatten (map get-function-mappings raw-black))))
     (letrec ((try-depth
               (lambda(v)
                 (let ((out (apply func white black v outputs symbolic inputs)))
@@ -605,6 +606,37 @@
         (print o)
         (check-operation o op)
         o))))
-    
+
+(define func_to_procs (make-hash))
+
+(hash-set! func_to_procs 'or (list do-logic-op))
+(hash-set! func_to_procs 'and (list do-logic-op))
+(hash-set! func_to_procs 'not (list do-logic-op-not))
+(hash-set! func_to_procs '= (list do-compare-to))
+(hash-set! func_to_procs '<= (list do-compare-to))
+(hash-set! func_to_procs '>= (list do-compare-to))
+(hash-set! func_to_procs '< (list do-compare-to))
+(hash-set! func_to_procs '> (list do-compare-to))
+(hash-set! func_to_procs 'concat (list do-concat))
+(hash-set! func_to_procs '+ (list do-basic-math))
+(hash-set! func_to_procs '- (list do-basic-math))
+(hash-set! func_to_procs '/ (list do-basic-math))
+(hash-set! func_to_procs '* (list do-basic-math))
+(hash-set! func_to_procs 'quotient (list do-basic-num-functions))
+(hash-set! func_to_procs 'remainder (list do-basic-num-functions))
+(hash-set! func_to_procs 'abs  (list do-basic-num-functions))
+(hash-set! func_to_procs 'ceiling  (list do-basic-num-functions))
+(hash-set! func_to_procs 'floor  (list do-basic-num-functions))
+(hash-set! func_to_procs 'truncate  (list do-basic-num-functions))
+(hash-set! func_to_procs 'sign  (list do-basic-num-functions))
+(hash-set! func_to_procs 'if (list do-if-then-str do-if-then-int))
+(hash-set! func_to_procs 'substring (list do-substring))
+(hash-set! func_to_procs 'index-of (list do-index-of))
+(hash-set! func_to_procs 'length (list do-length))
+(hash-set! func_to_procs '== (list do-compare-to-str))
+(hash-set! func_to_procs 'in (list do-in-int do-in-str))
+
+(define (get-function-mappings func)
+  (hash-ref func_to_procs func))
 
 (provide analyze render aggregate test val do-strv do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length)
