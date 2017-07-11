@@ -21,11 +21,15 @@
 (define (simple-selection1)
   (test analyze '(if) '() (list do-index-of do-basic-math) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 7))))  
 
+; test selection of a certain column (Col2) based on value in a different column (Col1)
+(define (simple-selection1a)
+  (test analyze '(if) '() (list do-length do-index-of do-basic-math) 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
+
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
   (test analyze '(*) '() '() 3 '(2.4 2.469) (list r1 r2) '((4 .6)(8.23 .3))))
 
-; test simple boolean expression - Return expression Col1 < Col2
+; test simple boolean expression - Return expression Col2 < Col3
 (define (simple-boolean1)
   (test analyze '(>) '() '() 5 '(#t #f #f) (list s1 i1 i2) '(("A" 5 7)("B" 7 5)("C" 5 5))))
 
@@ -53,16 +57,21 @@
 (define (simple-multiply2)
   (test analyze '(/) '() '() 3 '(.008 .016) (list i1 i2) '((4)(8)))) 
 
+; test string equal
+(define (simple-compare2)
+  (test analyze '(==) '() (list do-index-of do-substring do-basic-num-functions) 6 '(9 0 15) (list i1 i2 s1) '((4 3 "A") (4 3 "B") (5 5 "A"))))
 
+; if col1="" then take col3 else col2
+(define (simple-test2)
+  (test analyze '(==) '() (list do-basic-math do-index-of) 5 '(5 0) (list s1 i1) '(("A" 5)("" 5))))
+
+
+  
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)
   (test analyze '(*) '() '() 5 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 4 8.23 .3)("B" "G" 4 8.23 .3))))
-
-; if col1="" then take col3 else col2
-(define (simple-test2)
-   (test analyze '(=) '() '() '(5 0) (list s1 i1) '(("A" 5)("" 7))))
-
+  
 ; define (col1 + col2) / col3
 (define (simple-test3)
    (test analyze '(<) '() '() 3 '(3.55 3.85) '((4.3 2.8 2)(3.5 4.2 2))))
