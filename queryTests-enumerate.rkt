@@ -30,14 +30,14 @@
 
 ; test multiplication of 2 columns based on string in the first column - return Col 2 * Col 3 if Col1 = "Committed"
 (define (simple-selection3)
-  (test analyze '() '() '(quotient) 3 '(10.5 0) (list s1 i1) '(("Committed" 1050 .01) ("Custom" 1050 .5))))
+  (test analyze '() '() '(quotient) 3 '(10.5 0) (list s1 i1 r1) '(("Committed" 1050 .01) ("Custom" 1050 .5))))
 
 ; test if Col1 is "Committed" AND Col2 is not blank, then Col3 - (Col4 * Col5)
 (define (simple-selection4)
   (test analyze '() '() '(quotient) 3 '(5000 0 0) (list s1 i1) '(("Committed" 25 1050 10000 100 50) ("Committed" '() 1050 10000 100 50) ("Custom" 23 1050 12345 100 50))))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
-(define (simple-selection1a)
+(define (simple-selection1b)
   (test analyze '(if) '() (list do-length do-index-of do-basic-math) 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
 
 ; test a simple multiply - need to handle reals properly because of precision issues

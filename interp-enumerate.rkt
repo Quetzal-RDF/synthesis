@@ -6,6 +6,8 @@
 (require math/base)
 (require math/statistics)
 
+(require "../rosette/rosette/solver/smt/server.rkt")
+
 (define vals (make-hash))
 
 (define (sign b)
@@ -89,14 +91,11 @@
     
     (define/public (basic-math pos l r)
       (let ((m1 (val (cons 'm1 pos) boolean?))
-            (m2 (val (cons 'm2 pos) boolean?))
-            (m3 (val (cons 'm3 pos) boolean?)))
+            (m2 (val (cons 'm2 pos) boolean?)))
         (list
-         (cond [(and m1 m2 m3) 'quotient]
-               [(and m1 m2 (not m3)) 'remainder]
-               [(and m1 (not m2) m3) '/]
-               [(and m1 (not m2) (not m3)) '*]
-               [(and (not m1) m2 m3) '-]
+         (cond [(and m1 (not m2)) '/]
+               [(and m1 m2) '*]
+               [(and (not m1) m2) '-]
                [#t '+])
          l r)))
 
@@ -139,16 +138,25 @@
     (define/public (get-digits pos str)
       (list 'get-digits str))))
 
+;(define (basic-math-op r pos + - * / quotient remainder)
+;  (let ((m1 (val (cons 'm1 pos) boolean?))
+;        (m2 (val (cons 'm2 pos) boolean?))
+;        (m3 (val (cons 'm3 pos) boolean?)))
+;    (cond [(and m1 m2 m3 (integer? r) (not (= r 0))) quotient]
+;          [(and m1 m2 (not m3) (integer? r) (not (= r 0))) remainder]
+;          [(and m1 (not m2) m3 (not (= r 0))) /]
+;          [(and m1 (not m2) (not m3)) *]
+;          [(and (not m1) m2 m3) -]
+;          [#t +])))
+
 (define (basic-math-op r pos + - * / quotient remainder)
   (let ((m1 (val (cons 'm1 pos) boolean?))
-        (m2 (val (cons 'm2 pos) boolean?))
-        (m3 (val (cons 'm3 pos) boolean?)))
-    (cond [(and m1 m2 m3 (integer? r) (not (= r 0))) quotient]
-          [(and m1 m2 (not m3) (integer? r) (not (= r 0))) remainder]
-          [(and m1 (not m2) m3 (not (= r 0))) /]
-          [(and m1 (not m2) (not m3)) *]
-          [(and (not m1) m2 m3) -]
-          [#t +])))
+        (m2 (val (cons 'm2 pos) boolean?)))
+    (cond 
+      [(and m1 (not m2) (not (= r 0))) /]
+      [(and m1 m2) *]
+      [(and (not m1) m2) -]
+      [#t +])))
 
 (define expr-processor%
   (class object%
@@ -493,6 +501,9 @@
                ; raise models, which will then be trapped by the handler code
                (solver-assert solver (list formula))
                (let* ((result (solver-check solver)))
+                 (solver-shutdown solver)
+                 ; (system (format "kill ~v" (subprocess-pid (server-process (z3-server solver)))))
+
                  ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
                  ; has bugs so check.
                  (when (and (sat? result) (eq? #t (evaluate formula result)))
@@ -500,10 +511,9 @@
                    (println (evaluate formula result))
                    (set! models (cons (list (car y) (remove-duplicates (cadr y)) (caddr y) result null) models))
                    (set! goal (- goal 1))
-                   (when (= goal 0)
-                     (solver-shutdown solver)
-                     (raise models))
-                   (solver-shutdown solver))))))))
+                   (println goal)
+                   (when (<= goal 0)
+                     (raise models)))))))))
       (list))))
 
 (define (aggregate white black limit results symbolic . inputs)
