@@ -8,6 +8,8 @@
 
 (require "../rosette/rosette/solver/smt/server.rkt")
 
+(require "threads.rkt")
+
 (define vals (make-hash))
 
 (define (sign b)
@@ -30,12 +32,20 @@
 (define logging-processor%
   (class object%
     (super-new)
+
+    (define/public (is-null? pos)
+      (list do-is-null?))
     
     (define/public (in pos type-f)
       (if (eq? type-f number?)
           (list do-in-int)
           (list do-in-str)))
       	    
+    (define/public (in-v pos v type-f)
+      (if (eq? type-f number?)
+          (list do-in-int)
+          (list do-in-str)))
+
     (define/public (symbolic pos type)
       (list
        (if (equal? type integer?)
@@ -81,11 +91,19 @@
 (define doc-processor%
   (class object%
     (super-new)
-    
+
+    (define/public (is-null? pos)
+      (let ((mb (val (cons 'is-null pos) boolean?))
+            (mi (val (cons 'argn pos) integer?)))
+        (list (if mb 'is-null 'is-not-null) mi)))
+      
     (define/public (in pos type-f)
-     (let ((m (val (cons 'argn pos) integer?)))
-       (list 'in m)))
-    
+      (let ((m (val (cons 'argn pos) integer?)))
+        (list 'in m)))
+
+    (define/public (in-v pos v type-f)
+      (list 'in v))
+
     (define/public (symbolic pos type)
       (val pos type))
     
@@ -166,15 +184,26 @@
     
     (define input-vals inputs)
     
+    (define/public (is-null? pos)
+      (let ((mb (val (cons 'is-null pos) boolean?))
+            (mi (val (cons 'argn pos) integer?)))
+        (if (and (>= mi 1) (< (- mi 1) (length input-vals)))
+            (let ((v (list-ref input-vals (- mi 1))))
+              (if mb (equal? v '()) (not (equal? v '()))))
+            'invalid)))
+
     (define/public (in pos type-f)
       (let ((m (val (cons 'argn pos) integer?)))
         (if (and (>= m 1) (< (- m 1) (length input-vals)))
-            (let ((v (list-ref input-vals (- m 1))))
-              (if (type-f v)
-                  v
-                  'invalid))
+            (send this in-v pos m type-f)
             'invalid)))
 
+    (define/public (in-v pos v type-f)
+      (let ((val (list-ref input-vals (- v 1))))
+        (if (type-f val)
+            val
+            'invalid)))
+    
     (define/public (symbolic pos type)
       (val pos type))
 
@@ -209,7 +238,9 @@
           'invalid))
 
     (define/public (logic-op-not pos v)
-        (not v))
+      (if (boolean? v)
+          (not v)
+          'invalid))
   
     (define/public (logic-op pos l r)
       (if (and (boolean? l) (boolean? r))
@@ -250,21 +281,34 @@
 
 (define compound-processor%
   (class object%
-    (init children ordering-function)
+    (init extras children ordering-function)
 
     (super-new)
+
+    (define extra-functions extras)
     
     (define processors children)
 
     (define ordering ordering-function)
 
+    (define/public (extra-f)
+      extra-functions)
+    
     (define/public (get-ordering-function)
       ordering)
     
+    (define/public (is-null? pos)
+      (for/list ([p processors])
+        (send p is-null? pos)))
+
     (define/public (in pos type-f)
       (for/list ([p processors])
         (send p in pos type-f)))
 
+    (define/public (in-v pos v type-f)
+      (for/list ([p processors])
+        (send p in-v pos v type-f)))
+    
     (define/public (symbolic pos type)
       (for/list ([p processors])
         (send p symbolic pos type)))
@@ -317,23 +361,23 @@
       (for/list ([p processors] [s strs])
         (send p get-digits pos s)))))
 
-(define (do-all ops size pos p f)
-  (for ([op ((send p get-ordering-function) ops)])
+(define (do-all type ops size pos p f)
+  (for ([op (append (hash-ref (send p extra-f) type '()) ((send p get-ordering-function) ops))])
     (op size pos p f)))
 
 (define (do-all-str size pos p f)
-  (do-all
+  (do-all 'string
    (list do-in-str do-strv do-if-then-str do-concat do-substring do-get-digits)
    size pos p f))
 
 (define (do-all-int size pos p f)
-  (do-all
+  (do-all 'number
    (list do-in-int do-intv do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
    size pos p f))
 
 (define (do-all-bool size pos p f)
-  (do-all
-   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not)
+  (do-all 'boolean
+   (list do-compare-to do-logic-op do-logic-op-not do-is-null? do-compare-to-str)
    size pos p f))
 
 (define (do-in-int size pos p f) (f size (send p in pos number?)))
@@ -344,45 +388,35 @@
 
 (define (do-strv size pos p f) (f size (send p symbolic (cons 'str pos) string?)))
 
+(define (do-is-null? size pos p f)
+  (f size (send p is-null? pos)))
+
+(define (custom op . children)
+  (lambda (size pos p f)
+    (letrec ((rec (lambda (i sz cs args)
+                    (when (>= sz 0)
+                      (if (null? cs)
+                          (f sz (apply op p pos args))
+                          ((car cs)
+                           sz
+                           (cons i pos)
+                           p
+                           (lambda (new-size v)
+                             (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))
+      (rec 1 size children '()))))
+
 (define (do-unary-op do-arg op size pos p f)
-  (let ((sz (- size 1)))
-    (when (> sz 0)
-      (do-arg
-       sz (cons 1 pos) p
-       (lambda (new-size new-expr)
-         (when (> new-size 0)
-           (f new-size (dynamic-send p op pos new-expr))))))))
+  ((custom (lambda (p pos new-expr) (dynamic-send p op pos new-expr)) do-arg)
+   (- size 1) pos p f))
 
 (define (do-binary-op do-arg1 do-arg2 op size pos p f)
-  (let ((sz (- size 1)))
-    (when (> sz 0)
-      (do-arg1
-       sz (cons 1 pos) p
-       (lambda (left-size left-expr)
-         (when (> left-size 0)
-           (do-arg2
-            left-size (cons 2 pos) p
-            (lambda (right-size right-expr)
-              (when (> right-size 0)
-                (f right-size (dynamic-send p op pos left-expr right-expr)))))))))))
+  ((custom (lambda (p pos left-expr right-expr) (dynamic-send p op pos left-expr right-expr)) do-arg1 do-arg2)
+   (- size 1) pos p f))
 
 (define (do-ternary-op do-arg1 do-arg2 do-arg3 op size pos p f)
-  (let ((sz (- size 1)))
-    (when (> sz 0)
-      (do-arg1
-       sz (cons 1 pos) p
-       (lambda (str-size str-expr)
-         (when (> str-size 0)
-           (do-arg2
-            str-size (cons 2 pos) p
-            (lambda (start-size start-expr)
-              (when (> start-size 0)
-                (do-arg3
-                 start-size (cons 3 pos) p
-                 (lambda (end-size end-expr)
-                   (when (> end-size 0)
-                     (f end-size (dynamic-send p op str-expr start-expr end-expr))))))))))))))
-
+  ((custom (lambda (p pos str start end) (dynamic-send p op str start end)) do-arg1 do-arg2 do-arg3)
+   (- size 1) pos p f))
+  
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
 
@@ -421,7 +455,7 @@
 
 (define (do-substring size pos p f)
   (do-ternary-op do-all-str do-all-int do-all-int 'substr size pos p f))
-
+        
 (define (symbolic? x) 
   (or (union? x) (term? x)))
 
@@ -442,10 +476,11 @@
 ; white - white list of functions
 ; black - black list of functions
 
-(define (analyze white black limit outputs symbolic . inputs)
+(define (analyze extra white black limit outputs symbolic . inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
-  (let ((goal 1)
+  (let ((z3-engines (engines 5))
+        (goal 1)
         (models (list))
         (i 0))
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
@@ -462,6 +497,7 @@
        ; Note the first expression in y is discarded in processing for formulas because it reflects the output of the doc processor
        limit (list)
        (new compound-processor%
+            [extras extra]
             [ordering-function
              (lambda (ops)
                (append
@@ -479,42 +515,34 @@
                   ; line does not refer to the parameter passed into this function
                   (new expr-processor% [inputs input])))))])
        (lambda (x y)
-         (with-handlers ([exn:fail? (lambda (e) '())])
-           (let ((solver (z3)))
-             (solver-clear solver)
-             (set! i (+ i 1))
-             (let ((formula
-                    (for/fold ([formula #t])
-                              ([out outputs]
-                               [in (cdddr y)])
-                      ; collect up all expressions generated by the expression processor in y (cddr y)
-                      ; and create a single condition in formula for a solver to assert on with ANDs linking across rows.
-                      (and
-                       formula
-                       (cond ((eq? out #t) (eq? #t in))
-                             ((eq? out #f) (eq? #f in))
-                             ((number? out) (and (number? in) (= out in)))
-                             (#t (equal? out in)))))))         
-               ; (println formula)
-               ; (println formula)
-               ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
-               ; raise models, which will then be trapped by the handler code
-               (solver-assert solver (list formula))
-               (let* ((result (solver-check solver)))
-                 (solver-shutdown solver)
-                 ; (system (format "kill ~v" (subprocess-pid (server-process (z3-server solver)))))
-
-                 ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
-                 ; has bugs so check.
-                 (when (and (sat? result) (eq? #t (evaluate formula result)))
-                   (println result)
-                   (println (evaluate formula result))
-                   (set! models (cons (list (car y) (remove-duplicates (cadr y)) (caddr y) result null) models))
-                   (set! goal (- goal 1))
-                   (println goal)
-                   (when (<= goal 0)
-                     (raise models)))))))))
-      (list))))
+         (set! i (+ i 1))
+         (let ((formula
+                (for/fold ([formula #t])
+                          ([out outputs]
+                           [in (cdddr y)])
+                  ; collect up all expressions generated by the expression processor in y (cddr y)
+                  ; and create a single condition in formula for a solver to assert on with ANDs linking across rows.
+                  (and
+                   formula
+                   (cond ((eq? out #t) (eq? #t in))
+                         ((eq? out #f) (eq? #f in))
+                         ((number? out) (and (number? in) (= out in)))
+                         (#t (equal? out in)))))))         
+           ; (println formula)
+           ; (println formula)
+           ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
+           ; raise models, which will then be trapped by the handler code
+           (engines-solve z3-engines formula
+             (lambda (result)
+               ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
+               ; has bugs so check.
+               (when (and (sat? result) (eq? #t (evaluate formula result)))
+                 (set! models (cons (list (car y) (remove-duplicates (cadr y)) (caddr y) result null) models))
+                 (set! goal (- goal 1)))))
+           (when (<= goal 0)
+             (raise models))))))
+    (engines-stop z3-engines)
+    models))
 
 (define (aggregate white black limit results symbolic . inputs)
   (let ((solver (current-solver))
@@ -607,7 +635,7 @@
         (black (flatten (map get-function-mappings raw-black))))
     (letrec ((try-depth
               (lambda(v)
-                (let ((out (apply func white black v outputs symbolic inputs)))
+                (let ((out (apply func (hash) white black v outputs symbolic inputs)))
                   (if (not (null? out))
                       (map render out)
                       (when (< v limit)
@@ -649,4 +677,5 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-(provide analyze render aggregate test val do-strv do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length)
+
+(provide analyze render aggregate test val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-int do-all-str do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)

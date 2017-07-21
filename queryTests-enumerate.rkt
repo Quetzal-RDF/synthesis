@@ -12,10 +12,35 @@
 (define-symbolic i1 integer?)
 (define-symbolic i2 integer?)
 (define-symbolic i3 integer?)
+(define-symbolic i4 integer?)
+(define-symbolic i5 integer?)
 (define-symbolic s1 string?)
 (define-symbolic s2 string?)
 (define-symbolic r1 real?)
 (define-symbolic r2 real?)
+
+(define mult234
+  (custom
+   (lambda (p pos)
+     (send p basic-math pos
+           (send p basic-math (cons 1 pos)
+                 (send p in-v pos 2 number?)
+                 (send p in-v pos 3 number?))
+           (send p in-v pos 4 number?)))))
+
+(define extra-m234 (hash 'number (list mult234)))
+
+(define mult23x
+  (custom
+   (lambda (p pos v)
+     (send p basic-math pos
+           (send p basic-math (cons 1 pos)
+                 (send p in-v pos 2 number?)
+                 (send p in-v pos 3 number?))
+           v))
+   do-all-int))
+
+(define extra-m23x (hash 'number (list mult23x)))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1)
@@ -32,9 +57,41 @@
 (define (simple-selection3)
   (test analyze '() '() '(quotient) 3 '(10.5 0) (list s1 i1 r1) '(("Committed" 1050 .01) ("Custom" 1050 .5))))
 
-; test if Col1 is "Committed" AND Col2 is not blank, then Col3 - (Col4 * Col5)
+(define math345
+  (custom
+   (lambda (p pos)
+     (send p basic-math pos
+           (send p in-v pos 3 number?)
+           (send p basic-math (cons 1 pos)
+                 (send p in-v pos 4 number?)
+                 (send p in-v pos 5 number?))))))
+
+(define committed-if
+  (custom
+   (lambda (p pos yes no)
+     (send p if-then-else
+           (send p logic-op (cons 3 pos)
+                 (send p compare-to-str (cons 4 pos)
+                       (send p in-v (cons 5 pos) 1 string?)
+                       (send p symbolic (cons 6 pos) string?))
+                 (send p is-null? (cons 7 pos)))
+           yes no))
+   do-all-int do-all-int))
+
+(define committed
+  (custom
+   (lambda (p pos)
+     (send p logic-op (cons 3 pos)
+           (send p compare-to-str (cons 4 pos)
+                 (send p in-v (cons 5 pos) 1 string?)
+                 (send p symbolic (cons 6 pos) string?))
+           (send p is-null? (cons 7 pos))))))
+
+(define extra-selection4 (hash 'number (list math345)))
+
+; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
 (define (simple-selection4)
-  (test analyze '() '() '(quotient) 3 '(5000 0 0) (list s1 i1) '(("Committed" 25 1050 10000 100 50) ("Committed" '() 1050 10000 100 50) ("Custom" 23 1050 12345 100 50))))
+  (test analyze '() '() '() 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" '() 10000 100 50) ("Custom" 23 12345 100 50))))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1b)
