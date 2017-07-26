@@ -55,7 +55,7 @@
 
 ; test multiplication of 2 columns based on string in the first column - return Col 2 * Col 3 if Col1 = "Committed"
 (define (simple-selection3)
-  (test analyze '() '() '(quotient) 3 '(10.5 0) (list s1 i1 r1) '(("Committed" 1050 .01) ("Custom" 1050 .5))))
+  (test analyze '() '() '() 3 '(20 0 10) (list s1 i1 i2) '(("Committed" 1000 50) ("Custom" 1000 10) ("Committed" 100 10))))
 
 (define math345
   (custom
@@ -87,15 +87,15 @@
                  (send p symbolic (cons 6 pos) string?))
            (send p is-null? (cons 7 pos))))))
 
-(define extra-selection4 (hash 'number (list math345)))
+(define extra-selection4 (hash 'boolean (list committed) 'number (list math345)))
 
 ; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
 (define (simple-selection4)
-  (test analyze '() '() '() 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" '() 10000 100 50) ("Custom" 23 12345 100 50))))
+  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 23 12345 100 50))))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1b)
-  (test analyze '(if) '() (list do-length do-index-of do-basic-math) 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
+  (test analyze '(if) '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)

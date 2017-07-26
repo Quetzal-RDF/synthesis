@@ -1,5 +1,7 @@
 #lang rosette
 
+(require racket/async-channel)
+
 (define printer
   (thread
    (lambda ()
@@ -9,7 +11,7 @@
                  (loop))))
        (loop)))))
 
-(define (engine)
+(define (engine stop-channel)
   (thread
    (lambda ()
      (letrec ((loop
@@ -17,7 +19,7 @@
                  (let* ((stuff (thread-receive))
                         (problem (car stuff))
                         (hook (cdr stuff)))
-                   (unless (eq? problem 'stop)
+                   (unless (async-channel-try-get stop-channel)
                      (let ((solver (z3)))
                        (solver-clear solver)
                        (solver-assert solver (list problem))
@@ -32,19 +34,18 @@
 (define (engine-solve engine formula hook)
   (thread-send engine (cons formula hook)))
 
-(define (engine-stop engine)
-  (thread-send engine '(stop))
-  (thread-wait engine))
-
-(define (engines n) 
-  (for/list ([i (in-range n)])
-    (engine)))
+(define (engines n)
+  (let ((stop-channel (make-async-channel (+ n 1))))
+    (cons
+     stop-channel
+     (for/list ([i (in-range n)])
+       (engine stop-channel)))))
 
 (define (engines-solve engines formula hook)
-  (engine-solve (list-ref engines (random (length engines))) formula hook))
+  (engine-solve (list-ref engines (+ (random (length (cdr engines))) 1)) formula hook))
 
 (define (engines-stop engines)
-  (for ([engine engines])
-    (engine-stop engine)))
+  (for ([e (cdr engines)])
+    (async-channel-put (car engines) #t)))
 
-(provide engine engines engine-solve engines-solve engine-stop engines-stop)
+(provide engine engines engine-solve engines-solve engines-stop)

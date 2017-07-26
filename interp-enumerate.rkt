@@ -5,6 +5,7 @@
 (current-bitwidth #f)
 (require math/base)
 (require math/statistics)
+(require racket/async-channel)
 
 (require "../rosette/rosette/solver/smt/server.rkt")
 
@@ -233,10 +234,8 @@
           'invalid))
 
     (define/public (compare-to-str pos l r)
-      (if (and (string? l) (string? r))
-          (equal? l r)
-          'invalid))
-
+      (equal? l r))
+    
     (define/public (logic-op-not pos v)
       (if (boolean? v)
           (not v)
@@ -259,7 +258,7 @@
           'invalid))
 
     (define/public (substr str l r)
-      (if (and (string? str) (number? l) (number? r) (>= l 0) (<= l r) (<= r (string-length str)))
+      (if (and (string? str) (integer? l) (integer? r) (>= l 0) (<= l r) (<= r (string-length str)))
           (substring str l r)
           'invalid))
 
@@ -372,12 +371,17 @@
 
 (define (do-all-int size pos p f)
   (do-all 'number
+   (list do-in-int do-intv do-if-then-int do-basic-math do-basic-num-functions)
+   size pos p f))
+
+(define (do-math-int size pos p f)
+  (do-all 'number
    (list do-in-int do-intv do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
    size pos p f))
 
 (define (do-all-bool size pos p f)
   (do-all 'boolean
-   (list do-compare-to do-logic-op do-logic-op-not do-is-null? do-compare-to-str)
+   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null?)
    size pos p f))
 
 (define (do-in-int size pos p f) (f size (send p in pos number?)))
@@ -424,7 +428,7 @@
   (do-binary-op do-all-str do-all-str 'concat size pos p f))
 
 (define (do-basic-math size pos p f)
-  (do-binary-op do-all-int do-all-int 'basic-math size pos p f))
+  (do-binary-op do-math-int do-math-int 'basic-math size pos p f))
 
 (define (do-basic-num-functions size pos p f)
   (do-unary-op do-all-int 'basic-num-functions size pos p f))
@@ -479,10 +483,18 @@
 (define (analyze extra white black limit outputs symbolic . inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
-  (let ((z3-engines (engines 5))
-        (goal 1)
-        (models (list))
-        (i 0))
+  (letrec ((z3-engines (engines 5))
+           (time-limit 30000)
+           (start-time (current-inexact-milliseconds))
+           (results-channel (make-async-channel 100))
+           (goal 2)
+           (models (list))
+           (i 0)
+           (drain (lambda ()
+                    (let ((x (async-channel-try-get results-channel)))
+                      (when x
+                        (set! models (cons x models))
+                        (drain))))))
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
     ; the function where the result is raised as a list
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
@@ -537,10 +549,13 @@
                ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
                ; has bugs so check.
                (when (and (sat? result) (eq? #t (evaluate formula result)))
-                 (set! models (cons (list (car y) (remove-duplicates (cadr y)) (caddr y) result null) models))
+                 (async-channel-put results-channel (list (car y) (remove-duplicates (cadr y)) (caddr y) result null))
                  (set! goal (- goal 1)))))
-           (when (<= goal 0)
+           (drain)
+           (when (or ;(> (current-inexact-milliseconds) (+ start-time time-limit))
+                     (<= goal 0))
              (raise models))))))
+    (drain)
     (engines-stop z3-engines)
     models))
 
@@ -638,12 +653,15 @@
                 (let ((out (apply func (hash) white black v outputs symbolic inputs)))
                   (if (not (null? out))
                       (map render out)
-                      (when (< v limit)
-                        (try-depth (+ 1 v))))))))
-      (let ((o (try-depth 2)))
-        (print o)
+                      (if (< v limit)
+                          (try-depth (+ 1 v))
+                          '()))))))
+      (let ((o (try-depth 1)))
         (check-operation o op)
-        o))))
+        (sort o
+          (lambda (x y)
+            (let ((l (lambda (r) (length (flatten (second r))))))
+              (< (l x) (l y)))))))))
 
 (define func_to_procs (make-hash))
 
@@ -673,6 +691,8 @@
 (hash-set! func_to_procs 'length (list do-length))
 (hash-set! func_to_procs '== (list do-compare-to-str))
 (hash-set! func_to_procs 'in (list do-in-int do-in-str))
+(hash-set! func_to_procs 'is-null (list do-is-null?))
+(hash-set! func_to_procs 'is-not-null (list do-is-null?))
 
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))

@@ -1,5 +1,7 @@
 #lang rosette
 
+(require rosette/lib/angelic)
+
 (define (make-parser . column-names)
   (let ((keywords
 	 '(
@@ -168,6 +170,9 @@
                     (cons val (parse-loop toks))
                     (cons (car tokens) (parse-loop (cdr tokens)))))))
 
-    parse-loop))
+    (define (parsish-loop tokens)
+      (parse-loop (map (lambda (w) (if (cons? w) (apply choose* w) w)) tokens)))
+    
+    parsish-loop))
 
 (provide make-parser)
