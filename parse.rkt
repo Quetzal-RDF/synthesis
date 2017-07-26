@@ -50,7 +50,9 @@
                 (find-f pred-f val-f (cdr lst))))))
 
     (define (parse-keyword tok tokens)
-      (let ((word-lists (cdr (find-f (lambda (k) (eq? (car k) tok)) identity keywords))))
+      (let ((word-lists
+             (sort (cdr (find-f (lambda (k) (eq? (car k) tok)) identity keywords))
+                   (lambda (x y) (> (length x) (length y))))))
         (letrec ((swallow
                   (lambda (wls toks)
                     (let ((next (car toks)))
@@ -88,7 +90,12 @@
 
     (define (parse-nullary-expr tokens)
       (let ((next (car tokens)))
-        (cond ((member next column-names)
+        (cond ((equal? "(" next)
+               (let ((x (parse-if (cdr tokens))))
+                 (if (and (car x) (equal? (cadr x) ")"))
+                     (cons (car x) (cddr x))
+                     (list #f tokens))))
+              ((member next column-names)
                (cons (list 'column next) (cdr tokens)))
               ((or (string? next) (number? next))
                (cons next (cdr tokens)))
@@ -110,7 +117,7 @@
                   x)))))
     
     (define parse-binary-op
-      (parse-op '(= + "*" "times" '- '/)))
+      (parse-op '(+ "*" "times" '- '/)))
     
     (define (parse-binary-stuff parse-inner-expr parse-operator)
       (lambda (tokens)
@@ -139,10 +146,15 @@
     (define parse-binary-expr 
       (parse-binary-stuff parse-unary-expr parse-binary-op))
 
+    (define parse-comparison-op (parse-op '(= < > <= >=)))
+
+    (define parse-comparison-expr
+      (parse-binary-stuff parse-binary-expr parse-comparison-op))
+      
     (define parse-andor-op (parse-op '(and or)))
 
     (define parse-andor-expr
-      (parse-binary-stuff parse-binary-expr parse-andor-op))
+      (parse-binary-stuff parse-comparison-expr parse-andor-op))
 
     (define (parse-if tokens)
       (let ((x (parse-keyword 'if tokens)))
