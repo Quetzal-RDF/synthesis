@@ -91,7 +91,7 @@
 
 ; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
 (define (simple-selection4)
-  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 23 12345 100 50))))
+  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 23 10000 100 50))))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1b)

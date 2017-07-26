@@ -1,7 +1,5 @@
 #lang rosette
 
-(require racket/async-channel)
-
 (define printer
   (thread
    (lambda ()
@@ -11,19 +9,21 @@
                  (loop))))
        (loop)))))
 
-(define (engine stop-channel)
+(define (engine)
   (thread
    (lambda ()
      (letrec ((loop
                (lambda ()
-                 (let* ((stuff (thread-receive))
-                        (problem (car stuff))
-                        (hook (cdr stuff)))
-                   (unless (async-channel-try-get stop-channel)
-                     (let ((solver (z3)))
+                 (with-handlers ([exn:break? (lambda (x) '())])
+                   (let* ((stuff (thread-receive))
+                          (problem (car stuff))
+                          (hook (cdr stuff))
+                          (solver (z3)))
+                     (with-handlers ([exn:break? (lambda (x) (solver-shutdown solver))])
                        (solver-clear solver)
                        (solver-assert solver (list problem))
-                       (with-handlers ([exn:fail? (lambda (e) (println e))])
+                       (with-handlers ([exn:fail?
+                                        (lambda (e) (if (exn:break? e) (raise e) (println e)))])
                          (let ((result (solver-check solver)))
                            (when (and (sat? result) (evaluate problem result))                             
                              (hook result))))
@@ -34,18 +34,18 @@
 (define (engine-solve engine formula hook)
   (thread-send engine (cons formula hook)))
 
+(define (engine-stop engine)
+  (break-thread engine))
+
 (define (engines n)
-  (let ((stop-channel (make-async-channel (+ n 1))))
-    (cons
-     stop-channel
-     (for/list ([i (in-range n)])
-       (engine stop-channel)))))
+  (for/list ([i (in-range n)])
+    (engine)))
 
 (define (engines-solve engines formula hook)
-  (engine-solve (list-ref engines (+ (random (length (cdr engines))) 1)) formula hook))
+  (engine-solve (list-ref engines (random (length (cdr engines)))) formula hook))
 
 (define (engines-stop engines)
-  (for ([e (cdr engines)])
-    (async-channel-put (car engines) #t)))
+  (for ([e engines])
+    (engine-stop e)))
 
-(provide engine engines engine-solve engines-solve engines-stop)
+(provide engine engines engine-solve engines-solve engine-stop engines-stop)
