@@ -101,7 +101,7 @@
                        (cons (car x) (cddr x))
                        (list #f tokens))))
                 ((not (eq? #f (member next column-names)))
-                 (cons (list 'column next) (cdr tokens)))
+                 (cons (list 'column (+ 1 (- (length column-names) (length (member next column-names))))) (cdr tokens)))
                 ((or (and (string? next) (not (member next reserved))) (number? next))
                  (cons next (cdr tokens)))
                 (#t
