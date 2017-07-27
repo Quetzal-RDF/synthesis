@@ -192,8 +192,14 @@
                   (cons (car tokens) (parse-loop (cdr tokens))))))))
 
     (define (parsish-loop tokens)
-      (parse-loop (map (lambda (w) (if (cons? w) (apply choose* w) w)) tokens)))
+      (let ((toks (map (lambda (w) (if (cons? w) (apply choose* w) w)) tokens)))
+        (values (parse-loop toks) toks)))
     
     parsish-loop))
 
-(provide make-parser)
+(define (find-parse parser tokens f)
+  (let-values (([parse toks] (parser tokens)))
+    (let ((result (solve (assert (f parse)))))
+      (values (evaluate parse result) (evaluate toks result)))))
+
+(provide make-parser find-parse)
