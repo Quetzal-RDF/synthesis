@@ -198,7 +198,9 @@
 
     (define (parsish-loop tokens)
       (let ((toks (map (lambda (w) (if (cons? w) (apply choose* w) w)) tokens)))
-        (values (parse-loop toks) toks)))
+        (if (equal? toks tokens)
+            (parse-loop tokens)
+            (values (parse-loop toks) toks))))
     
     parsish-loop))
 
