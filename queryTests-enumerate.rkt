@@ -107,7 +107,7 @@
 
 ; test simple boolean expression - Return expression Col3 > Col2 and Col1 == "A"
 (define (simple-boolean2)
-  (test analyze '(> ==) '() '(index-of substring) 5 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
+  (test analyze '(==) '() '(index-of substring) 5 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
 
 ; define (col1 + col2) / col3
 (define (simple-math1)
@@ -119,7 +119,7 @@
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-compare1)
-  (test analyze '(and > ==) '() '(index-of substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+  (test analyze '(and ==) '() '(index-of substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 ; test if col1 > .33
 (define (simple-test5)
@@ -131,11 +131,11 @@
 
 ; test string equal
 (define (simple-compare2)
-  (test analyze '(==) '() (list do-index-of do-substring do-basic-num-functions) 6 '(9 0 15) (list i1 i2 s1) '((4 3 "A") (4 3 "B") (5 5 "A"))))
+  (test analyze '(==) '() '(index-of substring abs) 6 '(9 0 15) (list i1 i2 s1) '((4 3 "A") (4 3 "B") (5 5 "A"))))
 
 ; if col1="" then take col3 else col2
 (define (simple-test2)
-  (test analyze '(==) '() (list do-basic-math do-index-of) 5 '(5 0) (list s1 i1) '(("A" 5)("" 5))))
+  (test analyze '(==) '() '(abs index-of) 5 '(5 0) (list s1 i1) '(("A" 5)("" 5))))
 
 
   

@@ -1,5 +1,7 @@
 #lang rosette
 
+(require rosette/solver/smt/z3)
+
 (define printer
   (thread
    (lambda ()
