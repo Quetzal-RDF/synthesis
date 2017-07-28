@@ -24,6 +24,7 @@
             (+ ("+") ("plus"))
             (- ("-") ("minus") ("takeaway") ("subtract") ("deduct"))
             (/ ("/") ("divide") ("divided by"))
+            (* ("*") ("multiply" "by") ("multiply") ("times"))
             (exponent ("exponent") ("exp") ("power"))
             (logarithm ("logarithm") ("log") ("ln") ("natural logarithm"))
             (sqrt ("sqrt") ("square" "root") ("square" "root" "of"))
@@ -101,9 +102,11 @@
                        (cons (car x) (cddr x))
                        (list #f tokens))))
                 ((not (eq? #f (member next column-names)))
-                 (cons (list 'column (+ 1 (- (length column-names) (length (member next column-names))))) (cdr tokens)))
-                ((or (and (string? next) (not (member next reserved))) (number? next))
-                 (cons next (cdr tokens)))
+                 (cons (list 'in (+ 1 (- (length column-names) (length (member next column-names))))) (cdr tokens)))
+                ((and (string? next) (not (member next reserved)))
+                 (cons (or (string->number next) next) (cdr tokens)))
+                ((number? next)
+                 (cons next (cdr tokens)))            
                 (#t
                  (cons #f tokens))))))
 
@@ -123,7 +126,7 @@
                     x))))))
     
     (define parse-binary-op
-      (parse-op '(+ "*" "times" '- '/)))
+      (parse-op '(+ * - /)))
     
     (define (parse-binary-stuff parse-inner-expr parse-operator)
       (lambda (xtokens)
