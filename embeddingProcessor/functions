@@ -17,6 +17,7 @@
 ('length ("length")("string" "length")("len"))
 ('+ ("+") ("plus"))
 ('- ("-") ("minus") ("takeaway") ("subtract") ("deduct"))
+('* ("*") ("multiply") ("times"))
 ('/ ("/") ("divide") ("divided by"))
 ('exponent ("exponent") ("exp") ("power"))
 ('logarithm' ("logarithm") ("log") ("ln") ("natural logarithm"))
