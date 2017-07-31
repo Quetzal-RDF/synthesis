@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>sqlAnalysis</groupId>
+  <artifactId>sqlAnalysis</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>sqlAnalysis</name>
+  <url>http://maven.apache.org</url>
+
+ <properties>
+      <java.version>1.8</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+  <!-- https://mvnrepository.com/artifact/com.facebook.presto/presto-parser -->
+<dependency>
+    <groupId>com.facebook.presto</groupId>
+    <artifactId>presto-parser</artifactId>
+    <version>0.76</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/com.github.jsqlparser/jsqlparser -->
+<dependency>
+    <groupId>com.github.jsqlparser</groupId>
+    <artifactId>jsqlparser</artifactId>
+    <version>0.9</version>
+</dependency>
+
+<dependency>
+    <groupId>com.google.cloud</groupId>
+    <artifactId>google-cloud-bigquery</artifactId>
+    <version>0.20.1-beta</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+<dependency>
+    <groupId>com.google.guava</groupId>
+    <artifactId>guava</artifactId>
+    <version>19.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>com.ibm.wala.util</artifactId>
+    <version>1.4.3-SNAPSHOT</version>
+</dependency>
+
+<dependency>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>com.ibm.wala.shrike</artifactId>
+    <version>1.4.3-SNAPSHOT</version>
+</dependency>
+
+<dependency>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>com.ibm.wala.core</artifactId>
+    <version>1.4.3-SNAPSHOT</version>
+</dependency>
+
+<dependency>
+    <groupId>com.ibm.wala</groupId>
+    <artifactId>com.ibm.wala.cast</artifactId>
+    <version>1.4.3-SNAPSHOT</version>
+</dependency>
+
+
+
+<!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-core -->
+<dependency>
+    <groupId>com.google.cloud</groupId>
+    <artifactId>google-cloud-core</artifactId>
+    <version>1.2.3</version>
+</dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
