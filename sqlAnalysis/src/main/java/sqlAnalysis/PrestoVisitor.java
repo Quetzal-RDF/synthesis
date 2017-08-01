@@ -55,8 +55,10 @@ import com.ibm.wala.cast.tree.CAstQualifier;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
+import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
@@ -114,7 +116,7 @@ public class PrestoVisitor {
 				if (!(e instanceof QualifiedNameReference)) {
 					ExpressionGatherer exp = new ExpressionGatherer();
 					CAstNode n = exp.process(e, null);
-					createEntity(l, n);
+					createEntity(l, n, exp.cfg());
 				}
 			}
 		}
@@ -122,7 +124,7 @@ public class PrestoVisitor {
 		if (where.isPresent()) {
 			ExpressionGatherer exp = new ExpressionGatherer();
 			System.out.println("WHERE CLAUSE PROCESSSED AS CAST NODE:" + exp.process(where.get(), null));
-			createEntity(l, exp.process(where.get(), null));
+			createEntity(l, exp.process(where.get(), null), exp.cfg());
 		}
 		int myStatement = statementCount++;
 		return createFileEntity(l, myStatement);
@@ -232,7 +234,7 @@ public class PrestoVisitor {
 		};
 	}
 
-	public static void createEntity(List<CAstEntity> l, CAstNode n) {
+	public static void createEntity(List<CAstEntity> l, CAstNode n, CAstControlFlowMap cfg) {
 		int myNumber = expressionCount++;
 		l.add(new CAstEntity() {
 			
@@ -285,8 +287,7 @@ public class PrestoVisitor {
 			
 			@Override
 			public CAstControlFlowMap getControlFlow() {
-				// TODO Auto-generated method stub
-				return null;
+				return cfg;
 			}
 			
 			@Override
@@ -329,6 +330,17 @@ public class PrestoVisitor {
 		protected final CAst factory = new CAstImpl();
 		protected CAstNode NULL = factory.makeConstant(CAstNode.VOID);
 
+		private final CAstSourcePositionRecorder pos = new CAstSourcePositionRecorder();
+		
+		private final CAstControlFlowRecorder rec = new CAstControlFlowRecorder(pos);
+		
+		public ExpressionGatherer() {
+			// TODO Auto-generated constructor stub
+		}
+
+		public CAstControlFlowMap cfg() {
+			return rec;
+		}
 		
 		@Override
 		protected CAstNode visitSingleColumn(SingleColumn node, Void context) {

@@ -140,8 +140,7 @@ public class SQL implements Language {
 
 	@Override
 	public SSAInstructionFactory instructionFactory() {
-		// TODO Auto-generated method stub
-		return null;
+		return JAVA.instructionFactory();
 	}
 
 	@Override
