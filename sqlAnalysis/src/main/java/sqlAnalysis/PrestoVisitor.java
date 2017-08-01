@@ -121,6 +121,7 @@ public class PrestoVisitor {
 		Optional<Expression> where = qb.getWhere();
 		if (where.isPresent()) {
 			ExpressionGatherer exp = new ExpressionGatherer();
+			System.out.println("WHERE CLAUSE PROCESSSED AS CAST NODE:" + exp.process(where.get(), null));
 			createEntity(l, exp.process(where.get(), null));
 		}
 		int myStatement = statementCount++;
@@ -372,6 +373,13 @@ public class PrestoVisitor {
 					process(node.getLeft(), context), process(node.getRight(), context));
 		}
 
+		@Override
+		protected CAstNode visitQualifiedNameReference(QualifiedNameReference node, Void context) {
+			// TODO Auto-generated method stub
+			String colName = node.getName().toString();
+			return factory.makeNode(CAstNode.OBJECT_REF, factory.makeNode(CAstNode.VOID),
+					factory.makeConstant(colName));
+		}
 
 		@Override
 		protected CAstNode visitFunctionCall(FunctionCall node, Void context) {
