@@ -15,6 +15,7 @@ import com.facebook.presto.sql.tree.CoalesceExpression;
 import com.facebook.presto.sql.tree.ComparisonExpression;
 import com.facebook.presto.sql.tree.DefaultTraversalVisitor;
 import com.facebook.presto.sql.tree.DoubleLiteral;
+import com.facebook.presto.sql.tree.ExistsPredicate;
 import com.facebook.presto.sql.tree.Expression;
 import com.facebook.presto.sql.tree.Extract;
 import com.facebook.presto.sql.tree.FunctionCall;
@@ -35,12 +36,14 @@ import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.sql.tree.QualifiedNameReference;
 import com.facebook.presto.sql.tree.Query;
 import com.facebook.presto.sql.tree.QuerySpecification;
+import com.facebook.presto.sql.tree.Relation;
 import com.facebook.presto.sql.tree.SearchedCaseExpression;
 import com.facebook.presto.sql.tree.SelectItem;
 import com.facebook.presto.sql.tree.SimpleCaseExpression;
 import com.facebook.presto.sql.tree.SingleColumn;
 import com.facebook.presto.sql.tree.Statement;
 import com.facebook.presto.sql.tree.StringLiteral;
+import com.facebook.presto.sql.tree.SubqueryExpression;
 import com.facebook.presto.sql.tree.TimeLiteral;
 import com.facebook.presto.sql.tree.TimestampLiteral;
 import com.facebook.presto.sql.tree.WhenClause;
@@ -64,6 +67,8 @@ import com.ibm.wala.util.collections.HashMapFactory;
 public class PrestoVisitor {
 	public static int expressionCount = 0;
 	public static int statementCount = 0;
+	public final static CAstOperator OP_AND = new SQLCAstOperator("and");
+	public final static CAstOperator OP_OR = new SQLCAstOperator("or");
 	
 	protected static CAstOperator processOp(String op) {
 		if ("+".equals(op)) {
@@ -96,15 +101,16 @@ public class PrestoVisitor {
 			return CAstOperator.OP_BIT_XOR;
 		} else if ("~".equals(op)) {
 			return CAstOperator.OP_BITNOT;
-		}
+		} 
 		else {
 			throw new UnsupportedOperationException("dont recognize:" + op);
 		}
 	}
 	
 	public static CAstEntity process(Statement st, String orig) {
-		System.out.println(orig);
 		Query query = (Query) st;
+		System.out.println("Presto passed:" + orig);
+
 		List<CAstEntity> l = new LinkedList<CAstEntity>();
 		QuerySpecification qb = (QuerySpecification) query.getQueryBody();
 		List<SelectItem> items = qb.getSelect().getSelectItems();
@@ -127,6 +133,7 @@ public class PrestoVisitor {
 		int myStatement = statementCount++;
 		return createFileEntity(l, myStatement);
 	}
+	
 
 	public static CAstEntity createFileEntity(List<CAstEntity> l, int myStatement) {
 		return new CAstEntity() {
@@ -367,6 +374,28 @@ public class PrestoVisitor {
 			return process(e3, context);
 		}
 
+		protected CAstNode visitPartQuery(Query node, Void context) {
+			CAstNode e = null;
+			QuerySpecification qb = (QuerySpecification) node.getQueryBody();
+	        process(qb.getSelect(), context);
+	        if (qb.getWhere().isPresent()) {
+	            e = process(qb.getWhere().get(), context);
+	        }
+	        
+	        return e;
+		}
+		
+		@Override
+		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Void context) {
+			return visitQuery(node.getQuery(), context);
+		}
+
+		@Override
+		protected CAstNode visitExists(ExistsPredicate node, Void context) {
+			// TODO Auto-generated method stub
+			return visitPartQuery(node.getSubquery(), context);
+		}
+
 		@Override
 		protected CAstNode visitComparisonExpression(ComparisonExpression node, Void context) {
 			return factory.makeNode(CAstNode.BINARY_EXPR, processOp(node.getType().getValue()),
@@ -433,7 +462,7 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitNotExpression(NotExpression node, Void context) {
-			return factory.makeNode(CAstNode.UNARY_EXPR, CAstOperator.OP_NOT, process(node.getValue(), context));
+			return super.visitNotExpression(node, context);
 		}
 
 		@Override
@@ -441,7 +470,9 @@ public class PrestoVisitor {
 			List<Expression> args = new LinkedList<Expression>();
 			args.add(node.getValue());
 			args.add(node.getPattern());
-			args.add(node.getEscape());
+			if (node.getEscape() != null) {
+				args.add(node.getEscape());
+			}
 			FunctionCall fc = new FunctionCall(new QualifiedName("LIKE"), args);
 			return visitFunctionCall(fc, context);
 		}
@@ -538,9 +569,24 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitLogicalBinaryExpression(LogicalBinaryExpression node, Void context) {
-			return factory.makeNode(CAstNode.ANDOR_EXPR, processOp(node.getType().toString()),
+			CAstOperator op;
+			if (node.getType().toString().equals("AND")) {
+				op = OP_AND;
+			} else {
+				op = OP_OR;
+			}
+			return factory.makeNode(CAstNode.ANDOR_EXPR, op,
 					process(node.getLeft(), context), process(node.getRight(), context));
 		}
+	}
+	
+	public static class SQLCAstOperator extends CAstOperator {
+
+		protected SQLCAstOperator(String op) {
+			super(op);
+			// TODO Auto-generated constructor stub
+		}
+		
 	}
 }
 
