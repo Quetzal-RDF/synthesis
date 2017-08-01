@@ -22,7 +22,7 @@ public class ParseStackOverflowData {
 
 	public static void main(String[] args) throws Exception {
 		String content = new String(
-				Files.readAllBytes(Paths.get("embeddingData/stackOverflowBody.doc")));
+				Files.readAllBytes(Paths.get("../embeddingData/stackOverflowBody.doc")));
 		int start = content.indexOf(codeStart);
 		int end = content.indexOf(codeEnd);
 		int count = 0;
