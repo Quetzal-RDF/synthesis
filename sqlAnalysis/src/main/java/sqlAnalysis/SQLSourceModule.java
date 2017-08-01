@@ -1,9 +1,11 @@
 package sqlAnalysis;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 
 import com.ibm.wala.classLoader.Module;
@@ -41,8 +43,7 @@ public class SQLSourceModule implements SourceModule {
 
 	@Override
 	public InputStream getInputStream() {
-		assert false;
-		return null;
+		return new ByteArrayInputStream(code.getBytes(Charset.defaultCharset()));
 	}
 
 	@Override

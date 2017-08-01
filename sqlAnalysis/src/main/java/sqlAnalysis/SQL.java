@@ -1,6 +1,7 @@
 package sqlAnalysis;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
@@ -39,7 +40,7 @@ public class SQL implements Language {
 
 	@Override
 	public Set<Language> getDerivedLanguages() {
-		return null;
+		return Collections.emptySet();
 	}
 
 	@Override

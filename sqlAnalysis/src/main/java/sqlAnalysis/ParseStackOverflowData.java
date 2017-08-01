@@ -3,15 +3,16 @@ package sqlAnalysis;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 import com.facebook.presto.sql.parser.SqlParser;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 
 public class ParseStackOverflowData {
@@ -21,7 +22,7 @@ public class ParseStackOverflowData {
 
 	public static void main(String[] args) throws Exception {
 		String content = new String(
-				Files.readAllBytes(Paths.get("/Users/ksrinivs/git/synthesis/embeddingData/stackOverflowBody.doc")));
+				Files.readAllBytes(Paths.get("embeddingData/stackOverflowBody.doc")));
 		int start = content.indexOf(codeStart);
 		int end = content.indexOf(codeEnd);
 		int count = 0;
@@ -37,21 +38,11 @@ public class ParseStackOverflowData {
 				count++;
 				code = code.replaceAll("&gt;", ">");
 				code = code.replaceAll("&lt;", "<");
-				code = code.replaceAll("[", "");
+				code = code.replaceAll("\\[", "");
 				code = code.replaceAll("]", "");
 				code = code.replaceAll("[;#@]", "");
 				try {
-					SourceModule M = new SQLSourceModule(code);
-					AnalysisScope scope = new AnalysisScope(Collections.singleton(SQL.sql)) {
-						{
-							loadersByName.put(SQLClassLoaderFactory.Sql.getName(), SQLClassLoaderFactory.Sql);
-						}
-					};
-					scope.addToScope(SQLClassLoaderFactory.Sql, M);
-					
-					IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
-					
-					prestoPasses++;
+					prestoPasses = doPresto(prestoPasses, code, loaders);
 				} catch (Throwable e) {
 					try {
 						CCJSqlParserManager manager = new CCJSqlParserManager();
@@ -69,5 +60,23 @@ public class ParseStackOverflowData {
 		System.out.println("found:" + count + " selects" + " with successes:" + (count - failures));
 		System.out.println("presto passes:" + prestoPasses);
 
+	}
+
+	private static int doPresto(int prestoPasses, String code, ClassLoaderFactory loaders)
+			throws ClassHierarchyException {
+		SourceModule M = new SQLSourceModule(code);
+		AnalysisScope scope = new AnalysisScope(Collections.singleton(SQL.sql)) {
+			{
+				loadersByName.put(SQLClassLoaderFactory.Sql.getName(), SQLClassLoaderFactory.Sql);
+			}
+		};
+		scope.addToScope(SQLClassLoaderFactory.Sql, M);
+		
+		IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
+		
+		System.err.println(cha);
+		
+		prestoPasses++;
+		return prestoPasses;
 	}
 }

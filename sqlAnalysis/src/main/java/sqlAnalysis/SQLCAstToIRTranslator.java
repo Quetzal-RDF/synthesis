@@ -73,8 +73,7 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
 			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, TypeReference[]> catchTypes, boolean hasMonitorOp,
 			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
-		// TODO Auto-generated method stub
-
+		((SQLClassLoader)loader).defineFunction(N, definingContext, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo, debugInfo);
 	}
 
 	@Override
