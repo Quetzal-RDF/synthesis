@@ -3,6 +3,7 @@ package sqlAnalysis;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 
 import com.facebook.presto.sql.parser.SqlParser;
@@ -93,6 +94,11 @@ public class SQLClassLoader extends CAstAbstractModuleLoader {
 	@Override
 	protected TranslatorToIR initTranslator() {
 		return new SQLCAstToIRTranslator(this);
+	}
+
+	@Override
+	public Iterator<IClass> iterateAllClasses() {
+		return types.values().iterator();
 	}
 
 	public void defineFunction(CAstEntity n, WalkContext definingContext,
@@ -193,6 +199,13 @@ public class SQLClassLoader extends CAstAbstractModuleLoader {
 			public SQLCodeBody(TypeReference codeName) {
 				super(codeName, SQLClassLoader.this, null);
 			}
+
+			
+			@Override
+			public IClass getSuperclass() {
+				return types.get(SQL.sql.getRootType().getName());
+			}
+
 
 			@Override
 			public IClassHierarchy getClassHierarchy() {
