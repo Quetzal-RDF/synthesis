@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Stack;
 
 import com.ibm.wala.cast.tree.CAst;
+import com.ibm.wala.cast.tree.CAstControlFlowMap;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
+import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
+import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 
 import net.sf.jsqlparser.expression.AllComparisonExpression;
@@ -93,7 +96,7 @@ public class JSQLVisitor {
 			ExpressionVis vis = new ExpressionVis();
 			e.accept(vis);
 			CAstNode n = vis.expStack.pop();
-			PrestoVisitor.createEntity(l, n);
+			PrestoVisitor.createEntity(l, n, vis.cfg());
 		}
 		
 		int myStatement = PrestoVisitor.statementCount++;
@@ -212,6 +215,14 @@ final class JSQLVisit implements StatementVisitor {
 		protected final CAst factory = new CAstImpl();
 		protected CAstNode NULL = factory.makeConstant(CAstNode.VOID);
 		protected Stack<CAstNode> expStack = new Stack<CAstNode>();
+
+		private final CAstSourcePositionRecorder pos = new CAstSourcePositionRecorder();
+		
+		private final CAstControlFlowRecorder rec = new CAstControlFlowRecorder(pos);
+		
+		public CAstControlFlowMap cfg() {
+			return rec;
+		}
 
 		@Override
 		public void visit(NullValue value) {
