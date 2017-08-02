@@ -23,6 +23,9 @@ public class ParseStackOverflowData {
 	public static void main(String[] args) throws Exception {
 		String content = new String(
 				Files.readAllBytes(Paths.get("../embeddingData/stackOverflowBody.doc")));
+//		String content = new String(
+//				Files.readAllBytes(Paths.get("/tmp/test")));
+
 		int start = content.indexOf(codeStart);
 		int end = content.indexOf(codeEnd);
 		int count = 0;
@@ -44,6 +47,7 @@ public class ParseStackOverflowData {
 				try {
 					prestoPasses = doPresto(prestoPasses, code, loaders);
 				} catch (Throwable e) {
+					e.printStackTrace();
 					try {
 						CCJSqlParserManager manager = new CCJSqlParserManager();
 						net.sf.jsqlparser.statement.Statement st = manager.parse(new StringReader(code));

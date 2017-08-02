@@ -22,6 +22,7 @@ import com.facebook.presto.sql.tree.FunctionCall;
 import com.facebook.presto.sql.tree.GenericLiteral;
 import com.facebook.presto.sql.tree.IfExpression;
 import com.facebook.presto.sql.tree.InListExpression;
+import com.facebook.presto.sql.tree.InPredicate;
 import com.facebook.presto.sql.tree.IsNotNullPredicate;
 import com.facebook.presto.sql.tree.IsNullPredicate;
 import com.facebook.presto.sql.tree.LikePredicate;
@@ -36,7 +37,6 @@ import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.sql.tree.QualifiedNameReference;
 import com.facebook.presto.sql.tree.Query;
 import com.facebook.presto.sql.tree.QuerySpecification;
-import com.facebook.presto.sql.tree.Relation;
 import com.facebook.presto.sql.tree.SearchedCaseExpression;
 import com.facebook.presto.sql.tree.SelectItem;
 import com.facebook.presto.sql.tree.SimpleCaseExpression;
@@ -63,6 +63,7 @@ import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cast.tree.impl.CAstSourcePositionRecorder;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
+import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
 
@@ -71,7 +72,7 @@ public class PrestoVisitor {
 	public static int statementCount = 0;
 	public final static CAstOperator OP_AND = new SQLCAstOperator("and");
 	public final static CAstOperator OP_OR = new SQLCAstOperator("or");
-	
+
 	protected static CAstOperator processOp(String op) {
 		if ("+".equals(op)) {
 			return CAstOperator.OP_ADD;
@@ -103,13 +104,14 @@ public class PrestoVisitor {
 			return CAstOperator.OP_BIT_XOR;
 		} else if ("~".equals(op)) {
 			return CAstOperator.OP_BITNOT;
-		} 
-		else {
+		} else {
 			throw new UnsupportedOperationException("dont recognize:" + op);
 		}
 	}
-	
+
 	public static CAstEntity process(Statement st, String orig) {
+		CAstPrinter.setPrinter(new SQLCAstPrinter());
+
 		Query query = (Query) st;
 		System.out.println("Presto passed:" + orig);
 
@@ -135,7 +137,6 @@ public class PrestoVisitor {
 		int myStatement = statementCount++;
 		return createFileEntity(l, myStatement);
 	}
-	
 
 	public static CAstEntity createFileEntity(List<CAstEntity> l, int myStatement) {
 		return new CAstEntity() {
@@ -237,94 +238,94 @@ public class PrestoVisitor {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 		};
 	}
 
 	public static void createEntity(List<CAstEntity> l, CAstNode n, CAstControlFlowMap cfg) {
 		int myNumber = expressionCount++;
 		l.add(new CAstEntity() {
-			
+
 			public CAstType getType() {
 				return SQLCAstToIRTranslator.Any;
 			}
-			
+
 			public CAstSourcePositionMap getSourceMap() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public String getSignature() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public Iterator<CAstEntity> getScopedEntities(CAstNode construct) {
 				return EmptyIterator.instance();
 			}
-			
+
 			@Override
 			public Collection<CAstQualifier> getQualifiers() {
 				return Collections.emptySet();
 			}
-			
+
 			@Override
 			public Position getPosition() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public CAstNodeTypeMap getNodeTypeMap() {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public String getName() {
 				return "expression" + myNumber;
 			}
-			
+
 			@Override
 			public int getKind() {
 				return CAstEntity.FUNCTION_ENTITY;
 			}
-			
+
 			@Override
 			public CAstControlFlowMap getControlFlow() {
 				return cfg;
 			}
-			
+
 			@Override
 			public String[] getArgumentNames() {
 				// TODO Auto-generated method stub
 				return new String[0];
 			}
-			
+
 			@Override
 			public CAstNode[] getArgumentDefaults() {
 				// TODO Auto-generated method stub
 				return new CAstNode[0];
 			}
-			
+
 			@Override
 			public int getArgumentCount() {
 				return 0;
 			}
-			
+
 			@Override
 			public Collection<CAstAnnotation> getAnnotations() {
-				return  Collections.emptySet();
+				return Collections.emptySet();
 			}
-			
+
 			@Override
 			public Map<CAstNode, Collection<CAstEntity>> getAllScopedEntities() {
-				
+
 				return Collections.emptyMap();
 			}
-			
+
 			@Override
 			public CAstNode getAST() {
 				return n;
@@ -338,9 +339,9 @@ public class PrestoVisitor {
 		protected CAstNode NULL = factory.makeConstant(CAstNode.VOID);
 
 		private final CAstSourcePositionRecorder pos = new CAstSourcePositionRecorder();
-		
+
 		private final CAstControlFlowRecorder rec = new CAstControlFlowRecorder(pos);
-		
+
 		public ExpressionGatherer() {
 			// TODO Auto-generated constructor stub
 		}
@@ -348,7 +349,7 @@ public class PrestoVisitor {
 		public CAstControlFlowMap cfg() {
 			return rec;
 		}
-		
+
 		@Override
 		protected CAstNode visitSingleColumn(SingleColumn node, Void context) {
 			// TODO Auto-generated method stub
@@ -359,16 +360,14 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitSimpleCaseExpression(SimpleCaseExpression node, Void context) {
-			CAstNode result = process(node.getDefaultValue(), context);		
+			CAstNode result = process(node.getDefaultValue(), context);
 			List<WhenClause> whenclauses = node.getWhenClauses();
-			for (int i = whenclauses.size() -1; i >= 0; i--) {
+			for (int i = whenclauses.size() - 1; i >= 0; i--) {
 				result = factory.makeNode(CAstNode.IF_EXPR, process(whenclauses.get(i).getOperand(), context),
 						process(whenclauses.get(i).getResult(), context), result);
 			}
 			return result;
 		}
-
-		
 
 		@Override
 		protected CAstNode visitArithmeticExpression(ArithmeticExpression node, Void context) {
@@ -386,17 +385,34 @@ public class PrestoVisitor {
 			return process(e3, context);
 		}
 
-		protected CAstNode visitPartQuery(Query node, Void context) {
-			CAstNode e = null;
+		@Override
+		protected CAstNode visitQuery(Query node, Void context) {
+
+			CAstNode subquery = null;
 			QuerySpecification qb = (QuerySpecification) node.getQueryBody();
-	        process(qb.getSelect(), context);
-	        if (qb.getWhere().isPresent()) {
-	            e = process(qb.getWhere().get(), context);
-	        }
-	        
-	        return e;
+
+			List<CAstNode> l = new LinkedList<CAstNode>();
+			List<SelectItem> items = qb.getSelect().getSelectItems();
+			for (SelectItem i : items) {
+				if (i instanceof SingleColumn) {
+					Expression e = ((SingleColumn) i).getExpression();
+					if (!(e instanceof QualifiedNameReference)) {
+						l.add(process(e, null));
+					}
+				}
+			}
+			CAstNode select = factory.makeNode(SQLCAstNode.SUBQUERY_SELECT, l.toArray(new CAstNode[l.size()]));
+
+			if (qb.getWhere().isPresent()) {
+				CAstNode n = process(qb.getWhere().get(), context);
+				CAstNode where = factory.makeNode(SQLCAstNode.SUBQUERY_WHERE, n);
+				subquery = factory.makeNode(SQLCAstNode.SUBQUERY, select, where);
+			} else {
+				subquery = factory.makeNode(SQLCAstNode.SUBQUERY, select);
+			}
+			return subquery;
 		}
-		
+
 		@Override
 		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Void context) {
 			return visitQuery(node.getQuery(), context);
@@ -404,12 +420,12 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitExists(ExistsPredicate node, Void context) {
-			// TODO Auto-generated method stub
-			return visitPartQuery(node.getSubquery(), context);
+			return factory.makeNode(SQLCAstNode.EXISTS, visitQuery(node.getSubquery(), context));
 		}
 
 		@Override
 		protected CAstNode visitComparisonExpression(ComparisonExpression node, Void context) {
+			CAstNode n = process(node.getRight(), context);
 			return factory.makeNode(CAstNode.BINARY_EXPR, processOp(node.getType().getValue()),
 					process(node.getLeft(), context), process(node.getRight(), context));
 		}
@@ -420,6 +436,15 @@ public class PrestoVisitor {
 			String colName = node.getName().toString();
 			return factory.makeNode(CAstNode.OBJECT_REF, factory.makeNode(CAstNode.VOID),
 					factory.makeConstant(colName));
+		}
+
+		@Override
+		protected CAstNode visitInPredicate(InPredicate node, Void context) {
+			CAstNode[] arr = new CAstNode[2];
+			arr[0] = process(node.getValue(), context);
+			arr[1] = process(node.getValueList(), context);
+			return factory.makeNode(CAstNode.CALL, factory.makeConstant("in"), arr);
+
 		}
 
 		@Override
@@ -441,17 +466,19 @@ public class PrestoVisitor {
 		@Override
 		protected CAstNode visitInListExpression(InListExpression node, Void context) {
 			CAstNode[] arr = createArgs(context, node.getValues());
-			return factory.makeNode(CAstNode.CALL, factory.makeConstant("IN_LIST"), arr);
+			return factory.makeNode(SQLCAstNode.IN_ARGS, arr);
 		}
 
 		@Override
 		protected CAstNode visitNullIfExpression(NullIfExpression node, Void context) {
 			CAstNode lhs = process(node.getFirst(), context);
 			CAstNode rhs = process(node.getSecond(), context);
-			CAstNode decl = factory.makeNode(CAstNode.DECL_STMT, factory.makeConstant(new CAstSymbolImpl("if null temp", SQLCAstToIRTranslator.Any, lhs)));
+			CAstNode decl = factory.makeNode(CAstNode.DECL_STMT,
+					factory.makeConstant(new CAstSymbolImpl("if null temp", SQLCAstToIRTranslator.Any, lhs)));
 			CAstNode var = factory.makeNode(CAstNode.VAR, factory.makeConstant("if null temp"));
 			CAstNode l = factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_EQ, var, NULL);
-			return factory.makeNode(CAstNode.LOCAL_SCOPE, factory.makeNode(CAstNode.BLOCK_EXPR, decl, factory.makeNode(CAstNode.IF_EXPR, l, var, rhs)));
+			return factory.makeNode(CAstNode.LOCAL_SCOPE,
+					factory.makeNode(CAstNode.BLOCK_EXPR, decl, factory.makeNode(CAstNode.IF_EXPR, l, var, rhs)));
 		}
 
 		@Override
@@ -463,9 +490,11 @@ public class PrestoVisitor {
 			} else {
 				rhsExpr = NULL;
 			}
-			return factory.makeNode(CAstNode.IF_EXPR, process(node.getCondition(), context), process(node.getTrueValue(), context), rhsExpr);
+			return factory.makeNode(CAstNode.IF_EXPR, process(node.getCondition(), context),
+					process(node.getTrueValue(), context), rhsExpr);
 		}
-
+		
+		
 		@Override
 		protected CAstNode visitNegativeExpression(NegativeExpression node, Void context) {
 			NotExpression exp = new NotExpression(node.getValue());
@@ -474,7 +503,7 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitNotExpression(NotExpression node, Void context) {
-			return super.visitNotExpression(node, context);
+			return factory.makeNode(SQLCAstNode.NOT, process(node.getValue(), context));
 		}
 
 		@Override
@@ -492,14 +521,12 @@ public class PrestoVisitor {
 		@Override
 		protected CAstNode visitIsNotNullPredicate(IsNotNullPredicate node, Void context) {
 			// TODO Auto-generated method stub
-			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_NE, process(node.getValue(), context),
-					NULL);
+			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_NE, process(node.getValue(), context), NULL);
 		}
 
 		@Override
 		protected CAstNode visitIsNullPredicate(IsNullPredicate node, Void context) {
-			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_EQ, process(node.getValue(), context),
-					NULL);
+			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_EQ, process(node.getValue(), context), NULL);
 		}
 
 		@Override
@@ -512,14 +539,15 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitCast(Cast node, Void context) {
-			return factory.makeNode(CAstNode.CAST, process(node.getExpression(), context), factory.makeConstant(node.getType()));
+			return factory.makeNode(CAstNode.CAST, process(node.getExpression(), context),
+					factory.makeConstant(node.getType()));
 		}
 
 		@Override
 		protected CAstNode visitCoalesceExpression(CoalesceExpression node, Void context) {
 			FunctionCall fc = new FunctionCall(new QualifiedName("COALESCE"), node.getOperands());
 			return visitFunctionCall(fc, context);
-			
+
 		}
 
 		@Override
@@ -587,19 +615,17 @@ public class PrestoVisitor {
 			} else {
 				op = OP_OR;
 			}
-			return factory.makeNode(CAstNode.ANDOR_EXPR, op,
-					process(node.getLeft(), context), process(node.getRight(), context));
+			return factory.makeNode(CAstNode.ANDOR_EXPR, op, process(node.getLeft(), context),
+					process(node.getRight(), context));
 		}
 	}
-	
+
 	public static class SQLCAstOperator extends CAstOperator {
 
 		protected SQLCAstOperator(String op) {
 			super(op);
 			// TODO Auto-generated constructor stub
 		}
-		
+
 	}
 }
-
-
