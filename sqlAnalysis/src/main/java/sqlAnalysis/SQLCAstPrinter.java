@@ -13,15 +13,16 @@ public class SQLCAstPrinter extends CAstPrinter {
 				return "IN_ARGS";
 			case SQLCAstNode.SUBQUERY:
 				return "SUBQUERY";
-			case SQLCAstNode.SUBQUERY_SELECT:
-				return "SUBQUERY_SELECT";
-			case SQLCAstNode.SUBQUERY_WHERE:
-				return "SUBQUERY_WHERE";
+			case SQLCAstNode.QUERY_SELECT:
+				return "QUERY_SELECT";
+			case SQLCAstNode.QUERY_WHERE:
+				return "QUERY_WHERE";
 			case SQLCAstNode.EXISTS:
 				return "EXISTS";
 			case SQLCAstNode.NOT:
 				return "NOT";
-
+			case SQLCAstNode.QUERY:
+				return "QUERY";
 			}
 		}
 		// TODO Auto-generated method stub
