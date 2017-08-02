@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.facebook.presto.sql.tree.AliasedRelation;
 import com.facebook.presto.sql.tree.ArithmeticExpression;
 import com.facebook.presto.sql.tree.BetweenPredicate;
 import com.facebook.presto.sql.tree.BooleanLiteral;
@@ -25,6 +26,7 @@ import com.facebook.presto.sql.tree.InListExpression;
 import com.facebook.presto.sql.tree.InPredicate;
 import com.facebook.presto.sql.tree.IsNotNullPredicate;
 import com.facebook.presto.sql.tree.IsNullPredicate;
+import com.facebook.presto.sql.tree.Join;
 import com.facebook.presto.sql.tree.LikePredicate;
 import com.facebook.presto.sql.tree.LogicalBinaryExpression;
 import com.facebook.presto.sql.tree.LogicalBinaryExpression.Type;
@@ -37,6 +39,7 @@ import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.sql.tree.QualifiedNameReference;
 import com.facebook.presto.sql.tree.Query;
 import com.facebook.presto.sql.tree.QuerySpecification;
+import com.facebook.presto.sql.tree.Relation;
 import com.facebook.presto.sql.tree.SearchedCaseExpression;
 import com.facebook.presto.sql.tree.SelectItem;
 import com.facebook.presto.sql.tree.SimpleCaseExpression;
@@ -44,6 +47,7 @@ import com.facebook.presto.sql.tree.SingleColumn;
 import com.facebook.presto.sql.tree.Statement;
 import com.facebook.presto.sql.tree.StringLiteral;
 import com.facebook.presto.sql.tree.SubqueryExpression;
+import com.facebook.presto.sql.tree.TableSubquery;
 import com.facebook.presto.sql.tree.TimeLiteral;
 import com.facebook.presto.sql.tree.TimestampLiteral;
 import com.facebook.presto.sql.tree.WhenClause;
@@ -112,30 +116,41 @@ public class PrestoVisitor {
 	public static CAstEntity process(Statement st, String orig) {
 		CAstPrinter.setPrinter(new SQLCAstPrinter());
 
-		Query query = (Query) st;
-		System.out.println("Presto passed:" + orig);
+		List<Query> queries = new LinkedList<Query>();
+		queries.add((Query) st);
+		queries.addAll(getSubQueryRelations((QuerySpecification) ((Query) st).getQueryBody()));
 
 		List<CAstEntity> l = new LinkedList<CAstEntity>();
-		QuerySpecification qb = (QuerySpecification) query.getQueryBody();
-		List<SelectItem> items = qb.getSelect().getSelectItems();
-		for (SelectItem i : items) {
-			if (i instanceof SingleColumn) {
-				Expression e = ((SingleColumn) i).getExpression();
-				if (!(e instanceof QualifiedNameReference)) {
-					ExpressionGatherer exp = new ExpressionGatherer();
-					CAstNode n = exp.process(e, null);
-					createEntity(l, n, exp.cfg());
-				}
-			}
+
+		ExpressionGatherer exp = new ExpressionGatherer();
+		for (Query q : queries) {
+			CAstNode n = exp.process(q, null);
+			createEntity(l, n, exp.cfg());
+
 		}
-		Optional<Expression> where = qb.getWhere();
-		if (where.isPresent()) {
-			ExpressionGatherer exp = new ExpressionGatherer();
-			System.out.println("WHERE CLAUSE PROCESSSED AS CAST NODE:" + exp.process(where.get(), null));
-			createEntity(l, exp.process(where.get(), null), exp.cfg());
-		}
+		
 		int myStatement = statementCount++;
 		return createFileEntity(l, myStatement);
+	}
+	
+	private static List<Query> getSubQueryRelations(QuerySpecification qb) {
+		List<Query> subs = new LinkedList<Query>();
+		List<Relation> rels = qb.getFrom();
+		for (Relation r : rels) {
+			getTableSubqueries(r, subs);
+		}
+		return subs;
+	}
+	
+	private static void getTableSubqueries(Relation r, List<Query> subs) {
+		if (r instanceof Join) {
+			getTableSubqueries(((Join) r).getLeft(), subs);
+			getTableSubqueries(((Join) r).getRight(), subs);
+		} else if (r instanceof AliasedRelation) {
+			getTableSubqueries(((AliasedRelation) r).getRelation(), subs);
+		} else if (r instanceof TableSubquery) {
+			subs.add(((TableSubquery) r).getQuery());
+		}
 	}
 
 	public static CAstEntity createFileEntity(List<CAstEntity> l, int myStatement) {
@@ -336,12 +351,13 @@ public class PrestoVisitor {
 	protected static final class ExpressionGatherer extends DefaultTraversalVisitor<CAstNode, Void> {
 
 		protected final CAst factory = new CAstImpl();
+		
 		protected CAstNode NULL = factory.makeConstant(CAstNode.VOID);
 
 		private final CAstSourcePositionRecorder pos = new CAstSourcePositionRecorder();
 
 		private final CAstControlFlowRecorder rec = new CAstControlFlowRecorder(pos);
-
+		
 		public ExpressionGatherer() {
 			// TODO Auto-generated constructor stub
 		}
@@ -388,11 +404,12 @@ public class PrestoVisitor {
 		@Override
 		protected CAstNode visitQuery(Query node, Void context) {
 
-			CAstNode subquery = null;
+			CAstNode query = null;
 			QuerySpecification qb = (QuerySpecification) node.getQueryBody();
-
-			List<CAstNode> l = new LinkedList<CAstNode>();
+			
 			List<SelectItem> items = qb.getSelect().getSelectItems();
+			List<CAstNode> l = new LinkedList<CAstNode>();
+			
 			for (SelectItem i : items) {
 				if (i instanceof SingleColumn) {
 					Expression e = ((SingleColumn) i).getExpression();
@@ -401,21 +418,21 @@ public class PrestoVisitor {
 					}
 				}
 			}
-			CAstNode select = factory.makeNode(SQLCAstNode.SUBQUERY_SELECT, l.toArray(new CAstNode[l.size()]));
+			CAstNode select = factory.makeNode(SQLCAstNode.QUERY_SELECT, l.toArray(new CAstNode[l.size()]));
 
 			if (qb.getWhere().isPresent()) {
 				CAstNode n = process(qb.getWhere().get(), context);
-				CAstNode where = factory.makeNode(SQLCAstNode.SUBQUERY_WHERE, n);
-				subquery = factory.makeNode(SQLCAstNode.SUBQUERY, select, where);
+				CAstNode where = factory.makeNode(SQLCAstNode.QUERY_WHERE, n);
+				query = factory.makeNode(SQLCAstNode.QUERY, select, where);
 			} else {
-				subquery = factory.makeNode(SQLCAstNode.SUBQUERY, select);
+				query = factory.makeNode(SQLCAstNode.QUERY, select);
 			}
-			return subquery;
+			return query;
 		}
 
 		@Override
 		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Void context) {
-			return visitQuery(node.getQuery(), context);
+			return factory.makeNode(SQLCAstNode.QUERY_SELECT, process(node.getQuery(), null));
 		}
 
 		@Override
