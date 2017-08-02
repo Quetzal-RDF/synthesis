@@ -74,7 +74,7 @@ public class ParseStackOverflowData {
 		
 		IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
 		
-		System.err.println(cha);
+		System.err.println(code + ":\n" + cha);
 		
 		prestoPasses++;
 		return prestoPasses;
