@@ -17,20 +17,26 @@
             (let ((cond (to-custom-int (cadr form)))
                   (then (gensym 'p))
                   (else (gensym 'p)))
-              (list (append (car cond) (list (list then 'any) (list else 'any))) (list 'send 'p 'if-then-else (cadr cond) then else) 'any))]
+              (list (append (car cond) (list (list then 'any) (list else 'any)))
+                    (list 'send 'p 'if-then-else (cadr cond) then else)
+                    'any))]
            [(3)
             (let* ((cond (to-custom-int (second form)))
                    (then (to-custom-int (third form)))
                    (then-type (third then))
                    (else (gensym 'p)))
-              (list (append (car cond) (car then) (list (list else then-type))) (list 'send 'p 'if-then-else (cadr cond) (cadr then) else) then-type))]
+              (list (append (car cond) (car then) (list (list else then-type)))
+                    (list 'send 'p 'if-then-else (cadr cond) (cadr then) else)
+                    then-type))]
            [(4)
             (let* ((cond (to-custom-int (second form)))
                    (then (to-custom-int (third form)))
                    (then-type (third then))
                    (else (to-custom-int (fourth form)))
                    (type (if (eq? then-type 'any) (third else) then-type)))
-              (list (append (car cond) (car then) (car else)) (list 'send 'p 'if-then-else (cadr cond) (cadr then) (cadr else)) type))])]
+              (list (append (car cond) (car then) (car else))
+                    (list 'send 'p 'if-then-else (cadr cond) (cadr then) (cadr else))
+                    type))])]
         [(not)
          (let ((op (car form))
                (l (to-custom-int (second form))))
@@ -80,13 +86,14 @@
           (apply make-parser columns))
          (stuff
           (parse text)))
+    (println stuff)
     (map make-custom (filter cons? stuff))))
 
 (define (test-custom text columns)
   (let ((p (new expr-processor% [inputs columns]))
-        (int (lambda (size pos p f) (val pos integer?)))
-        (bool (lambda (size pos p f) (val pos boolean?)))
-        (str (lambda (size pos p f) (val pos string?))))
+        (int (lambda (size pos p f) (f 5 (val pos integer?))))
+        (bool (lambda (size pos p f) (f 5 (val pos boolean?))))
+        (str (lambda (size pos p f) (f 5 (val pos string?)))))
     (map (lambda (f)
            (let ((expr '()))
              (f 5 '() p (lambda (x y) (set! expr y)))
