@@ -231,12 +231,17 @@ final class JSQLVisit implements StatementVisitor {
 
 		@Override
 		public void visit(Function function) {	
-			List<Expression> e = function.getParameters().getExpressions();
-			CAstNode[] arr = new CAstNode[e.size()];
+			CAstNode[] arr;
+			if (function.getParameters() == null) {
+				arr = new CAstNode[0];
+			} else {
+				List<Expression> e = function.getParameters().getExpressions();
+				arr = new CAstNode[e.size()];
 
-			for (int i = 0; i < e.size() ; i++) {
-				e.get(i).accept(this);
-				arr[i] = expStack.pop();
+				for (int i = 0; i < e.size() ; i++) {
+					e.get(i).accept(this);	
+					arr[i] = expStack.pop();
+				}
 			}
 			expStack.push(factory.makeNode(CAstNode.CALL, factory.makeConstant(function.getName()), arr));
 		}

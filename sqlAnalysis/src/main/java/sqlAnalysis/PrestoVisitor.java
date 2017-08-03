@@ -472,7 +472,13 @@ public class PrestoVisitor {
 		protected CAstNode visitFunctionCall(FunctionCall node, Void context) {
 			List<Expression> l = node.getArguments();
 			CAstNode[] arr = createArgs(context, l);
-			return factory.makeNode(CAstNode.CALL, factory.makeConstant(node.getName().toString()), arr);
+			
+			CAstNode[] allArgs = new CAstNode[ arr.length + 2 ];
+			System.arraycopy(arr, 0, allArgs, 2, arr.length);
+			allArgs[0] = factory.makeConstant(CAstNode.VOID);
+			allArgs[1] = factory.makeConstant(node.getName().toString());
+			
+			return factory.makeNode(CAstNode.CALL, allArgs);
 		}
 
 		@Override
