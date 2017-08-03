@@ -374,6 +374,11 @@
    (list do-in-int do-intv do-if-then-int do-basic-math do-basic-num-functions)
    size pos p f))
 
+(define (do-all-any size pos p f)
+  (do-all-bool size pos p f)
+  (do-all-int size pos p f)
+  (do-all-str size pos p f))
+  
 (define (do-math-int size pos p f)
   (do-all 'number
    (list do-in-int do-intv do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
@@ -697,5 +702,4 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-
-(provide analyze render aggregate test val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-int do-all-str do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)
+(provide expr-processor% analyze render aggregate test val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)

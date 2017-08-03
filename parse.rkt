@@ -73,8 +73,11 @@
                                #f))
                          wls)))))
             (or
-             (if (eq? (car tokens) tok) (cons tok (cdr tokens)) #f)
-             (swallow word-lists tokens)
+             (and
+              (not (null? tokens))
+              (or
+               (if (eq? (car tokens) tok) (cons tok (cdr tokens)) #f)
+               (swallow word-lists tokens)))
              (cons #f tokens))))))
     
     (define (parse-op ops)
