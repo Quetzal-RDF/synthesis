@@ -127,7 +127,9 @@ public class PrestoVisitor {
 		ExpressionGatherer exp = new ExpressionGatherer();
 		for (Query q : queries) {
 			CAstNode n = exp.process(q, null);
-			createEntity(l, n, exp.cfg());
+			if (n != null) {
+				createEntity(l, n, exp.cfg());
+			}
 
 		}
 		
@@ -418,14 +420,16 @@ public class PrestoVisitor {
 					}
 				}
 			}
-			CAstNode select = factory.makeNode(SQLCAstNode.QUERY_SELECT, l.toArray(new CAstNode[l.size()]));
-
-			if (qb.getWhere().isPresent()) {
-				CAstNode n = process(qb.getWhere().get(), context);
-				CAstNode where = factory.makeNode(SQLCAstNode.QUERY_WHERE, n);
-				query = factory.makeNode(SQLCAstNode.QUERY, select, where);
-			} else {
-				query = factory.makeNode(SQLCAstNode.QUERY, select);
+			if (!l.isEmpty()) {
+				CAstNode select = factory.makeNode(SQLCAstNode.QUERY_SELECT, l.toArray(new CAstNode[l.size()]));
+		
+				if (qb.getWhere().isPresent()) {
+					CAstNode n = process(qb.getWhere().get(), context);
+					CAstNode where = factory.makeNode(SQLCAstNode.QUERY_WHERE, n);
+					query = factory.makeNode(SQLCAstNode.QUERY, select, where);
+				} else {
+					query = factory.makeNode(SQLCAstNode.QUERY, select);
+				}
 			}
 			return query;
 		}
