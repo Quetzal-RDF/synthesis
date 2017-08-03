@@ -23,6 +23,8 @@ public class SQLCAstPrinter extends CAstPrinter {
 				return "NOT";
 			case SQLCAstNode.QUERY:
 				return "QUERY";
+			case SQLCAstNode.CURRENT_TIME:
+				return "CURRENT_TIME";
 			}
 		}
 		// TODO Auto-generated method stub

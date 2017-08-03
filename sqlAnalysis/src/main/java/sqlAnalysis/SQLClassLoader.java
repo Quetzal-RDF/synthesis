@@ -80,7 +80,9 @@ public class SQLClassLoader extends CAstAbstractModuleLoader {
 			public CAstEntity translateToCAst() throws Error, IOException {
 				String code = new String(Streams.inputStream2ByteArray(M.getInputStream()));
 				Statement statement = SQL_PARSER.createStatement(code);
-				return PrestoVisitor.process(statement, code);
+				CAstEntity e = PrestoVisitor.process(statement, code);
+				System.out.println(code);
+				return e;
 			}
 			
 		};

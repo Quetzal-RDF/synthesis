@@ -9,9 +9,11 @@ import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
+import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
@@ -146,6 +148,16 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void doPrimitive(int resultVal, WalkContext context, CAstNode primitiveCall) {
 		assert false;
+	}
+
+	private static final boolean DEBUG_AST = true;
+	@Override
+	public void translate(CAstEntity N, ModuleEntry context) {
+		if (DEBUG_AST) {
+			System.out.println(CAstPrinter.print(N));
+		} else {
+			super.translate(N, context);
+		}
 	}
 
 }

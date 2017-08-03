@@ -14,6 +14,7 @@ import com.facebook.presto.sql.tree.BooleanLiteral;
 import com.facebook.presto.sql.tree.Cast;
 import com.facebook.presto.sql.tree.CoalesceExpression;
 import com.facebook.presto.sql.tree.ComparisonExpression;
+import com.facebook.presto.sql.tree.CurrentTime;
 import com.facebook.presto.sql.tree.DefaultTraversalVisitor;
 import com.facebook.presto.sql.tree.DoubleLiteral;
 import com.facebook.presto.sql.tree.ExistsPredicate;
@@ -24,6 +25,7 @@ import com.facebook.presto.sql.tree.GenericLiteral;
 import com.facebook.presto.sql.tree.IfExpression;
 import com.facebook.presto.sql.tree.InListExpression;
 import com.facebook.presto.sql.tree.InPredicate;
+import com.facebook.presto.sql.tree.IntervalLiteral;
 import com.facebook.presto.sql.tree.IsNotNullPredicate;
 import com.facebook.presto.sql.tree.IsNullPredicate;
 import com.facebook.presto.sql.tree.Join;
@@ -174,8 +176,7 @@ public class PrestoVisitor {
 
 			@Override
 			public String[] getArgumentNames() {
-				// TODO Auto-generated method stub
-				return null;
+				return new String[0];
 			}
 
 			@Override
@@ -315,7 +316,6 @@ public class PrestoVisitor {
 
 			@Override
 			public String[] getArgumentNames() {
-				// TODO Auto-generated method stub
 				return new String[0];
 			}
 
@@ -466,10 +466,19 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitFunctionCall(FunctionCall node, Void context) {
-			// how do we deal with a list of arguments in the wala AST?
 			List<Expression> l = node.getArguments();
 			CAstNode[] arr = createArgs(context, l);
 			return factory.makeNode(CAstNode.CALL, factory.makeConstant(node.getName().toString()), arr);
+		}
+
+		@Override
+		protected CAstNode visitCurrentTime(CurrentTime node, Void context) {
+			return factory.makeNode(SQLCAstNode.CURRENT_TIME);
+		}
+
+		@Override
+		protected CAstNode visitIntervalLiteral(IntervalLiteral node, Void context) {
+			return factory.makeConstant(node.getValue());
 		}
 
 		private CAstNode[] createArgs(Void context, List<Expression> l) {
@@ -531,7 +540,7 @@ public class PrestoVisitor {
 			if (node.getEscape() != null) {
 				args.add(node.getEscape());
 			}
-			FunctionCall fc = new FunctionCall(new QualifiedName("LIKE"), args);
+			FunctionCall fc = new FunctionCall(new QualifiedName("like"), args);
 			return visitFunctionCall(fc, context);
 		}
 
@@ -562,18 +571,20 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitCoalesceExpression(CoalesceExpression node, Void context) {
-			FunctionCall fc = new FunctionCall(new QualifiedName("COALESCE"), node.getOperands());
+			FunctionCall fc = new FunctionCall(new QualifiedName("coalesce"), node.getOperands());
 			return visitFunctionCall(fc, context);
 
 		}
 
 		@Override
 		protected CAstNode visitSearchedCaseExpression(SearchedCaseExpression node, Void context) {
-			List<Expression> exp = new LinkedList<Expression>();
-			exp.add(node.getDefaultValue());
-			exp.addAll(node.getWhenClauses());
-			FunctionCall fc = new FunctionCall(new QualifiedName("COALESCE"), exp);
-			return visitFunctionCall(fc, context);
+			CAstNode result = process(node.getDefaultValue(), context);
+			List<WhenClause> whenclauses = node.getWhenClauses();
+			for (int i = whenclauses.size() - 1; i >= 0; i--) {
+				result = factory.makeNode(CAstNode.IF_EXPR, process(whenclauses.get(i).getOperand(), context),
+						process(whenclauses.get(i).getResult(), context), result);
+			}
+			return result;
 		}
 
 		@Override

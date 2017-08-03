@@ -68,6 +68,7 @@ public class ParseStackOverflowData {
 
 	private static int doPresto(int prestoPasses, String code, ClassLoaderFactory loaders)
 			throws ClassHierarchyException {
+		
 		SourceModule M = new SQLSourceModule(code);
 		AnalysisScope scope = new AnalysisScope(Collections.singleton(SQL.sql)) {
 			{
@@ -77,8 +78,8 @@ public class ParseStackOverflowData {
 		scope.addToScope(SQLClassLoaderFactory.Sql, M);
 		
 		IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
-		
-		System.err.println(cha);
+
+		//System.err.println(cha);
 		
 		prestoPasses++;
 		return prestoPasses;
