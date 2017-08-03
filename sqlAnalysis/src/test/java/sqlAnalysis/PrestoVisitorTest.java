@@ -11,6 +11,8 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 
+import sqlAnalysis.PrestoVisitor.SQLCAstOperator;
+
 public class PrestoVisitorTest {
 	static final SqlParser SQL_PARSER = new SqlParser();
 
@@ -179,11 +181,78 @@ public class PrestoVisitorTest {
 		Statement statement = SQL_PARSER.createStatement(sql);
 		CAstEntity entity = PrestoVisitor.process(statement, sql);
 		Collection<CAstEntity> l = entity.getAllScopedEntities().get(null);
-		int i = 0;
-		for (CAstEntity e : l) {
-			CAstNode n = e.getAST();
-			System.out.println(n);
-		}
-	}
+		Iterator<CAstEntity> it = l.iterator();
+		CAstNode n = it.next().getAST();
+		n = getWhere(n).getChild(0);
+		assert n.getKind() == CAstOperator.BINARY_EXPR;
+		assert n.getChild(0).getValue() == "==";
+		assert n.getChild(1).getKind() == CAstOperator.OBJECT_REF;
+		assert (long) n.getChild(2).getValue() == 42;
 
+		n = it.next().getAST();
+		n = getSelect(n).getChild(0);
+		assert n.getKind() == CAstOperator.BINARY_EXPR;
+		assert n.getChild(0).getValue() == "-";
+		assert n.getChild(1).getKind() == CAstOperator.OBJECT_REF;
+		assert (int) n.getChild(2).getKind() == SQLCAstNode.QUERY_SELECT;
+		n = n.getChild(2).getChild(0);
+		CAstNode sn = getSelect(n).getChild(0);
+		assert sn.getKind() == CAstOperator.CALL;
+		assert sn.getChild(0).getValue().equals("top");
+		
+		CAstNode wn = getWhere(n).getChild(0);
+		assert wn.getKind() == CAstOperator.ANDOR_EXPR;
+		CAstNode lhs = wn.getChild(1);
+		assertBinaryExpression(lhs, CAstOperator.OP_EQ);
+		CAstNode rhs = wn.getChild(2);
+		assertBinaryExpression(rhs, CAstOperator.OP_GT);
+		
+		n = it.next().getAST();
+		n = getSelect(n).getChild(0);
+		assert n.getKind() == CAstOperator.CALL;
+		assert n.getChild(0).getValue().equals("max");
+		assert n.getChild(1).getKind() == CAstOperator.OBJECT_REF;
+	}
+	
+	private void testIf(CAstNode n, Object opKind, int kind, Object value, Object then) {
+		assert n.getKind() == CAstNode.IF_EXPR;
+		CAstNode t = n.getChild(1);
+		n = n.getChild(0);
+		assert n.getKind() == CAstNode.BINARY_EXPR;
+		n.getChild(0).getValue().equals(opKind);
+		assert n.getChild(1).getKind() == kind;
+		assert n.getChild(2).getValue().equals(value);
+		assert t.getValue().equals(then);
+	}
+	
+	@Test
+	public void testCase() {
+		String sql = "SELECT tmptract.soc_sec, name.last_name, name.first_name, name.mi, address.st_addr, address.add_addr,address.add_add2,address.city, "+
+           " address.state, address.zip, tcodes.act_code, (CASE WHEN tcodes.act_code = '+' THEN '1' WHEN tcodes.act_code = '-' THEN '2' WHEN tcodes.act_code = '=' THEN '3' ELSE tcodes.act_code " +
+           " END) as TCode, '' as employee_soc_sec, 2 as bill_type FROM tmptract, name, address, tcodes, transact WHERE tmptract.soc_sec = name.soc_sec " +
+           "AND address.soc_sec = name.soc_sec AND tcodes.tcodes = transact.tcodes AND tmptract.token = 'session.token'";
+		CAstNode i = getSelect(process(sql)).getChild(0);
+		System.out.println(i);
+		testIf(i, "==", CAstNode.OBJECT_REF, "+", "1");
+		i = i.getChild(2);
+		testIf(i, "==", CAstNode.OBJECT_REF, "-", "2");
+		i = i.getChild(2);
+		testIf(i, "==", CAstNode.OBJECT_REF, "=", "3");
+		i = i.getChild(2);
+		assert i.getKind() == CAstNode.OBJECT_REF;
+		CAstNode w = getWhere(process(sql)).getChild(0);
+		System.out.println(w);
+
+	}
+	
+	@Test
+	public void testCurrentDate() {
+		String sql = "select datediff(day, current_date, dataaction) from etc";
+		CAstNode i = getSelect(process(sql)).getChild(0);
+		assert i.getKind() == CAstNode.CALL;
+		assert i.getChild(0).getValue().equals("datediff");
+		assert i.getChild(1).getKind() == CAstNode.OBJECT_REF;
+		assert i.getChild(2).getKind() == SQLCAstNode.CURRENT_TIME;
+		assert i.getChild(3).getKind() == CAstNode.OBJECT_REF;
+	}
 }
