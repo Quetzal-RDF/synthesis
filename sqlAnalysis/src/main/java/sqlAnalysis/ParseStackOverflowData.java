@@ -6,12 +6,19 @@ import java.nio.file.Paths;
 import java.util.Collections;
 
 import com.facebook.presto.sql.parser.SqlParser;
+import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
+import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
+import com.ibm.wala.ssa.DefaultIRFactory;
+import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.SSAOptions;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 
@@ -79,7 +86,12 @@ public class ParseStackOverflowData {
 		
 		IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
 
-		System.err.println(code + ":\n" + cha);
+		IRFactory<IMethod> irs = new AstIRFactory<IMethod>();
+		for(IClass c : cha) {
+			for(IMethod f : c.getDeclaredMethods()) {
+				System.out.println(irs.makeIR(f, Everywhere.EVERYWHERE, SSAOptions.defaultOptions()));
+			}
+		}
 		
 		prestoPasses++;
 		return prestoPasses;
