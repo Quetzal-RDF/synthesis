@@ -11,8 +11,6 @@ public class SQLCAstPrinter extends CAstPrinter {
 			switch (kind) {
 			case SQLCAstNode.IN_ARGS:
 				return "IN_ARGS";
-			case SQLCAstNode.SUBQUERY:
-				return "SUBQUERY";
 			case SQLCAstNode.QUERY_SELECT:
 				return "QUERY_SELECT";
 			case SQLCAstNode.QUERY_WHERE:
