@@ -156,9 +156,11 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 	protected boolean doVisit(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
 		if (n.getKind() == SQLCAstNode.QUERY) {
 			visitor.visit(n.getChild(0), context, visitor);
+			context.setValue(n, context.getValue(n.getChild(0)));
 			return true;
 		} else if (n.getKind() == SQLCAstNode.QUERY_SELECT) {
 			visitor.visit(n.getChild(0), context, visitor);
+			context.setValue(n, context.getValue(n.getChild(0)));
 			return true;
 		} else {
 			return super.doVisit(n, context, visitor);
