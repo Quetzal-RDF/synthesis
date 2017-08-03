@@ -55,7 +55,7 @@
 
 ; test multiplication of 2 columns based on string in the first column - return Col 2 * Col 3 if Col1 = "Committed"
 (define (simple-selection3)
-  (test analyze '() '() '() 3 '(20 0 10) (list s1 i1 i2) '(("Committed" 1000 50) ("Custom" 1000 10) ("Committed" 100 10))))
+  (test analyze '() '() '() 3 '(50000 0 1000) (list s1 i1 i2) '(("Committed" 1000 50) ("Custom" 1000 10) ("Committed" 100 10))))
 
 (define math345
   (custom
