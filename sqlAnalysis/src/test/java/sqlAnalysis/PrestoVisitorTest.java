@@ -253,7 +253,7 @@ public class PrestoVisitorTest {
 		assert i.getKind() == CAstNode.CALL;
 		assert i.getChild(1).getValue().equals("datediff");
 		assert i.getChild(2).getKind() == CAstNode.OBJECT_REF;
-		assert i.getChild(3).getKind() == SQLCAstNode.CURRENT_TIME;
+		assert i.getChild(3).getKind() == SQLCAstNode.CALL;
 		assert i.getChild(4).getKind() == CAstNode.OBJECT_REF;
 	}
 	
@@ -264,5 +264,22 @@ public class PrestoVisitorTest {
 		CAstEntity entity = PrestoVisitor.process(statement, sql);
 		Collection<CAstEntity> l = entity.getAllScopedEntities().get(null);
 		System.out.println(l);
+	}
+	
+	@Test
+	public void testCase2() {
+		String sql = "SELECT  name, id, CASE WHEN( status = 'Missing' AND severity = 'Optional' ) AND ( id=123 ) " +
+                     " THEN COALESCE(count(patchid),0) ELSE 0 END AS missingoptional, CASE WHEN( status = 'Missing' AND severity = 'Important' ) AND ( id=123 )  THEN COALESCE(count(patchid),0) " +
+                     " ELSE 0 END  as missingimportant FROM tablename GROUP BY  name, id, status, severity ORDER BY id";
+		System.out.println(process(sql));
+	}
+	
+	@Test
+	public void testNegative() {
+		String sql = "SELECT CASE WHEN  Invoice_Type_Code = 'C' THEN -1 ELSE 1 END * Invoice_Amount " +
+				" FROM Forefront.dbo.VN_GL_DISTRIBUTION_HEADER_MC where Vendor_Code ='  UnitedEL' and " +
+				" Date_List1  > '2011-12-31' and Date_List1 < '2012-02-01' and Company_Code = 'tmg'";
+		System.out.println(process(sql));
+
 	}
 }
