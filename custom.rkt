@@ -51,6 +51,11 @@
                (l (to-custom-int (second form)))
                (r (to-custom-int (third form))))
            (list (append (car l) (car r)) (list 'send 'p 'compare-to-str 'pos (cadr l) (cadr r)) 'boolean))]
+        [(and or)
+         (let ((op (car form))
+               (l (to-custom-int (second form)))
+               (r (to-custom-int (third form))))
+           (list (append (car l) (car r)) (list 'send 'p 'logic-op 'pos (cadr l) (cadr r)) 'boolean))]
         [(< >)
          (let ((op (car form))
                (l (to-custom-int (second form)))
