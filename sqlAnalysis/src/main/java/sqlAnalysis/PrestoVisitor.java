@@ -531,12 +531,18 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitCurrentTime(CurrentTime node, Void context) {
-			return factory.makeNode(SQLCAstNode.CURRENT_TIME);
+			CAstNode[] arr = new CAstNode[2];
+			arr[0] = factory.makeConstant(CAstNode.VOID);
+			arr[1] = factory.makeConstant("currentTime");
+			return factory.makeNode(CAstNode.CALL, arr);
 		}
 
 		@Override
 		protected CAstNode visitIntervalLiteral(IntervalLiteral node, Void context) {
-			return factory.makeConstant(node.getValue());
+			CAstNode[] arr = new CAstNode[2];
+			arr[0] = factory.makeConstant(CAstNode.VOID);
+			arr[1] = factory.makeConstant("interval");
+			return factory.makeNode(CAstNode.CALL, arr);
 		}
 
 		private CAstNode[] createArgs(Void context, List<Expression> l) {
@@ -581,8 +587,7 @@ public class PrestoVisitor {
 		
 		@Override
 		protected CAstNode visitNegativeExpression(NegativeExpression node, Void context) {
-			NotExpression exp = new NotExpression(node.getValue());
-			return visitNotExpression(exp, context);
+			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_MUL, process(node.getValue(), context), factory.makeConstant(-1));
 		}
 
 		@Override

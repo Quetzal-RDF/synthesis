@@ -9,5 +9,4 @@ public interface SQLCAstNode extends CAstNode {
 	public static int EXISTS = SUB_LANGUAGE_BASE + 4;
 	public static int NOT = SUB_LANGUAGE_BASE + 5;
 	public static int QUERY = SUB_LANGUAGE_BASE + 6;
-	public static int CURRENT_TIME = SUB_LANGUAGE_BASE + 7;
 }
