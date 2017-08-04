@@ -56,7 +56,7 @@
                (l (to-custom-int (second form)))
                (r (to-custom-int (third form))))
            (list (append (car l) (car r)) (list 'send 'p 'compare-to 'pos (cadr l) (cadr r)) 'boolean))])
-     (list '() form 'any)))
+     (list '() (list 'send 'p 'constant form) 'any)))
 
 (define (to-custom form)
   (let ((x (to-custom-int form)))
@@ -129,5 +129,9 @@
                                              (cons (cadr l)
                                                    (add e (cddr l)))))))))
                (add fs hs))))))
-    
-(provide test-custom make-custom-table)
+
+(define (analyze-custom text limit outputs symbolic . inputs)
+  (let ((custom (make-custom-table text (map ~a symbolic))))
+    (apply analyze custom '() '() limit outputs symbolic inputs)))
+
+(provide test-custom make-custom-table analyze-custom)

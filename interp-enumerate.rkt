@@ -30,10 +30,16 @@
         (hash-set! vals pos v)
         v)))
 
+(define (merge . args)
+  (apply append (filter cons? args)))
+
 (define logging-processor%
   (class object%
     (super-new)
 
+    (define/public (constant v)
+      '())
+    
     (define/public (is-null? pos)
       (list do-is-null?))
     
@@ -54,45 +60,48 @@
 	   do-strv)))
     
     (define/public (basic-math pos l r)
-      (cons do-basic-math (append l r)))
+      (cons do-basic-math (merge l r)))
 
     (define/public (basic-num-functions pos v)
-      (cons do-basic-num-functions v))
+      (merge (list do-basic-num-functions) v))
     
     (define/public (index-of pos l r)
-      (cons do-index-of (append l r)))
+      (cons do-index-of (merge l r)))
     
     (define/public (compare-to pos l r)
-      (cons do-compare-to (append l r)))
+      (cons do-compare-to (merge l r)))
 
     (define/public (compare-to-str pos l r)
-      (cons do-compare-to-str (append l r)))
+      (cons do-compare-to-str (merge l r)))
     
     (define/public (logic-op pos l r)
-      (cons do-logic-op (append l r)))
+      (cons do-logic-op (merge l r)))
 
     (define/public (logic-op-not pos v)
-      (cons do-logic-op-not v))
+      (merge (list do-logic-op-not) v))
 
     (define/public (if-then-else case l r)
-      (cons (if (number? l) do-if-then-int do-if-then-str) (append case l r)))
+      (cons (if (number? l) do-if-then-int do-if-then-str) (merge case l r)))
     
     (define/public (strlength pos str)
-      (cons do-length str))
+      (merge (list do-length) str))
     
     (define/public (substr str l r)
-      (cons do-substring (append str l r)))
+      (cons do-substring (merge str l r)))
 
     (define/public (concat pos left right)
-      (cons do-concat (append left right)))
+      (cons do-concat (merge left right)))
 
     (define/public (get-digits pos str)
-      (cons do-get-digits str))))
+      (merge (list do-get-digits) str))))
 
 (define doc-processor%
   (class object%
     (super-new)
 
+    (define/public (constant v)
+      v)
+    
     (define/public (is-null? pos)
       (let ((mb (val (cons 'is-null pos) boolean?))
             (mi (val (cons 'argn pos) integer?)))
@@ -185,6 +194,9 @@
     
     (define input-vals inputs)
     
+    (define/public (constant v)
+      v)
+
     (define/public (is-null? pos)
       (let ((mb (val (cons 'is-null pos) boolean?))
             (mi (val (cons 'argn pos) integer?)))
@@ -296,6 +308,10 @@
     (define/public (get-ordering-function)
       ordering)
     
+    (define/public (constant v)
+      (for/list ([p processors])
+        (send p constant v)))
+
     (define/public (is-null? pos)
       (for/list ([p processors])
         (send p is-null? pos)))
@@ -412,7 +428,7 @@
                            p
                            (lambda (new-size v)
                              (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))
-      (rec 1 size children '()))))
+      (rec 1 (- size 1) children '()))))
 
 (define (do-unary-op do-arg op size pos p f)
   ((custom (lambda (p pos new-expr) (dynamic-send p op pos new-expr)) do-arg)

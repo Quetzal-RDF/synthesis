@@ -26,3 +26,6 @@
          (result (solve (assert (and (not (equal? s1 "bad")) (= 17 (car fs)))))))
     (println result)
     (assert (sat? result))))
+
+(define (test4)
+  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") 2 '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
