@@ -53,11 +53,12 @@ public class PrestoVisitorTest {
 		String sql = "SELECT name, capital FROM world WHERE name LIKE capital";
 		System.out.println(process(sql));
 		CAstNode n = getWhere(process(sql));
+		System.out.println(n);
 		n = n.getChild(0);
 		assert n.getKind() == CAstNode.CALL;
-		assert n.getChild(0).getValue().equals("like");
-		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
+		assert n.getChild(1).getValue().equals("like");
 		assert n.getChild(2).getKind() == CAstNode.OBJECT_REF;
+		assert n.getChild(3).getKind() == CAstNode.OBJECT_REF;
 
 	}
 
@@ -66,15 +67,15 @@ public class PrestoVisitorTest {
 		String sql = "SELECT name, capital FROM world WHERE capital LIKE concat('%',name,'%')";
 		CAstNode n = getWhere(process(sql));
 		n = n.getChild(0);
-
+		System.out.println(n);
 		assert n.getKind() == CAstNode.CALL;
-		assert n.getChild(0).getValue().equals("like");
-		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
-		assert n.getChild(2).getKind() == CAstNode.CALL;
-		assert n.getChild(2).getChild(0).getValue().equals("concat");
-		assert n.getChild(2).getChild(1).getValue().equals("%");
-		assert n.getChild(2).getChild(2).getKind() == CAstNode.OBJECT_REF;
-		assert n.getChild(2).getChild(3).getValue().equals("%");
+		assert n.getChild(1).getValue().equals("like");
+		assert n.getChild(2).getKind() == CAstNode.OBJECT_REF;
+		assert n.getChild(3).getKind() == CAstNode.CALL;
+		assert n.getChild(3).getChild(1).getValue().equals("concat");
+		assert n.getChild(3).getChild(2).getValue().equals("%");
+		assert n.getChild(3).getChild(3).getKind() == CAstNode.OBJECT_REF;
+		assert n.getChild(3).getChild(4).getValue().equals("%");
 
 	}
 
@@ -101,7 +102,7 @@ public class PrestoVisitorTest {
 
 		CAstNode sn = getSelect(n).getChild(0);
 		assert sn.getKind() == CAstOperator.CALL;
-		assert sn.getChild(0).getValue().equals("count");
+		assert sn.getChild(1).getValue().equals("count");
 
 		CAstNode wn = getWhere(n).getChild(0);
 		assert wn.getKind() == CAstOperator.ANDOR_EXPR;
@@ -122,8 +123,8 @@ public class PrestoVisitorTest {
 
 	private void assertMax(CAstNode n) {
 		assert n.getKind() == CAstOperator.CALL;
-		assert n.getChild(0).getValue().equals("max");
-		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
+		assert n.getChild(1).getValue().equals("max");
+		assert n.getChild(2).getKind() == CAstNode.OBJECT_REF;
 	}
 
 	@Test
@@ -166,7 +167,7 @@ public class PrestoVisitorTest {
 		assert n.getKind() == SQLCAstNode.QUERY_SELECT;
 		n = n.getChild(0);
 		assert n.getKind() == CAstNode.CALL;
-		assert n.getChild(0).getValue().equals("max");
+		assert n.getChild(1).getValue().equals("max");
 	}
 
 	@Test
@@ -198,7 +199,7 @@ public class PrestoVisitorTest {
 		n = n.getChild(2).getChild(0);
 		CAstNode sn = getSelect(n).getChild(0);
 		assert sn.getKind() == CAstOperator.CALL;
-		assert sn.getChild(0).getValue().equals("top");
+		assert sn.getChild(1).getValue().equals("top");
 		
 		CAstNode wn = getWhere(n).getChild(0);
 		assert wn.getKind() == CAstOperator.ANDOR_EXPR;
@@ -210,8 +211,8 @@ public class PrestoVisitorTest {
 		n = it.next().getAST();
 		n = getSelect(n).getChild(0);
 		assert n.getKind() == CAstOperator.CALL;
-		assert n.getChild(0).getValue().equals("max");
-		assert n.getChild(1).getKind() == CAstOperator.OBJECT_REF;
+		assert n.getChild(1).getValue().equals("max");
+		assert n.getChild(2).getKind() == CAstOperator.OBJECT_REF;
 	}
 	
 	private void testIf(CAstNode n, Object opKind, int kind, Object value, Object then) {
@@ -250,9 +251,18 @@ public class PrestoVisitorTest {
 		String sql = "select datediff(day, current_date, dataaction) from etc";
 		CAstNode i = getSelect(process(sql)).getChild(0);
 		assert i.getKind() == CAstNode.CALL;
-		assert i.getChild(0).getValue().equals("datediff");
-		assert i.getChild(1).getKind() == CAstNode.OBJECT_REF;
-		assert i.getChild(2).getKind() == SQLCAstNode.CURRENT_TIME;
-		assert i.getChild(3).getKind() == CAstNode.OBJECT_REF;
+		assert i.getChild(1).getValue().equals("datediff");
+		assert i.getChild(2).getKind() == CAstNode.OBJECT_REF;
+		assert i.getChild(3).getKind() == SQLCAstNode.CURRENT_TIME;
+		assert i.getChild(4).getKind() == CAstNode.OBJECT_REF;
+	}
+	
+	@Test
+	public void testUnion() {
+		String sql = "SELECT pax_no, amount_one, amount_two FROM your_table UNION ALL SELECT PAX_NO_LASTYEAR, AMOUNT_ONE_LASTYEAR, AMOUNT_TWO_LASTYEAR FROM your_table";
+		Statement statement = SQL_PARSER.createStatement(sql);
+		CAstEntity entity = PrestoVisitor.process(statement, sql);
+		Collection<CAstEntity> l = entity.getAllScopedEntities().get(null);
+		System.out.println(l);
 	}
 }

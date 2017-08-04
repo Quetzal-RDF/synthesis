@@ -17,6 +17,7 @@ import com.facebook.presto.sql.tree.ComparisonExpression;
 import com.facebook.presto.sql.tree.CurrentTime;
 import com.facebook.presto.sql.tree.DefaultTraversalVisitor;
 import com.facebook.presto.sql.tree.DoubleLiteral;
+import com.facebook.presto.sql.tree.Except;
 import com.facebook.presto.sql.tree.ExistsPredicate;
 import com.facebook.presto.sql.tree.Expression;
 import com.facebook.presto.sql.tree.Extract;
@@ -25,6 +26,7 @@ import com.facebook.presto.sql.tree.GenericLiteral;
 import com.facebook.presto.sql.tree.IfExpression;
 import com.facebook.presto.sql.tree.InListExpression;
 import com.facebook.presto.sql.tree.InPredicate;
+import com.facebook.presto.sql.tree.Intersect;
 import com.facebook.presto.sql.tree.IntervalLiteral;
 import com.facebook.presto.sql.tree.IsNotNullPredicate;
 import com.facebook.presto.sql.tree.IsNullPredicate;
@@ -40,6 +42,7 @@ import com.facebook.presto.sql.tree.NullLiteral;
 import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.sql.tree.QualifiedNameReference;
 import com.facebook.presto.sql.tree.Query;
+import com.facebook.presto.sql.tree.QueryBody;
 import com.facebook.presto.sql.tree.QuerySpecification;
 import com.facebook.presto.sql.tree.Relation;
 import com.facebook.presto.sql.tree.SearchedCaseExpression;
@@ -52,6 +55,7 @@ import com.facebook.presto.sql.tree.SubqueryExpression;
 import com.facebook.presto.sql.tree.TableSubquery;
 import com.facebook.presto.sql.tree.TimeLiteral;
 import com.facebook.presto.sql.tree.TimestampLiteral;
+import com.facebook.presto.sql.tree.Union;
 import com.facebook.presto.sql.tree.WhenClause;
 import com.google.common.base.Optional;
 import com.ibm.wala.cast.tree.CAst;
@@ -118,14 +122,13 @@ public class PrestoVisitor {
 	public static CAstEntity process(Statement st, String orig) {
 		CAstPrinter.setPrinter(new SQLCAstPrinter());
 
-		List<Query> queries = new LinkedList<Query>();
-		queries.add((Query) st);
-		queries.addAll(getSubQueryRelations((QuerySpecification) ((Query) st).getQueryBody()));
+		List<QuerySpecification> querySpec = new LinkedList<QuerySpecification>();
+		getQuerySpecifications( ((Query) st), querySpec);
 
 		List<CAstEntity> l = new LinkedList<CAstEntity>();
 
 		ExpressionGatherer exp = new ExpressionGatherer();
-		for (Query q : queries) {
+		for (QuerySpecification q : querySpec) {
 			CAstNode n = exp.process(q, null);
 			if (n != null) {
 				createEntity(l, n, exp.cfg());
@@ -137,7 +140,41 @@ public class PrestoVisitor {
 		return createFileEntity(l, myStatement);
 	}
 	
-	private static List<Query> getSubQueryRelations(QuerySpecification qb) {
+	private static void getQuerySpecifications(Query query, List<QuerySpecification> sp) {
+		QueryBody body = query.getQueryBody();
+		List<Query> queries = new LinkedList<Query>();
+
+		if (body instanceof TableSubquery) {
+			getQuerySpecifications(((TableSubquery) body).getQuery(), sp);
+		} else if (body instanceof QuerySpecification) {
+			sp.add((QuerySpecification) body);	
+			QuerySpecification b = (QuerySpecification) body;
+			queries.addAll(getSubQueries(b));
+		} else {
+			if (body instanceof Intersect) {
+				Intersect i = (Intersect) body;
+				List<Relation> rels = i.getRelations();
+				for (Relation r : rels) {
+					getTableSubqueries(r, queries);
+				}
+			} else if (body instanceof Union) {
+				Union u = (Union) body;
+				List<Relation> rels = u.getRelations();
+				for (Relation r : rels) {
+					getTableSubqueries(r, queries);
+				}
+			} else if (body instanceof Except) {
+				Except e = (Except) body;
+				getTableSubqueries(e.getLeft(), queries);
+				getTableSubqueries(e.getRight(), queries);
+			}
+		}
+		for (Query q: queries) {
+			getQuerySpecifications(q, sp);
+		}
+	}
+	
+	private static List<Query> getSubQueries(QuerySpecification qb) {
 		List<Query> subs = new LinkedList<Query>();
 		List<Relation> rels = qb.getFrom();
 		for (Relation r : rels) {
@@ -386,6 +423,39 @@ public class PrestoVisitor {
 			}
 			return result;
 		}
+	
+
+		@Override
+		protected CAstNode visitQuerySpecification(QuerySpecification node, Void context) {
+			List<SelectItem> items = node.getSelect().getSelectItems();
+			List<CAstNode> l = new LinkedList<CAstNode>();
+			
+			for (SelectItem i : items) {
+				if (i instanceof SingleColumn) {
+					Expression e = ((SingleColumn) i).getExpression();
+					if (!(e instanceof QualifiedNameReference)) {
+						l.add(process(e, null));
+					}
+				}
+			}
+			CAstNode select = null;
+			if (!l.isEmpty()) {
+				select = factory.makeNode(SQLCAstNode.QUERY_SELECT, l.toArray(new CAstNode[l.size()]));
+			}
+			CAstNode query = null;
+			if (node.getWhere().isPresent()) {
+				CAstNode n = process(node.getWhere().get(), context);
+				CAstNode where = factory.makeNode(SQLCAstNode.QUERY_WHERE, n);
+				if (select != null) {
+					query = factory.makeNode(SQLCAstNode.QUERY, select, where);
+				} else {
+					query = factory.makeNode(SQLCAstNode.QUERY, factory.makeNode(CAstNode.VOID), where);
+				}
+			} else if (select != null) {
+				query = factory.makeNode(SQLCAstNode.QUERY, select, factory.makeNode(CAstNode.VOID));
+			}
+			return query;
+		}
 
 		@Override
 		protected CAstNode visitArithmeticExpression(ArithmeticExpression node, Void context) {
@@ -402,37 +472,15 @@ public class PrestoVisitor {
 			LogicalBinaryExpression e3 = new LogicalBinaryExpression(Type.AND, e1, e2);
 			return process(e3, context);
 		}
-
+		
 		@Override
 		protected CAstNode visitQuery(Query node, Void context) {
-
-			CAstNode query = null;
-			QuerySpecification qb = (QuerySpecification) node.getQueryBody();
-			
-			List<SelectItem> items = qb.getSelect().getSelectItems();
-			List<CAstNode> l = new LinkedList<CAstNode>();
-			
-			for (SelectItem i : items) {
-				if (i instanceof SingleColumn) {
-					Expression e = ((SingleColumn) i).getExpression();
-					if (!(e instanceof QualifiedNameReference)) {
-						l.add(process(e, null));
-					}
-				}
-			}
-			if (!l.isEmpty()) {
-				CAstNode select = factory.makeNode(SQLCAstNode.QUERY_SELECT, l.toArray(new CAstNode[l.size()]));
-		
-				if (qb.getWhere().isPresent()) {
-					CAstNode n = process(qb.getWhere().get(), context);
-					CAstNode where = factory.makeNode(SQLCAstNode.QUERY_WHERE, n);
-					query = factory.makeNode(SQLCAstNode.QUERY, select, where);
-				} else {
-					query = factory.makeNode(SQLCAstNode.QUERY, select);
-				}
-			}
-			return query;
+			List<QuerySpecification> querySpec = new LinkedList<QuerySpecification>();
+			getQuerySpecifications(node, querySpec);
+			assert querySpec.size() == 1;
+			return visitQuerySpecification(querySpec.get(0), context);
 		}
+
 
 		@Override
 		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Void context) {
