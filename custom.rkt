@@ -69,15 +69,16 @@
 (define (make-custom-function do-all-int do-all-bool do-all-str do-all-any)
   (lambda (fragment)
     (let-values ([(arg-types fun funtype) (to-custom fragment)])
-      (apply custom fun
-             (map
-              (lambda (x)
-                (case x
-                  ((number) do-all-int)
-                  ((boolean) do-all-bool)
-                  ((string) do-all-str)
-                  (else do-all-any)))
-              arg-types)))))
+      (cons (apply custom fun
+                   (map
+                    (lambda (x)
+                      (case x
+                        ((number) do-all-int)
+                        ((boolean) do-all-bool)
+                        ((string) do-all-str)
+                        (else do-all-any)))
+                    arg-types))
+            funtype))))
 
 (define (make-custom-functions columns text do-all-int do-all-bool do-all-str do-all-any)
   (let* ((make-custom 
@@ -86,7 +87,7 @@
           (apply make-parser columns))
          (stuff
           (parse text)))
-    (println stuff)
+    (println make-custom)
     (map make-custom (filter cons? stuff))))
 
 (define (test-custom text columns)
@@ -98,11 +99,35 @@
            (let ((expr '()))
              (f 5 '() p (lambda (x y) (set! expr y)))
              expr))
-         (make-custom-functions
-          (map ~a columns)
-          text
-          int bool str
-          (lambda (size pos p f)
-            ([choose* int bool str] size pos p f))))))
+         (map car
+              (make-custom-functions
+               (map ~a columns)
+               text
+               int bool str
+               (lambda (size pos p f)
+                 ([choose* int bool str] size pos p f)))))))
 
-(provide test-custom)
+(define (make-custom-table text column-names)
+  (let ((customs
+         (make-custom-functions
+          column-names
+          text
+          do-all-int
+          do-all-bool
+          do-all-str
+          do-all-any)))
+    (apply hasheq
+           (for/fold ([hs '()])
+                     ([fs customs])
+             (letrec ((add (lambda (e l)
+                             (cond ((null? l) (list (cdr e) (list (car e))))
+                                   ((eq? (car l) (cdr e))
+                                    (cons (car l)
+                                          (cons (cons (car e) (cadr l))
+                                                (cddr l))))
+                                   (#t (cons (car l)
+                                             (cons (cadr l)
+                                                   (add e (cddr l)))))))))
+               (add fs hs))))))
+    
+(provide test-custom make-custom-table)
