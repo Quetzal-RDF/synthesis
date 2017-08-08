@@ -73,7 +73,7 @@ public class ParseStackOverflowData {
 
 	}
 
-	private static int doPresto(int prestoPasses, String code, ClassLoaderFactory loaders)
+	public static int doPresto(int prestoPasses, String code, ClassLoaderFactory loaders)
 			throws ClassHierarchyException {
 		
 		SourceModule M = new SQLSourceModule(code);

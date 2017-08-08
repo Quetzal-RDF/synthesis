@@ -164,6 +164,7 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 			return true;
 		} else {
 			return super.doVisit(n, context, visitor);
+
 		}
 	}
 

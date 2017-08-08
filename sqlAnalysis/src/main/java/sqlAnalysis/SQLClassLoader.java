@@ -11,6 +11,7 @@ import com.facebook.presto.sql.tree.Statement;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
+import com.ibm.wala.cast.ir.translator.RewritingTranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
 import com.ibm.wala.cast.loader.AstDynamicPropertyClass;
@@ -21,6 +22,7 @@ import com.ibm.wala.cast.loader.AstMethod.Retranslatable;
 import com.ibm.wala.cast.loader.CAstAbstractModuleLoader;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
+import com.ibm.wala.cast.tree.rewrite.CAstRewriter;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
@@ -66,6 +68,7 @@ public class SQLClassLoader extends CAstAbstractModuleLoader {
 		return getLanguage().instructionFactory();
 	}
 
+	/**
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
 		return new TranslatorToCAst() {
@@ -87,7 +90,39 @@ public class SQLClassLoader extends CAstAbstractModuleLoader {
 			
 		};
 	}
+   */
+	@Override
+	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M) throws IOException {
+		RewritingTranslatorToCAst xlator = new RewritingTranslatorToCAst(M, new TranslatorToCAst() {
 
+			@Override
+			public <C extends RewriteContext<K>, K extends CopyKey<K>> void addRewriter(
+					CAstRewriterFactory<C, K> factory, boolean prepend) {
+				assert false;
+			}
+
+			@Override
+			public CAstEntity translateToCAst() throws Error, IOException {
+				String code = new String(Streams.inputStream2ByteArray(M.getInputStream()));
+				Statement statement = SQL_PARSER.createStatement(code);
+				CAstEntity e = PrestoVisitor.process(statement, code);
+				System.out.println(e.getAST());
+				System.out.println(code);
+				return e;
+			}
+			
+		});
+		@SuppressWarnings("rawtypes")
+		CAstRewriterFactory<?, ?> factory = new CAstRewriterFactory() {
+			@Override
+			public CAstRewriter<?, ?> createCAstRewriter(CAst ast) {
+				return new AndOrRewriter(ast, false);
+			}	
+		};
+		xlator.addRewriter(factory, false);
+		return xlator;
+	}
+	
 	@Override
 	protected boolean shouldTranslate(CAstEntity entity) {
 		return true;
