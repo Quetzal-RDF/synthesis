@@ -377,7 +377,10 @@
         (send p get-digits pos s)))))
 
 (define (do-all type ops size pos p f)
-  (for ([op (append (hash-ref (send p extra-f) type '()) ((send p get-ordering-function) ops))])
+  (for ([op (append
+             (hash-ref (send p extra-f) type '())
+             (hash-ref (send p extra-f) 'any '())
+             ((send p get-ordering-function) ops))])
     (op size pos p f)))
 
 (define (do-all-str size pos p f)
@@ -414,7 +417,8 @@
 (define (do-strv size pos p f) (f size (send p symbolic (cons 'str pos) string?)))
 
 (define (do-is-null? size pos p f)
-  (f size (send p is-null? pos)))
+  (when (>= size 0)
+    (f (- size 1) (send p is-null? pos))))
 
 (define (custom op . children)
   (lambda (size pos p f)
@@ -432,15 +436,15 @@
 
 (define (do-unary-op do-arg op size pos p f)
   ((custom (lambda (p pos new-expr) (dynamic-send p op pos new-expr)) do-arg)
-   (- size 1) pos p f))
+   size pos p f))
 
 (define (do-binary-op do-arg1 do-arg2 op size pos p f)
   ((custom (lambda (p pos left-expr right-expr) (dynamic-send p op pos left-expr right-expr)) do-arg1 do-arg2)
-   (- size 1) pos p f))
+   size pos p f))
 
 (define (do-ternary-op do-arg1 do-arg2 do-arg3 op size pos p f)
   ((custom (lambda (p pos str start end) (dynamic-send p op str start end)) do-arg1 do-arg2 do-arg3)
-   (- size 1) pos p f))
+   size pos p f))
   
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
@@ -507,15 +511,19 @@
   (letrec ((z3-engines (engines 5))
            (time-limit 30000)
            (start-time (current-inexact-milliseconds))
-           (results-channel (make-async-channel 100))
-           (goal 2)
+           (results-channel (make-async-channel 10000))
+           (goal 1)
            (models (list))
-           (i 0)
-           (drain (lambda ()
-                    (let ((x (async-channel-try-get results-channel)))
+           (outstanding 0)
+           (drain (lambda (async?)
+                    (let ((x ((if async? async-channel-try-get async-channel-get) results-channel)))
                       (when x
-                        (set! models (cons x models))
-                        (drain))))))
+                        (set! outstanding (- outstanding 1))
+                        (when (cons? x)
+                          (set! goal (- goal 1))
+                          (set! models (cons x models)))
+                        (when (and (> goal 0) (> outstanding 0))
+                          (drain async?)))))))
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
     ; the function where the result is raised as a list
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
@@ -548,7 +556,8 @@
                   ; line does not refer to the parameter passed into this function
                   (new expr-processor% [inputs input])))))])
        (lambda (x y)
-         (set! i (+ i 1))
+         ; (println (car y))
+         (set! outstanding (+ outstanding 1))
          (let ((formula
                 (for/fold ([formula #t])
                           ([out outputs]
@@ -560,23 +569,29 @@
                    (cond ((eq? out #t) (eq? #t in))
                          ((eq? out #f) (eq? #f in))
                          ((number? out) (and (number? in) (= out in)))
-                         (#t (equal? out in)))))))         
-           ; (println formula)
-           ; (println formula)
+                         (#t (equal? out in)))))))
+           ;(println (car y))
+           ;(println formula)
            ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
            ; raise models, which will then be trapped by the handler code
            (engines-solve z3-engines formula
              (lambda (result)
                ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
                ; has bugs so check.
-               (when (and (sat? result) (eq? #t (evaluate formula result)))
-                 (async-channel-put results-channel (list (car y) (remove-duplicates (cadr y)) (caddr y) result null))
-                 (set! goal (- goal 1)))))
-           (drain)
-           (when (or ;(> (current-inexact-milliseconds) (+ start-time time-limit))
-                     (<= goal 0))
+               (async-channel-put
+                results-channel
+                (if (and (not (exn? result)) (sat? result) (eq? #t (evaluate formula result)))
+                    (list (car y) (remove-duplicates (cadr y)) (caddr y) result null)
+                    #t))))
+           (drain #t)
+           (when (<= goal 0)
              (raise models))))))
-    (drain)
+    (letrec ((finish
+              (lambda ()
+                (when (and (> goal 0) (> outstanding 0))
+                  (drain #f)
+                  (finish)))))
+      (finish))
     (engines-stop z3-engines)
     models))
 

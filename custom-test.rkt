@@ -31,14 +31,28 @@
     (assert (sat? result))))
 
 (define (test4)
-  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") 2 '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
+  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") 1 '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
 
 (define (test5)
-  (analyze-custom '("if" "s1" "==" "bad" "," "i2" "*" "i3") 5 '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
+  (analyze-custom '("if" "s1" "==" "bad" "," "i2" "*" "i3") 2 '(40 50 0) (list s1 i2 i3) '("bad" 4 10) '("bad" 5 10) '("good" 5 10)))
+
+(define (test6)
+   (analyze-custom '("s1" "==" "Committed" "and" "i1" ">=" 25 "," "i3" "-" "(" "i4" "*" "i5" ")")
+                   3
+                   '(5000 0 0)
+                   (list s1 i1 i3 i4 i5)
+                   '("Committed" 25 10000 100 50) '("Committed" 10 10000 100 50) '("Custom" 25 10000 100 50)))
 
 (define (test7)
-   (analyze-custom '("if" "s1" "==" "Committed" "and" "i1" "equals" 25 "then" "i3" "-" "(" "i4" "*" "i5" ")")
+   (analyze-custom '("if" "s1" "==" "Committed" "and" "i1" ">=" 25 "," "i3" "-" "(" "i4" "*" "i5" ")")
                    2
+                   '(5000 6000 0)
+                   (list s1 i1 i3 i4 i5)
+                   '("Committed" 25 10000 100 50) '("Committed" 25 10000 100 40) '("Custom" 25 10000 100 50)))
+
+(define (test8)
+   (analyze-custom '("if" "s1" "==" "Committed" "and" "i1" ">=" 25 "then" "i3" "-" "(" "i4" "*" "i5" ")")
+                   1
                    '(5000 0 0)
                    (list s1 i1 i3 i4 i5)
                    '("Committed" 25 10000 100 50) '("Committed" 0 10000 100 50) '("Custom" 23 10000 100 50)))

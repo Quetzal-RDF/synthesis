@@ -25,10 +25,13 @@
                        (solver-clear solver)
                        (solver-assert solver (list problem))
                        (with-handlers ([exn:fail?
-                                        (lambda (e) (if (exn:break? e) (raise e) (println e)))])
+                                        (lambda (e) (if (exn:break? e)
+                                                        (raise e)
+                                                        (begin
+                                                          (println e)
+                                                          (hook e))))])
                          (let ((result (solver-check solver)))
-                           (when (and (sat? result) (evaluate problem result))                             
-                             (hook result))))
+                           (hook result)))
                        (solver-shutdown solver)
                        (loop)))))))
        (loop)))))

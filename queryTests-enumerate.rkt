@@ -91,7 +91,7 @@
 
 ; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
 (define (simple-selection4)
-  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 23 10000 100 50))))
+  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 25 10000 100 50))))
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1b)
@@ -119,7 +119,7 @@
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-compare1)
-  (test analyze '(and ==) '() '(index-of substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+  (test analyze '(==) '() '(index-of substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 ; test if col1 > .33
 (define (simple-test5)
@@ -137,21 +137,21 @@
 (define (simple-test2)
   (test analyze '(==) '() '(abs index-of) 5 '(5 0) (list s1 i1) '(("A" 5)("" 5))))
 
+; define (col1 + col2) / col3
+(define (simple-test3)
+   (test analyze '(/) '() '() 3 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
 
-  
+; and (col1 > col2, col3 = "A")
+(define (simple-test4)
+  (test analyze '(>) 5 '(#t #f #f #f) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+
+
+
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)
   (test analyze '(*) '() '() 5 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 4 8.23 .3)("B" "G" 4 8.23 .3))))
   
-; define (col1 + col2) / col3
-(define (simple-test3)
-   (test analyze '(<) '() '() 3 '(3.55 3.85) '((4.3 2.8 2)(3.5 4.2 2))))
-
-; and (col1 > col2, col3 = "A")
-(define (simple-test4)
-  (test analyze '(AND > =) 5 '(#t #f #f #f) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
-
 ; test if (col1 > col2) and (col2 < col3) and (col4 = "C" or col4 = "D")
 (define (simple-test6)
   (test analyze '('AND '> '=) 5 '(#t #f #f #t #f) '((5 2 4 "C")(5 2 1 "C")(1 2 4 "C")(8 1 5 "D")(5 2 4 "M"))))
