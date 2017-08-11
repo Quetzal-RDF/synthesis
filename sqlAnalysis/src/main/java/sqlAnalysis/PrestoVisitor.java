@@ -120,8 +120,7 @@ public class PrestoVisitor {
 	}
 
 	public static CAstEntity process(Statement st, String orig) {
-		CAstPrinter.setPrinter(new SQLCAstPrinter());
-
+		
 		List<QuerySpecification> querySpec = new LinkedList<QuerySpecification>();
 		getQuerySpecifications( ((Query) st), querySpec);
 
@@ -129,7 +128,7 @@ public class PrestoVisitor {
 
 		ExpressionGatherer exp = new ExpressionGatherer();
 		for (QuerySpecification q : querySpec) {
-			CAstNode n = exp.process(q, null);
+			CAstNode n = exp.process(q, new Context());
 			if (n != null) {
 				createEntity(l, n, exp.cfg());
 			}
@@ -137,7 +136,8 @@ public class PrestoVisitor {
 		}
 		
 		int myStatement = statementCount++;
-		return createFileEntity(l, myStatement);
+		CAstEntity e = createFileEntity(l, myStatement);
+		return e;
 	}
 	
 	private static void getQuerySpecifications(Query query, List<QuerySpecification> sp) {
@@ -386,8 +386,67 @@ public class PrestoVisitor {
 			}
 		});
 	}
+	
+	protected static final class Context {
+		
+		protected Context parent = null;
+		
+		protected Boolean isExists = null;
+		
+		protected Boolean isIn = null;
+		
+		protected Boolean isComparison = null;
 
-	protected static final class ExpressionGatherer extends DefaultTraversalVisitor<CAstNode, Void> {
+		public Context() {
+		}
+		
+		public Context(Context p) {
+			this.parent = p;
+		}
+
+		public boolean isExists() {
+			if (isExists != null) {
+				return isExists;
+			} else {
+				return parent.isExists();
+			}
+		}
+
+		public void setExists(boolean isExists) {
+			this.isExists = isExists;
+		}
+
+		public boolean isIn() {
+			if (isIn != null) {
+				return isIn;
+			} else {
+				return parent.isExists();
+			}
+		}
+
+		public void setIn(boolean isIn) {
+			this.isIn = isIn;
+		}
+
+		public boolean isComparison() {
+			if (isComparison != null) {
+				return isComparison;
+			} else {
+				return parent.isComparison();
+			}
+		}
+
+		public void setComparison(boolean isComparison) {
+			this.isComparison = isComparison;
+		}
+
+		public boolean isTop() {
+			return parent == null;
+		}
+		
+	}
+
+	protected static final class ExpressionGatherer extends DefaultTraversalVisitor<CAstNode, Context> {
 
 		protected final CAst factory = new CAstImpl();
 		
@@ -398,7 +457,6 @@ public class PrestoVisitor {
 		private final CAstControlFlowRecorder rec = new CAstControlFlowRecorder(pos);
 		
 		public ExpressionGatherer() {
-			// TODO Auto-generated constructor stub
 		}
 
 		public CAstControlFlowMap cfg() {
@@ -406,15 +464,14 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitSingleColumn(SingleColumn node, Void context) {
-			// TODO Auto-generated method stub
+		protected CAstNode visitSingleColumn(SingleColumn node, Context context) {
 			String colName = node.getExpression().toString();
 			return factory.makeNode(CAstNode.OBJECT_REF, factory.makeNode(CAstNode.VOID),
 					factory.makeConstant(colName));
 		}
 
 		@Override
-		protected CAstNode visitSimpleCaseExpression(SimpleCaseExpression node, Void context) {
+		protected CAstNode visitSimpleCaseExpression(SimpleCaseExpression node, Context context) {
 			CAstNode result = process(node.getDefaultValue(), context);
 			List<WhenClause> whenclauses = node.getWhenClauses();
 			for (int i = whenclauses.size() - 1; i >= 0; i--) {
@@ -426,7 +483,7 @@ public class PrestoVisitor {
 	
 
 		@Override
-		protected CAstNode visitQuerySpecification(QuerySpecification node, Void context) {
+		protected CAstNode visitQuerySpecification(QuerySpecification node, Context context) {
 			List<SelectItem> items = node.getSelect().getSelectItems();
 			List<CAstNode> l = new LinkedList<CAstNode>();
 			
@@ -434,37 +491,55 @@ public class PrestoVisitor {
 				if (i instanceof SingleColumn) {
 					Expression e = ((SingleColumn) i).getExpression();
 					if (!(e instanceof QualifiedNameReference)) {
-						l.add(process(e, null));
+						l.add(process(e, context));
 					}
 				}
 			}
 			CAstNode select = null;
 			if (!l.isEmpty()) {
-				select = factory.makeNode(SQLCAstNode.QUERY_SELECT, l.toArray(new CAstNode[l.size()]));
+				select = factory.makeNode(CAstNode.ARRAY_LITERAL, l.toArray(new CAstNode[l.size()]));
 			}
-			CAstNode query = null;
+			
+			CAstNode where = null;
+			
 			if (node.getWhere().isPresent()) {
-				CAstNode n = process(node.getWhere().get(), context);
-				CAstNode where = factory.makeNode(SQLCAstNode.QUERY_WHERE, n);
-				if (select != null) {
-					query = factory.makeNode(SQLCAstNode.QUERY, select, where);
-				} else {
-					query = factory.makeNode(SQLCAstNode.QUERY, factory.makeNode(CAstNode.VOID), where);
-				}
-			} else if (select != null) {
-				query = factory.makeNode(SQLCAstNode.QUERY, select, factory.makeNode(CAstNode.VOID));
+				where = process(node.getWhere().get(), context);
 			}
-			return query;
+			
+			return createQueryNode(select, where, context);
+		}
+		
+		private CAstNode createQueryNode(CAstNode select, CAstNode where, Context context) {
+			if (context.isTop()) {
+				CAstNode query = null;	
+				if (where != null && select != null) {
+					query = factory.makeNode(CAstNode.IF_EXPR, where, select);
+				} else if (where != null && select == null) {
+					query = factory.makeNode(CAstNode.IF_EXPR, where, factory.makeConstant(true));
+				} else if (select != null) {
+					query = factory.makeNode(CAstNode.IF_EXPR, factory.makeConstant(true), select);
+				}
+				return query;
+			} else if (context.isExists()) {
+				return where;
+			} else if (context.isComparison()) {
+				assert select.getChildCount() == 1;
+				return select.getChild(0);
+			} else if (context.isIn()) {
+				assert select.getChildCount() == 1;
+				return select.getChild(0);
+			}
+			return null;
 		}
 
 		@Override
-		protected CAstNode visitArithmeticExpression(ArithmeticExpression node, Void context) {
+		protected CAstNode visitArithmeticExpression(ArithmeticExpression node, Context context) {
 			return factory.makeNode(CAstNode.BINARY_EXPR, processOp(node.getType().getValue()),
 					process(node.getLeft(), context), process(node.getRight(), context));
 		}
 
 		@Override
-		protected CAstNode visitBetweenPredicate(BetweenPredicate node, Void context) {
+		protected CAstNode visitBetweenPredicate(BetweenPredicate node, Context context) {
 			Expression e1 = new ComparisonExpression(ComparisonExpression.Type.LESS_THAN, node.getValue(),
 					node.getMax());
 			Expression e2 = new ComparisonExpression(ComparisonExpression.Type.GREATER_THAN, node.getValue(),
@@ -474,7 +549,7 @@ public class PrestoVisitor {
 		}
 		
 		@Override
-		protected CAstNode visitQuery(Query node, Void context) {
+		protected CAstNode visitQuery(Query node, Context context) {
 			List<QuerySpecification> querySpec = new LinkedList<QuerySpecification>();
 			getQuerySpecifications(node, querySpec);
 			assert querySpec.size() == 1;
@@ -483,41 +558,52 @@ public class PrestoVisitor {
 
 
 		@Override
-		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Void context) {
-			return factory.makeNode(SQLCAstNode.QUERY_SELECT, process(node.getQuery(), null));
+		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Context context) {
+			return process(node.getQuery(), context);
 		}
 
 		@Override
-		protected CAstNode visitExists(ExistsPredicate node, Void context) {
-			return factory.makeNode(SQLCAstNode.EXISTS, visitQuery(node.getSubquery(), context));
+		protected CAstNode visitExists(ExistsPredicate node, Context context) {
+			Context c = new Context(context);
+			c.setExists(true);
+			return factory.makeNode(CAstNode.IF_EXPR, visitQuery(node.getSubquery(), c));
 		}
 
 		@Override
-		protected CAstNode visitComparisonExpression(ComparisonExpression node, Void context) {
-			CAstNode n = process(node.getRight(), context);
+		protected CAstNode visitComparisonExpression(ComparisonExpression node, Context context) {
+			Context c = new Context(context);
+			c.setComparison(true);
 			return factory.makeNode(CAstNode.BINARY_EXPR, processOp(node.getType().getValue()),
 					process(node.getLeft(), context), process(node.getRight(), context));
 		}
 
 		@Override
-		protected CAstNode visitQualifiedNameReference(QualifiedNameReference node, Void context) {
-			// TODO Auto-generated method stub
+		protected CAstNode visitQualifiedNameReference(QualifiedNameReference node, Context context) {
 			String colName = node.getName().toString();
 			return factory.makeNode(CAstNode.OBJECT_REF, factory.makeNode(CAstNode.VOID),
 					factory.makeConstant(colName));
 		}
 
 		@Override
-		protected CAstNode visitInPredicate(InPredicate node, Void context) {
-			CAstNode[] arr = new CAstNode[2];
-			arr[0] = process(node.getValue(), context);
-			arr[1] = process(node.getValueList(), context);
-			return factory.makeNode(CAstNode.CALL, factory.makeConstant("in"), arr);
+		protected CAstNode visitInPredicate(InPredicate node, Context context) {
+			Context c = new Context(context);
+			c.setIn(true);
+			
+			CAstNode args = process(node.getValueList(), c);
+			CAstNode[] arr = new CAstNode[ 3 + args.getChildCount() ];
+			arr[0] = factory.makeNode(CAstNode.VOID);
+			arr[1] = factory.makeConstant("in");
+			arr[2] = process(node.getValue(), c);
+			for(int i = 0; i < args.getChildCount(); i++) {
+				arr[i+3] = args.getChild(i);
+			}
+			
+			return factory.makeNode(CAstNode.CALL, arr);
 
 		}
 
 		@Override
-		protected CAstNode visitFunctionCall(FunctionCall node, Void context) {
+		protected CAstNode visitFunctionCall(FunctionCall node, Context context) {
 			List<Expression> l = node.getArguments();
 			CAstNode[] arr = createArgs(context, l);
 			
@@ -530,7 +616,7 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitCurrentTime(CurrentTime node, Void context) {
+		protected CAstNode visitCurrentTime(CurrentTime node, Context context) {
 			CAstNode[] arr = new CAstNode[2];
 			arr[0] = factory.makeConstant(CAstNode.VOID);
 			arr[1] = factory.makeConstant("currentTime");
@@ -538,14 +624,14 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitIntervalLiteral(IntervalLiteral node, Void context) {
+		protected CAstNode visitIntervalLiteral(IntervalLiteral node, Context context) {
 			CAstNode[] arr = new CAstNode[2];
 			arr[0] = factory.makeConstant(CAstNode.VOID);
 			arr[1] = factory.makeConstant("interval");
 			return factory.makeNode(CAstNode.CALL, arr);
 		}
 
-		private CAstNode[] createArgs(Void context, List<Expression> l) {
+		private CAstNode[] createArgs(Context context, List<Expression> l) {
 			CAstNode[] arr = new CAstNode[l.size()];
 			for (int i = 0; i < l.size(); i++) {
 				arr[i] = process(l.get(i), context);
@@ -554,13 +640,13 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitInListExpression(InListExpression node, Void context) {
+		protected CAstNode visitInListExpression(InListExpression node, Context context) {
 			CAstNode[] arr = createArgs(context, node.getValues());
-			return factory.makeNode(SQLCAstNode.IN_ARGS, arr);
+			return factory.makeNode(CAstNode.ARRAY_LITERAL, arr);
 		}
 
 		@Override
-		protected CAstNode visitNullIfExpression(NullIfExpression node, Void context) {
+		protected CAstNode visitNullIfExpression(NullIfExpression node, Context context) {
 			CAstNode lhs = process(node.getFirst(), context);
 			CAstNode rhs = process(node.getSecond(), context);
 			CAstNode decl = factory.makeNode(CAstNode.DECL_STMT,
@@ -572,7 +658,7 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitIfExpression(IfExpression node, Void context) {
+		protected CAstNode visitIfExpression(IfExpression node, Context context) {
 			Optional<Expression> isFalse = node.getFalseValue();
 			CAstNode rhsExpr = null;
 			if (isFalse.isPresent()) {
@@ -586,17 +672,17 @@ public class PrestoVisitor {
 		
 		
 		@Override
-		protected CAstNode visitNegativeExpression(NegativeExpression node, Void context) {
+		protected CAstNode visitNegativeExpression(NegativeExpression node, Context context) {
 			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_MUL, process(node.getValue(), context), factory.makeConstant(-1));
 		}
 
 		@Override
-		protected CAstNode visitNotExpression(NotExpression node, Void context) {
-			return factory.makeNode(SQLCAstNode.NOT, process(node.getValue(), context));
+		protected CAstNode visitNotExpression(NotExpression node, Context context) {
+			return factory.makeNode(CAstNode.UNARY_EXPR, CAstOperator.OP_NOT, process(node.getValue(), context));
 		}
 
 		@Override
-		protected CAstNode visitLikePredicate(LikePredicate node, Void context) {
+		protected CAstNode visitLikePredicate(LikePredicate node, Context context) {
 			List<Expression> args = new LinkedList<Expression>();
 			args.add(node.getValue());
 			args.add(node.getPattern());
@@ -608,18 +694,17 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitIsNotNullPredicate(IsNotNullPredicate node, Void context) {
-			// TODO Auto-generated method stub
+		protected CAstNode visitIsNotNullPredicate(IsNotNullPredicate node, Context context) {
 			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_NE, process(node.getValue(), context), NULL);
 		}
 
 		@Override
-		protected CAstNode visitIsNullPredicate(IsNullPredicate node, Void context) {
+		protected CAstNode visitIsNullPredicate(IsNullPredicate node, Context context) {
 			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_EQ, process(node.getValue(), context), NULL);
 		}
 
 		@Override
-		protected CAstNode visitExtract(Extract node, Void context) {
+		protected CAstNode visitExtract(Extract node, Context context) {
 			CAstNode[] arr = new CAstNode[2];
 			arr[0] = process(node.getExpression(), context);
 			arr[1] = factory.makeConstant(node.getField().toString());
@@ -627,20 +712,20 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitCast(Cast node, Void context) {
+		protected CAstNode visitCast(Cast node, Context context) {
 			return factory.makeNode(CAstNode.CAST, process(node.getExpression(), context),
 					factory.makeConstant(node.getType()));
 		}
 
 		@Override
-		protected CAstNode visitCoalesceExpression(CoalesceExpression node, Void context) {
+		protected CAstNode visitCoalesceExpression(CoalesceExpression node, Context context) {
 			FunctionCall fc = new FunctionCall(new QualifiedName("coalesce"), node.getOperands());
 			return visitFunctionCall(fc, context);
 
 		}
 
 		@Override
-		protected CAstNode visitSearchedCaseExpression(SearchedCaseExpression node, Void context) {
+		protected CAstNode visitSearchedCaseExpression(SearchedCaseExpression node, Context context) {
 			CAstNode result = process(node.getDefaultValue(), context);
 			List<WhenClause> whenclauses = node.getWhenClauses();
 			for (int i = whenclauses.size() - 1; i >= 0; i--) {
@@ -651,55 +736,55 @@ public class PrestoVisitor {
 		}
 
 		@Override
-		protected CAstNode visitDoubleLiteral(DoubleLiteral node, Void context) {
+		protected CAstNode visitDoubleLiteral(DoubleLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitGenericLiteral(GenericLiteral node, Void context) {
+		protected CAstNode visitGenericLiteral(GenericLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitTimeLiteral(TimeLiteral node, Void context) {
+		protected CAstNode visitTimeLiteral(TimeLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitTimestampLiteral(TimestampLiteral node, Void context) {
+		protected CAstNode visitTimestampLiteral(TimestampLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitStringLiteral(StringLiteral node, Void context) {
+		protected CAstNode visitStringLiteral(StringLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitBooleanLiteral(BooleanLiteral node, Void context) {
+		protected CAstNode visitBooleanLiteral(BooleanLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitNullLiteral(NullLiteral node, Void context) {
+		protected CAstNode visitNullLiteral(NullLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return NULL;
 		}
 
 		@Override
-		protected CAstNode visitLongLiteral(LongLiteral node, Void context) {
+		protected CAstNode visitLongLiteral(LongLiteral node, Context context) {
 			// TODO Auto-generated method stub
 			return factory.makeConstant(node.getValue());
 		}
 
 		@Override
-		protected CAstNode visitLogicalBinaryExpression(LogicalBinaryExpression node, Void context) {
+		protected CAstNode visitLogicalBinaryExpression(LogicalBinaryExpression node, Context context) {
 			CAstOperator op;
 			if (node.getType().toString().equals("AND")) {
 				op = OP_AND;

@@ -19,9 +19,11 @@ import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.strings.Atom;
 
 public class SQLCAstToIRTranslator extends AstTranslator {
 
@@ -108,9 +110,9 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 	}
 
 	@Override
-	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
-		// TODO Auto-generated method stub
-
+	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {	
+		FieldReference ref = FieldReference.findOrCreate(SQLClassLoader.Any, Atom.findOrCreateUnicodeAtom((String) elt.getValue()), SQLClassLoader.Any);
+		context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, ref));
 	}
 
 	@Override
@@ -152,21 +154,7 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 		assert false;
 	}
 
-	@Override
-	protected boolean doVisit(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
-		if (n.getKind() == SQLCAstNode.QUERY) {
-			visitor.visit(n.getChild(0), context, visitor);
-			context.setValue(n, context.getValue(n.getChild(0)));
-			return true;
-		} else if (n.getKind() == SQLCAstNode.QUERY_SELECT) {
-			visitor.visit(n.getChild(0), context, visitor);
-			context.setValue(n, context.getValue(n.getChild(0)));
-			return true;
-		} else {
-			return super.doVisit(n, context, visitor);
 
-		}
-	}
 
 
 	private static final boolean DEBUG_AST = false;

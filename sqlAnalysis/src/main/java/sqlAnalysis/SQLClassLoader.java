@@ -13,6 +13,7 @@ import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.ir.translator.RewritingTranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
+import com.ibm.wala.cast.ir.translator.TranslatorToCAst.Error;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
 import com.ibm.wala.cast.loader.AstDynamicPropertyClass;
 import com.ibm.wala.cast.loader.AstFunctionClass;
@@ -27,6 +28,7 @@ import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
 import com.ibm.wala.cast.types.AstMethodReference;
+import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.IClass;
@@ -106,17 +108,26 @@ public class SQLClassLoader extends CAstAbstractModuleLoader {
 				String code = new String(Streams.inputStream2ByteArray(M.getInputStream()));
 				Statement statement = SQL_PARSER.createStatement(code);
 				CAstEntity e = PrestoVisitor.process(statement, code);
-				System.out.println(e.getAST());
 				System.out.println(code);
 				return e;
 			}
 			
-		});
+		}) {
+
+			@Override
+			public CAstEntity translateToCAst() throws IOException, Error {
+				
+				CAstEntity e = super.translateToCAst();
+				System.out.println(CAstPrinter.print(e));
+				return e;
+			} 
+			
+		};
 		@SuppressWarnings("rawtypes")
 		CAstRewriterFactory<?, ?> factory = new CAstRewriterFactory() {
 			@Override
 			public CAstRewriter<?, ?> createCAstRewriter(CAst ast) {
-				return new AndOrRewriter(ast, false);
+				return new AndOrRewriter(ast, true);
 			}	
 		};
 		xlator.addRewriter(factory, false);
