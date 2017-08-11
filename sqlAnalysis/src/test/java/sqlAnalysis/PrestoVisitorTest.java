@@ -11,8 +11,6 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 
-import sqlAnalysis.PrestoVisitor.SQLCAstOperator;
-
 public class PrestoVisitorTest {
 	static final SqlParser SQL_PARSER = new SqlParser();
 
@@ -20,7 +18,6 @@ public class PrestoVisitorTest {
 	public void testSimpleBinary() {
 		String sql = "select column1, column2 from tblpatient a, tbldropdowns b where a.gender = b.id order by a.gender";
 		CAstNode n = getWhere(process(sql));
-		n = n.getChild(0);
 		assert n.getKind() == CAstNode.BINARY_EXPR;
 		assertBinaryExpression(n, CAstOperator.OP_EQ);
 
@@ -41,11 +38,11 @@ public class PrestoVisitorTest {
 	}
 
 	private CAstNode getWhere(CAstNode n) {
-		return n.getChild(1);
+		return n.getChild(0);
 	}
 
 	private CAstNode getSelect(CAstNode n) {
-		return n.getChild(0);
+		return n.getChild(1);
 	}
 
 	@Test
@@ -54,7 +51,6 @@ public class PrestoVisitorTest {
 		System.out.println(process(sql));
 		CAstNode n = getWhere(process(sql));
 		System.out.println(n);
-		n = n.getChild(0);
 		assert n.getKind() == CAstNode.CALL;
 		assert n.getChild(1).getValue().equals("like");
 		assert n.getChild(2).getKind() == CAstNode.OBJECT_REF;
@@ -66,7 +62,6 @@ public class PrestoVisitorTest {
 	public void testLike2() {
 		String sql = "SELECT name, capital FROM world WHERE capital LIKE concat('%',name,'%')";
 		CAstNode n = getWhere(process(sql));
-		n = n.getChild(0);
 		System.out.println(n);
 		assert n.getKind() == CAstNode.CALL;
 		assert n.getChild(1).getValue().equals("like");
@@ -83,9 +78,11 @@ public class PrestoVisitorTest {
 	public void testNotExists() {
 		String sql = "SELECT * FROM Courses WHERE NOT EXISTS (SELECT * FROM Scores WHERE CourseID = Courses.CourseID AND UserID = userID)";
 		CAstNode n = getWhere(process(sql));
-		n = n.getChild(0);
-
-		n = n.getChild(0).getChild(0).getChild(1).getChild(0);
+		System.out.println(n);
+		assert n.getKind() == CAstNode.UNARY_EXPR;
+		System.out.println(n.getChild(0).getValue());
+		assert n.getChild(0).equals(CAstOperator.OP_NOT);
+		n = n.getChild(1).getChild(0);
 		assert n.getKind() == CAstNode.ANDOR_EXPR;
 		assert n.getChild(0).getValue().equals("and");
 		assert n.getChild(1).getKind() == CAstNode.BINARY_EXPR;
@@ -104,7 +101,7 @@ public class PrestoVisitorTest {
 		assert sn.getKind() == CAstOperator.CALL;
 		assert sn.getChild(1).getValue().equals("count");
 
-		CAstNode wn = getWhere(n).getChild(0);
+		CAstNode wn = getWhere(n);
 		assert wn.getKind() == CAstOperator.ANDOR_EXPR;
 		assert wn.getChild(0).getValue().equals("and");
 		assert wn.getChild(1).getKind() == CAstNode.BINARY_EXPR;
@@ -118,9 +115,15 @@ public class PrestoVisitorTest {
 		assert wn.getChild(0).getKind() == CAstOperator.OP_SUB.getKind();
 		assert wn.getChild(1).getKind() == CAstNode.OBJECT_REF;
 		assert (Long) wn.getChild(2).getValue() == 5;
-
 	}
 
+	@Test
+	public void test() {
+		String sql = "select a, b from c where a = b and b = c";
+		CAstNode n = process(sql);
+		System.out.println(n);
+	}
+	
 	private void assertMax(CAstNode n) {
 		assert n.getKind() == CAstOperator.CALL;
 		assert n.getChild(1).getValue().equals("max");
@@ -135,7 +138,8 @@ public class PrestoVisitorTest {
 		
 		assertMax(sn.getChild(0));
 		assertMax(sn.getChild(1));
-		n = getWhere(n).getChild(0);
+		n = getWhere(n);
+
 		assert n.getKind() == CAstOperator.CALL;
 		assert n.getChild(0).getValue().equals("in");
 		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
@@ -146,7 +150,6 @@ public class PrestoVisitorTest {
 	public void testIsNull() {
 		String sql = "SELECT p.Color FROM Parts p LEFT JOIN Catalog c ON c.pid = p.pid WHERE  c.sid IS NULL GROUP BY p.Color";
 		CAstNode n = getWhere(process(sql));
-		n = n.getChild(0);
 		assert n.getKind() == CAstNode.BINARY_EXPR;
 		assert n.getChild(0).getValue().equals("==");
 		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
@@ -156,16 +159,14 @@ public class PrestoVisitorTest {
 	@Test
 	public void testSubQueryParse() {
 		String sql = "SELECT name, height FROM people WHERE height = (SELECT MAX(height) FROM people)";
-		System.out.println(process(sql));
 		CAstNode n = getWhere(process(sql));
-		n = n.getChild(0);
+		System.out.println(n);
+
 		assert n.getKind() == CAstNode.BINARY_EXPR;
 		assert n.getChild(0).getValue().equals("==");
 		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
-		assert n.getChild(2).getKind() == SQLCAstNode.QUERY_SELECT;
-		n = n.getChild(2).getChild(0).getChild(0);
-		assert n.getKind() == SQLCAstNode.QUERY_SELECT;
-		n = n.getChild(0);
+		assert n.getChild(2).getKind() == CAstNode.IF_EXPR;
+		n = n.getChild(2).getChild(1).getChild(0);
 		assert n.getKind() == CAstNode.CALL;
 		assert n.getChild(1).getValue().equals("max");
 	}
@@ -184,7 +185,7 @@ public class PrestoVisitorTest {
 		Collection<CAstEntity> l = entity.getAllScopedEntities().get(null);
 		Iterator<CAstEntity> it = l.iterator();
 		CAstNode n = it.next().getAST();
-		n = getWhere(n).getChild(0);
+		n = getWhere(n);
 		assert n.getKind() == CAstOperator.BINARY_EXPR;
 		assert n.getChild(0).getValue() == "==";
 		assert n.getChild(1).getKind() == CAstOperator.OBJECT_REF;
@@ -192,16 +193,20 @@ public class PrestoVisitorTest {
 
 		n = it.next().getAST();
 		n = getSelect(n).getChild(0);
+		System.out.println(n);
 		assert n.getKind() == CAstOperator.BINARY_EXPR;
 		assert n.getChild(0).getValue() == "-";
 		assert n.getChild(1).getKind() == CAstOperator.OBJECT_REF;
-		assert (int) n.getChild(2).getKind() == SQLCAstNode.QUERY_SELECT;
-		n = n.getChild(2).getChild(0);
+		assert (int) n.getChild(2).getKind() == CAstNode.IF_EXPR;
+		n = n.getChild(2);
+		System.out.println(n);
+
 		CAstNode sn = getSelect(n).getChild(0);
 		assert sn.getKind() == CAstOperator.CALL;
 		assert sn.getChild(1).getValue().equals("top");
 		
-		CAstNode wn = getWhere(n).getChild(0);
+		System.out.println("where" +  getWhere(n));
+		CAstNode wn = getWhere(n);
 		assert wn.getKind() == CAstOperator.ANDOR_EXPR;
 		CAstNode lhs = wn.getChild(1);
 		assertBinaryExpression(lhs, CAstOperator.OP_EQ);
@@ -253,7 +258,7 @@ public class PrestoVisitorTest {
 		assert i.getKind() == CAstNode.CALL;
 		assert i.getChild(1).getValue().equals("datediff");
 		assert i.getChild(2).getKind() == CAstNode.OBJECT_REF;
-		assert i.getChild(3).getKind() == SQLCAstNode.CALL;
+		assert i.getChild(3).getKind() == CAstNode.CALL;
 		assert i.getChild(4).getKind() == CAstNode.OBJECT_REF;
 	}
 	
