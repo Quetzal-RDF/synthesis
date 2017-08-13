@@ -39,7 +39,7 @@
             (< ("<") ("less") ("less" "than") ("smaller") ("smaller" "than") ("lower") ("lower" "than") ("younger") ("younger" "than"))
             (>= (">=") ("greater" "than" "or" "equal" "to") ("more" "than" "or" "equal" "to") ("larger" "than" "or" "equal" "to") ("higher" "than" "or" "equal" "to") ("bigger" "than" "or" "equal" "to") ("older" "than" "or" "equal" "to"))
             (<= ("<=") ("less" "than" "or" "equal" "to") ("smaller" "than" "or" "equal" "to") ("lower" "than" "or" "equal" "to") ("younger" "than" "or" "equal" "to"))
-            (= ("=") ("==") ("equals") ("is") ("is equal to"))))
+            (= ("=") ("==") ("equals") ("is") ("is" "equal" "to") ("is" "same" "as"))))
          (reserved (filter string? (flatten keywords))))
     
     (define (find-f pred-f val-f lst)
@@ -214,5 +214,42 @@
   (let-values (([parse toks] (parser tokens)))
     (let ((result (solve (assert (f parse)))))
       (values (evaluate parse result) (evaluate toks result)))))
+
+
+(define (test1)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("if" "A" "==" "B" "then" "C"))))
+    (println result)))
+
+(define (test2)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("if" "A" "=" "B" "then" "C"))))
+    (println result)))
+
+(define (test3)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("if" "A" "is" "equal" "to" "B" "then" "C"))))
+    (println result)))
+
+(define (test4)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("if" "A" "is" "equal" "to" "B" "then" "C"))))
+    (println result)))
+
+(define (test5)
+  (letrec ((p (apply make-parser '("A" "B" "C" "D")))
+           (result (p '("if" "A" "is" "equal" "to" "B" "then" "C" "or" "else" "D"))))
+    (println result)))
+
+(define (test6)
+  (letrec ((p (apply make-parser '("A" "B" "C" "D")))
+           (result (p '("if" "A" "is" "equal" "to" "B" "then" "C" "else" "D"))))
+    (println result)))
+
+(define (test7)
+  (letrec ((p (apply make-parser '("A" "B" "C" "D")))
+           (result (p '("if" "A" "is" "equal" "to" "B" "then" "C" "otherwise" "D"))))
+    (println result)))
+
 
 (provide make-parser find-parse)
