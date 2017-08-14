@@ -89,10 +89,6 @@
 
 (define extra-selection4 (hash 'boolean (list committed) 'number (list math345)))
 
-; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
-(define (simple-selection4)
-  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 25 10000 100 50))))
-
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1b)
   (test analyze '(if) '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
@@ -103,7 +99,7 @@
 
 ; test simple boolean expression - Return expression Col2 < Col3
 (define (simple-boolean1)
-  (test analyze '(>) '() '() 5 '(#t #f #f) (list s1 i1 i2) '(("A" 5 7)("B" 7 5)("C" 5 5))))
+  (test analyze '(>) '() '() 5 '(#t #f #f #t) (list s1 i1 i2) '(("A" 5 7)("B" 7 5)("C" 5 5)("D" 1 2))))
 
 ; test simple boolean expression - Return expression Col3 > Col2 and Col1 == "A"
 (define (simple-boolean2)
@@ -123,7 +119,7 @@
 
 ; test if col1 > .33
 (define (simple-test5)
-  (test analyze '(>=) '() '() 5 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
+  (test analyze '(<=) '() '() 5 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)
@@ -139,19 +135,25 @@
 
 ; define (col1 + col2) / col3
 (define (simple-test3)
-   (test analyze '(/) '() '() 3 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
+  (test analyze '(/) '() '() 3 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-test4)
-  (test analyze '(>) 5 '(#t #f #f #f) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+  (test analyze '(<) '() '(substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
+
+
+; test if (col1 > col2) and (col2 < col3) and (col4 = "C" or col4 = "D")
+(define (simple-test6)
+  (test analyze '(>) '() '(index-of) 5 '(#t #f #f #t #f) (list i1 i2 i3 s1) '((5 2 4 "C")(5 2 1 "C")(1 2 4 "C")(8 1 5 "D")(5 2 4 "M"))))
+
+; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
+(define (simple-selection4)
+  (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 25 10000 100 50))))
 
 
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)
-  (test analyze '(*) '() '() 5 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 4 8.23 .3)("B" "G" 4 8.23 .3))))
+  (test analyze '(*) '() '() 3 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 10 9.7 1.3)("B" "G" 4 1.23 .3))))
   
-; test if (col1 > col2) and (col2 < col3) and (col4 = "C" or col4 = "D")
-(define (simple-test6)
-  (test analyze '('AND '> '=) 5 '(#t #f #f #t #f) '((5 2 4 "C")(5 2 1 "C")(1 2 4 "C")(8 1 5 "D")(5 2 4 "M"))))

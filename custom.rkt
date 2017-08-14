@@ -46,13 +46,13 @@
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'basic-math (list 'append (list 'quote nested-pos) 'pos) (cadr l) (cadr r)) 'number))]
+                 (list 'send 'p 'basic-binary op (cadr l) (cadr r)) 'number))]
         [(=)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'compare-to-str (list 'append (list 'quote nested-pos) 'pos) (cadr l) (cadr r)) 'boolean))]
+                 (list 'send 'p 'basic-binary equal? (cadr l) (cadr r)) 'boolean))]
         [(and or)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
@@ -64,7 +64,7 @@
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'compare-to (list 'append (list 'quote nested-pos) 'pos) (cadr l) (cadr r)) 'boolean))])
+                 (list 'send 'p 'basic-binary op (cadr l) (cadr r)) 'boolean))])
      (list '() (list 'send 'p 'constant form) 'any)))
 
 (define (to-custom form)

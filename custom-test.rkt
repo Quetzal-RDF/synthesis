@@ -11,11 +11,11 @@
 (define-symbolic i5 integer?)
 
 (define (test1)
-  (let* ((fs (test-custom '("i2" "+" "i3") (list s1 i2 i3)))
-         (result (solve (assert (and (> i2 1) (< i2 17) (> i3 1) (< i3 17) (= 17 (car fs)))))))
+  (let* ((fs (test-custom '("i2" "*" "i3") (list s1 i2 i3)))
+         (result (solve (assert (and (> i2 1) (< i2 15) (> i3 1) (< i3 15) (= 15 (car fs)))))))
     (println result)
     (assert (sat? result))
-    (assert (= 17 (evaluate (+ i2 i3) result)))))
+    (assert (= 15 (evaluate (* i2 i3) result)))))
 
 (define (test2)
   (let* ((fs (test-custom '("if" "s1" "==" "bad" "then" "i2" "+" "i3") (list s1 i2 i3)))
