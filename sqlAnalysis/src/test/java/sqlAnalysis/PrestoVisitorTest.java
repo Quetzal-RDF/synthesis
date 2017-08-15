@@ -141,8 +141,8 @@ public class PrestoVisitorTest {
 		n = getWhere(n);
 
 		assert n.getKind() == CAstOperator.CALL;
-		assert n.getChild(0).getValue().equals("in");
-		assert n.getChild(1).getKind() == CAstNode.OBJECT_REF;
+		assert n.getChild(1).getValue().equals("in");
+		assert n.getChild(2).getKind() == CAstNode.OBJECT_REF;
 
 	}
 
