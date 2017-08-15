@@ -39,7 +39,16 @@
 
     (define/public (constant v)
       '())
+
+    (define/public (basic-unary f v)
+      (cons f v))
     
+    (define/public (basic-binary f l r)
+      (cons f (merge l r)))
+    
+    (define/public (is-null-v? mb v pos)
+      (cons 'is-null v))
+
     (define/public (is-null? pos)
       (list do-is-null?))
     
@@ -101,7 +110,16 @@
 
     (define/public (constant v)
       v)
+
+    (define/public (basic-unary f v)
+      (list f v))
     
+    (define/public (basic-binary f l r)
+      (list (if (equal? f equal?) '== f) l r))
+    
+    (define/public (is-null-v? mb v pos)
+        (list (if mb 'is-null 'is-not-null) v))
+
     (define/public (is-null? pos)
       (let ((mb (val (cons 'is-null pos) boolean?))
             (mi (val (cons 'argn pos) integer?)))
@@ -197,12 +215,21 @@
     (define/public (constant v)
       v)
 
+    (define/public (basic-unary f v)
+      (f v))
+    
+    (define/public (basic-binary f l r)
+      (f l r))
+    
+    (define/public (is-null-v? mb v pos)
+      (send this basic-unary (lambda (v) (if mb (equal? v '()) (not (equal? v '())))) v))
+
     (define/public (is-null? pos)
       (let ((mb (val (cons 'is-null pos) boolean?))
             (mi (val (cons 'argn pos) integer?)))
         (if (and (>= mi 1) (< (- mi 1) (length input-vals)))
             (let ((v (list-ref input-vals (- mi 1))))
-              (if mb (equal? v '()) (not (equal? v '()))))
+              (send this is-null-v? mb v pos))
             'invalid)))
 
     (define/public (in pos type-f)
@@ -222,7 +249,7 @@
 
     (define/public (basic-math pos l r)
       (if (and (number? l) (number? r))
-                ((basic-math-op r pos + - * / quotient remainder) l r)
+          (send this basic-binary (basic-math-op r pos + - * / quotient remainder) l r)
           'invalid))
 
     (define/public (basic-num-functions pos v)
@@ -230,7 +257,7 @@
           (let ((m1 (val (cons 'm1 pos) boolean?))
                 (m2 (val (cons 'm2 pos) boolean?))
                 (m3 (val (cons 'm3 pos) boolean?)))
-            ((if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) floor) v))
+            (send this basic-unary (if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) floor) v))
           'invalid))
     
     (define/public (index-of pos l r)
@@ -242,21 +269,21 @@
       (if (and (number? l) (number? r))
           (let ((islt (val (cons 'islt pos) boolean?))
                 (iseq (val (cons 'iseq pos) boolean?)))
-            (if iseq (if islt (<= l r) (>= l r)) (if islt (< l r) (> l r))))
+            (send this basic-binary (if iseq (if islt <= >=) (if islt < >)) l r))
           'invalid))
 
     (define/public (compare-to-str pos l r)
-      (equal? l r))
+      (send this basic-binary equal? l r))
     
     (define/public (logic-op-not pos v)
       (if (boolean? v)
-          (not v)
+          (send this basic-unary not v)
           'invalid))
   
     (define/public (logic-op pos l r)
       (if (and (boolean? l) (boolean? r))
           (let ((isand (val (cons 'isand pos) boolean?)))
-            (if isand (and l r) (or l r)))
+            (send this basic-binary (lambda (l r) (if isand (and l r) (or l r))) l r))
            'invalid))
     
     (define/public (if-then-else case l r)
@@ -266,7 +293,7 @@
 
     (define/public (strlength pos str)
       (if (string? str)
-          (string-length str)
+          (send this basic-unary string-length str)
           'invalid))
 
     (define/public (substr str l r)
@@ -276,7 +303,7 @@
 
     (define/public (concat pos left right)
       (if (and (string? left) (string? right))
-          (string-append left right)
+          (send this basic-binary string-append left right)
           'invalid))
 
     (define/public (get-digits pos str)
@@ -312,6 +339,18 @@
       (for/list ([p processors])
         (send p constant v)))
 
+    (define/public (basic-unary f value)
+      (for/list ([p processors] [v value])
+        (send p basic-unary f v)))
+
+    (define/public (basic-binary f left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p basic-binary f l r)))
+    
+    (define/public (is-null-v? mbs vs pos)
+      (for/list ([p processors] [mb mbs] [v vs])
+        (send p is-null? mb v pos)))
+      
     (define/public (is-null? pos)
       (for/list ([p processors])
         (send p is-null? pos)))
@@ -680,13 +719,16 @@
 ; limit determines the total num of expressions it can use
 ; op is the top level node for the expression tree (for now) - to check if we got the right operation
 (define (test func op white raw-black limit raw-outputs symbolic raw-inputs)
+  (test-int  func op (hash) white raw-black limit raw-outputs symbolic raw-inputs))
+
+(define (test-int func op custom white raw-black limit raw-outputs symbolic raw-inputs)
    ; convert all reals to rational numbers in case we have any
   (let ((inputs (map (lambda(x) (map convert-to-rational x)) raw-inputs))
         (outputs (map convert-to-rational raw-outputs))
         (black (flatten (map get-function-mappings raw-black))))
     (letrec ((try-depth
               (lambda(v)
-                (let ((out (apply func (hash) white black v outputs symbolic inputs)))
+                (let ((out (apply func custom white black v outputs symbolic inputs)))
                   (if (not (null? out))
                       (map render out)
                       (if (< v limit)
@@ -733,4 +775,4 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-(provide expr-processor% analyze render aggregate test val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)
+(provide expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)
