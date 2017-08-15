@@ -39,6 +39,7 @@
             (< ("<") ("less") ("less" "than") ("is" "less" "than") ("smaller") ("smaller" "than") ("is" "smaller" "than") ("lower") ("lower" "than") ("is" "lower" "than") ("younger") ("younger" "than") ("is" "younger" "than"))
             (>= (">=") ("greater" "than" "or" "equal" "to") ("is" "greater" "than" "or" "equal" "to") ("more" "than" "or" "equal" "to") ("is" "more" "than" "or" "equal" "to") ("larger" "than" "or" "equal" "to") ("is" "larger" "than" "or" "equal" "to") ("higher" "than" "or" "equal" "to") ("is" "higher" "than" "or" "equal" "to") ("bigger" "than" "or" "equal" "to") ("is" "higher" "than" "or" "equal" "to") ("older" "than" "or" "equal" "to") ("is" "older" "than" "or" "equal" "to"))
             (<= ("<=") ("less" "than" "or" "equal" "to") ("is" "less" "than" "or" "equal" "to") ("smaller" "than" "or" "equal" "to") ("is" "smaller" "than" "or" "equal" "to") ("lower" "than" "or" "equal" "to") ("is" "lower" "than" "or" "equal" "to") ("is" "younger" "than" "or" "equal" "to"))
+            (!= ("!=") ("<>") ("not equal") ("is" "not" "equal" "to") ("is" "not" "same" "as"))
             (= ("=") ("==") ("equals") ("is") ("is" "equal" "to") ("is" "same" "as"))))
          (reserved (filter string? (flatten keywords))))
     
@@ -159,7 +160,7 @@
     (define parse-binary-expr 
       (parse-binary-stuff parse-unary-expr parse-binary-op))
 
-    (define parse-comparison-op (parse-op '(= < > <= >=)))
+    (define parse-comparison-op (parse-op '(= != < > <= >=)))
 
     (define parse-comparison-expr
       (parse-binary-stuff parse-binary-expr parse-comparison-op))
@@ -280,7 +281,7 @@
 (define (test11a)
     (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F")))
            (result (p '("if" "(" "(" "A" ">" "B" ")" "and" "(" "C" ">" "D" ")" 
-                             "and" "(" "E" "not" "25" ")" ")" "then" "(" "F" "=" "coo" "or" "F" "=" "roo" ")"))))
+                             "and" "(" "E" "=" "25" ")" ")" "then" "(" "F" "=" "coo" "or" "F" "=" "roo" ")"))))
     (println result)))
 
 (define (test11b)
@@ -296,7 +297,7 @@
 
 (define (test13)
       (letrec ((p (apply make-parser '("A" "B")))
-           (result (p '("A" "is" "greater" "than" "B"))))
+           (result (p '("A" "is" "equal" "to" "B"))))
     (println result)))
 
 (define (test14)
