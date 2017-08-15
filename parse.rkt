@@ -33,12 +33,12 @@
             (trim ("trim") ("remove" "trailing" "spaces") ("pare") ("cut"))
             (replace ("replace") ("overlay") ("change"))
             (matches ("matches") ("contains") ("includes") ("has") ("appears in"))
-            (now ("now") ("current" "time") ("today"))
+            (now ("now") ("current" "time") ("time" "now") ("today"))
             (extract ("extract") ("retrieve") ("pull" "out") ("grab") ("fetch") ("find") ("obtain") ("get"))
-            (> (">") ("greater") ("greater" "than") ("more") ("more" "than") ("larger") ("larger" "than") ("higher") ("higher" "than") ("bigger") ("bigger" "than") ("older") ("older" "than"))
-            (< ("<") ("less") ("less" "than") ("smaller") ("smaller" "than") ("lower") ("lower" "than") ("younger") ("younger" "than"))
-            (>= (">=") ("greater" "than" "or" "equal" "to") ("more" "than" "or" "equal" "to") ("larger" "than" "or" "equal" "to") ("higher" "than" "or" "equal" "to") ("bigger" "than" "or" "equal" "to") ("older" "than" "or" "equal" "to"))
-            (<= ("<=") ("less" "than" "or" "equal" "to") ("smaller" "than" "or" "equal" "to") ("lower" "than" "or" "equal" "to") ("younger" "than" "or" "equal" "to"))
+            (> (">") ("greater") ("is" "greater" "than") ("greater" "than") ("more") ("more" "than") ("is" "more" "than") ("larger") ("larger" "than") ("is" "larger" "than") ("higher") ("higher" "than") ("is" "higher" "than") ("bigger") ("bigger" "than") ("is" "bigger" "than") ("older") ("older" "than") ("is" "older" "than"))
+            (< ("<") ("less") ("less" "than") ("is" "less" "than") ("smaller") ("smaller" "than") ("is" "smaller" "than") ("lower") ("lower" "than") ("is" "lower" "than") ("younger") ("younger" "than") ("is" "younger" "than"))
+            (>= (">=") ("greater" "than" "or" "equal" "to") ("is" "greater" "than" "or" "equal" "to") ("more" "than" "or" "equal" "to") ("is" "more" "than" "or" "equal" "to") ("larger" "than" "or" "equal" "to") ("is" "larger" "than" "or" "equal" "to") ("higher" "than" "or" "equal" "to") ("is" "higher" "than" "or" "equal" "to") ("bigger" "than" "or" "equal" "to") ("is" "higher" "than" "or" "equal" "to") ("older" "than" "or" "equal" "to") ("is" "older" "than" "or" "equal" "to"))
+            (<= ("<=") ("less" "than" "or" "equal" "to") ("is" "less" "than" "or" "equal" "to") ("smaller" "than" "or" "equal" "to") ("is" "smaller" "than" "or" "equal" "to") ("lower" "than" "or" "equal" "to") ("is" "lower" "than" "or" "equal" "to") ("is" "younger" "than" "or" "equal" "to"))
             (= ("=") ("==") ("equals") ("is") ("is" "equal" "to") ("is" "same" "as"))))
          (reserved (filter string? (flatten keywords))))
     
@@ -251,5 +251,57 @@
            (result (p '("if" "A" "is" "equal" "to" "B" "then" "C" "otherwise" "D"))))
     (println result)))
 
+(define (test8)
+   (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F" "G" "H")))
+           (result (p '("if" "A" "is" "foo" "then" "B" "otherwise" "0"
+                             "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0"
+                             "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H"))))
+    (println result)))
+
+(define (test9)
+   (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F" "G" "H")))
+           (result (p '("(" "if" "A" "is" "foo" "then" "B" "otherwise" "0" ")"
+                             "+" "(" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0" ")"
+                             "+" "(" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H" ")"))))
+    (println result)))
+
+(define (test10)
+    (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F")))
+           (result (p '("if" "A" "is" "greater" "than" "B" "and" "C" "is" "greater" "than" "D" 
+                             "and" "E" "is" "not" "null" "then" "F" "=" "coo" "or" "F" "=" "roo"))))
+    (println result)))
+
+(define (test11)
+    (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F")))
+           (result (p '("if" "(" "(" "A" "is" "greater" "than" "B" ")" "and" "(" "C" "is" "greater" "than" "D" ")" 
+                             "and" "(" "E" "is" "not" "null" ")" ")" "then" "(" "F" "=" "coo" "or" "F" "=" "roo" ")"))))
+    (println result)))
+
+(define (test11a)
+    (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F")))
+           (result (p '("if" "(" "(" "A" ">" "B" ")" "and" "(" "C" ">" "D" ")" 
+                             "and" "(" "E" "not" "25" ")" ")" "then" "(" "F" "=" "coo" "or" "F" "=" "roo" ")"))))
+    (println result)))
+
+(define (test11b)
+    (letrec ((p (apply make-parser '("A" "B" "C" "D" "E" "F")))
+           (result (p '("if" "(" "A" ">" "B" ")" "and" "(" "C" ">" "D" ")" 
+                             "and" "(" "E" "not" "25" ")" "then" "(" "F" "=" "coo" "or" "F" "=" "roo" ")"))))
+    (println result)))
+
+(define (test12)
+      (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("A" "is" "greater" "than" "B"))))
+    (println result)))
+
+(define (test13)
+      (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("A" "is" "greater" "than" "B"))))
+    (println result)))
+
+(define (test14)
+       (letrec ((p (apply make-parser '("A")))
+           (result (p '("if" "A" "<" "500" "then" "t3" "else" "if" "A" "<" "1000" "then" "t4" "else" "if" "A" "<" "1500" "then" "t5" "else" "t6"))))
+    (println result)))
 
 (provide make-parser find-parse)
