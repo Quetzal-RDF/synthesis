@@ -136,7 +136,7 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 			int[] params) {
 		MethodReference ref= MethodReference.findOrCreate(SQLClassLoader.Any, name.getValue().toString(), "()LAny;");
 		CallSiteReference cs = CallSiteReference.make(context.cfg().getCurrentInstruction(), ref, IInvokeInstruction.Dispatch.STATIC);
-		insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, params, exception, cs, null);
+		context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, params, exception, cs, null));
 	}
 
 	@Override

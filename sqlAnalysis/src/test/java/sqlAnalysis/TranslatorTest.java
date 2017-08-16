@@ -5,6 +5,7 @@ import org.junit.Test;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
+import com.ibm.wala.ipa.cha.ClassHierarchyException;
 
 public class TranslatorTest {
 	private ClassLoaderFactory loaders = new SQLClassLoaderFactory();
@@ -32,7 +33,13 @@ public class TranslatorTest {
 		String sql = "select max(AccessID) as AccessID,  max(AccessType) as AccessType from audit_log where Status in (335,66) group by EventTime";
 		int i = 0;
 		ParseStackOverflowData.doPresto(i, sql, loaders);
+	}
 
+	@Test
+	public void testFuns() throws ClassHierarchyException {
+		String sql = "select a, b from c where sqrt(abs(a)) = b";
+		int i = 0;
+		ParseStackOverflowData.doPresto(i, sql, loaders);
 	}
 
 }

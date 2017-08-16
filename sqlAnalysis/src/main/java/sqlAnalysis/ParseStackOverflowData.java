@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Set;
 
 import com.facebook.presto.sql.parser.SqlParser;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
@@ -16,9 +17,14 @@ import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
-import com.ibm.wala.ssa.DefaultIRFactory;
+import com.ibm.wala.ssa.DefUse;
+import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
+import com.ibm.wala.ssa.SSAPhiInstruction;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 
@@ -89,7 +95,30 @@ public class ParseStackOverflowData {
 		IRFactory<IMethod> irs = new AstIRFactory<IMethod>();
 		for(IClass c : cha) {
 			for(IMethod f : c.getDeclaredMethods()) {
-				System.out.println(irs.makeIR(f, Everywhere.EVERYWHERE, SSAOptions.defaultOptions()));
+				IR ir = irs.makeIR(f, Everywhere.EVERYWHERE, SSAOptions.defaultOptions());
+				DefUse du = new DefUse(ir);
+				for(int i = 0; i <= ir.getSymbolTable().getMaxValueNumber(); i++) {
+					SSAInstruction d = du.getDef(i);
+					if (d instanceof SSAInvokeInstruction) {
+						Set<SSAInstruction> uses = HashSetFactory.make();
+						du.getUses(i).forEachRemaining((SSAInstruction x) -> { uses.add(x); });
+						while (! uses.isEmpty()) {
+							SSAInstruction use = uses.iterator().next();
+							uses.remove(use);
+							if (use instanceof SSAInvokeInstruction) {
+								System.err.println(
+									((SSAInvokeInstruction) d).getCallSite().getDeclaredTarget().getName() + 
+									" --> " +
+									((SSAInvokeInstruction) use).getCallSite().getDeclaredTarget().getName());
+							} else if (use instanceof SSAPhiInstruction) {
+								du.getUses(use.getDef()).forEachRemaining((SSAInstruction x) -> { 
+									uses.add(x);
+								});
+							}
+						}
+					}
+				}
+				System.out.println(ir);
 			}
 		}
 		

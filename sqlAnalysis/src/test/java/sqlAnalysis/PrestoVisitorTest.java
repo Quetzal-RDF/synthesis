@@ -287,4 +287,12 @@ public class PrestoVisitorTest {
 		System.out.println(process(sql));
 
 	}
+	
+	@Test
+	public void testFuns() {
+		String sql = "select a, b from c where sqrt(abs(a)) = b";
+		CAstNode n = process(sql);
+		System.out.println(n);
+	}
+
 }
