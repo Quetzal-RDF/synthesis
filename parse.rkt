@@ -160,7 +160,7 @@
     (define parse-binary-expr 
       (parse-binary-stuff parse-unary-expr parse-binary-op))
 
-    (define parse-comparison-op (parse-op '(= != < > <= >=)))
+    (define parse-comparison-op (parse-op '(<= >= < > != =)))
 
     (define parse-comparison-expr
       (parse-binary-stuff parse-binary-expr parse-comparison-op))
