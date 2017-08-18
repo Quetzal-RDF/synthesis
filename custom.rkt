@@ -10,7 +10,9 @@
   (if (list? form)
       (case (car form)
         [(in)
-         (list '() (list 'send 'p 'in-v (list 'append (list 'quote nested-pos) 'pos) (second form) (lambda (x) #t)) 'any)]
+         (list '()
+               (list 'send 'p 'in-v (list 'append (list 'quote nested-pos) 'pos) (second form) (lambda (x) #t))
+               'any)]
         [(if)
          (case (length form)
            [(2)
@@ -40,32 +42,40 @@
         [(not)
          (let ((op (car form))
                (l (to-custom-int (second form))))
-           (list (car l) (list 'send 'p 'logic-op-not (list 'append (list 'quote nested-pos) 'pos) (cadr l)) 'boolean))]
+           (list (car l)
+                 (list 'send 'p 'logic-op-not (list 'append (list 'quote nested-pos) 'pos) (cadr l))
+                 'boolean))]
         [(+ - * /)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'basic-binary op (cadr l) (cadr r)) 'number))]
+                 (list 'send 'p 'basic-binary op (cadr l) (cadr r))
+                 'number))]
         [(=)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'basic-binary equal? (cadr l) (cadr r)) 'boolean))]
+                 (list 'send 'p 'basic-binary equal? (cadr l) (cadr r))
+                 'boolean))]
         [(and or)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'logic-op (list 'append (list 'quote nested-pos) 'pos) (cadr l) (cadr r)) 'boolean))]
+                 (list 'send 'p 'logic-op (list 'append (list 'quote nested-pos) 'pos) (cadr l) (cadr r))
+                 'boolean))]
         [(< > <= >=)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'basic-binary op (cadr l) (cadr r)) 'boolean))])
-     (list '() (list 'send 'p 'constant form) 'any)))
+                 (list 'send 'p 'basic-binary op (cadr l) (cadr r))
+                 'boolean))])
+     (list '()
+           (list 'send 'p 'constant form)
+           'any)))
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
@@ -99,22 +109,38 @@
     (println make-custom)
     (map make-custom (filter cons? stuff))))
 
+(define tracing-expr-processor%
+  (class expr-processor%
+    (super-new)
+
+    (define conditionals '())
+
+    (define/public (controls)
+      conditionals)
+
+    (define (if-then-else case l r)
+      (set! conditionals (cons case conditionals))
+      (super if-then-else case l r))    
+    (override if-then-else)))
+
 (define (test-custom text columns)
-  (let ((p (new expr-processor% [inputs columns]))
+  (let ((p (new tracing-expr-processor% [inputs columns]))
         (int (lambda (size pos p f) (f 5 (val pos integer?))))
         (bool (lambda (size pos p f) (f 5 (val pos boolean?))))
         (str (lambda (size pos p f) (f 5 (val pos string?)))))
-    (map (lambda (f)
-           (let ((expr '()))
-             (f 5 '() p (lambda (x y) (set! expr y)))
-             expr))
-         (map car
-              (make-custom-functions
-               (map ~a columns)
-               text
-               int bool str
-               (lambda (size pos p f)
-                 ([choose* int bool str] size pos p f)))))))
+    (values
+     (map (lambda (f)
+            (let ((expr '()))
+              (f 5 '() p (lambda (x y) (set! expr y)))
+              expr))
+          (map car
+               (make-custom-functions
+                (map ~a columns)
+                text
+                int bool str
+                (lambda (size pos p f)
+                  ([choose* int bool str] size pos p f)))))
+     (send p controls))))
 
 (define (make-custom-table text column-names)
   (let ((customs
