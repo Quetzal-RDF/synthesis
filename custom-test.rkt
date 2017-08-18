@@ -66,7 +66,25 @@
                    '("Committed" 25 10000 100 50) '("Committed" 0 10000 100 50) '("Custom" 23 10000 100 50)))
 
 (define (test10)
-  (let-values ([(fs controls) (test-custom '("if" "s1" "==" "bad" "then" "i2" "+" "i3" "else" "if" "s1" "==" "good" "then" "i2") (list s1 i2 i3))])
+  (let-values ([(fs controls)
+                (test-custom
+                 '("if" "s1" "==" "bad" "then" "i2" "+" "i3" "else"
+                        "if" "s1" "==" "good" "then" "i2" "else"
+                        "if" "i3" ">" "i2" "then" "i3")
+                 (list s1 i2 i3))])
+    (letrec ((test (lambda (guards ctrls)
+                     (if (null? ctrls)                         
+                         (let ((result (solve (assert (and guards (= (car fs) 17))))))
+                           (if (sat? result)
+                               (list result)
+                               '()))
+                         (append
+                          (test (and (car ctrls) guards) (cdr ctrls))
+                          (test (and (not (car ctrls)) guards) (cdr ctrls)))))))
+      (test #t controls))))
+
+(define (test11)
+  (let-values ([(fs controls) (test-custom '("if" "s1" "is" "foo" "then" "i1" "otherwise" 0) (list s1 i1))])
     (letrec ((test (lambda (guards ctrls)
                      (if (null? ctrls)                         
                          (let ((result (solve (assert (and guards (= (car fs) 17))))))
