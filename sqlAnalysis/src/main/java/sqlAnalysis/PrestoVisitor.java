@@ -407,8 +407,10 @@ public class PrestoVisitor {
 		public boolean isExists() {
 			if (isExists != null) {
 				return isExists;
-			} else {
+			} else if (parent != null) {
 				return parent.isExists();
+			} else {
+				return false;
 			}
 		}
 
@@ -419,8 +421,10 @@ public class PrestoVisitor {
 		public boolean isIn() {
 			if (isIn != null) {
 				return isIn;
+			} else if (parent != null) {
+				return parent.isIn();
 			} else {
-				return parent.isExists();
+				return false;
 			}
 		}
 
@@ -431,8 +435,10 @@ public class PrestoVisitor {
 		public boolean isComparison() {
 			if (isComparison != null) {
 				return isComparison;
-			} else {
+			} else if (parent != null) {
 				return parent.isComparison();
+			} else {
+				return false;
 			}
 		}
 
@@ -515,7 +521,7 @@ public class PrestoVisitor {
 				if (where != null && select != null) {
 					query = factory.makeNode(CAstNode.IF_EXPR, where, select);
 				} else if (where != null && select == null) {
-					query = factory.makeNode(CAstNode.IF_EXPR, where, factory.makeConstant(true));
+					query = factory.makeNode(CAstNode.IF_EXPR, where, factory.makeConstant(true), factory.makeConstant(false));
 				} else if (select != null) {
 					query = factory.makeNode(CAstNode.IF_EXPR, factory.makeConstant(true), select);
 				}
@@ -559,14 +565,15 @@ public class PrestoVisitor {
 
 		@Override
 		protected CAstNode visitSubqueryExpression(SubqueryExpression node, Context context) {
-			return process(node.getQuery(), context);
+			Context c = new Context(context);
+			return process(node.getQuery(), c);
 		}
 
 		@Override
 		protected CAstNode visitExists(ExistsPredicate node, Context context) {
 			Context c = new Context(context);
 			c.setExists(true);
-			return factory.makeNode(CAstNode.IF_EXPR, visitQuery(node.getSubquery(), c));
+			return visitQuery(node.getSubquery(), c);
 		}
 
 		@Override
@@ -574,7 +581,7 @@ public class PrestoVisitor {
 			Context c = new Context(context);
 			c.setComparison(true);
 			return factory.makeNode(CAstNode.BINARY_EXPR, processOp(node.getType().getValue()),
-					process(node.getLeft(), context), process(node.getRight(), context));
+					process(node.getLeft(), c), process(node.getRight(), c));
 		}
 
 		@Override
@@ -608,10 +615,10 @@ public class PrestoVisitor {
 			CAstNode[] arr = createArgs(context, l);
 			
 			CAstNode[] allArgs = new CAstNode[ arr.length + 2 ];
-			System.arraycopy(arr, 0, allArgs, 2, arr.length);
 			allArgs[0] = factory.makeConstant(CAstNode.VOID);
 			allArgs[1] = factory.makeConstant(node.getName().toString());
-			
+			System.arraycopy(arr, 0, allArgs, 2, arr.length);
+
 			return factory.makeNode(CAstNode.CALL, allArgs);
 		}
 
@@ -706,9 +713,11 @@ public class PrestoVisitor {
 		@Override
 		protected CAstNode visitExtract(Extract node, Context context) {
 			CAstNode[] arr = new CAstNode[2];
-			arr[0] = process(node.getExpression(), context);
-			arr[1] = factory.makeConstant(node.getField().toString());
-			return factory.makeNode(CAstNode.CALL, factory.makeConstant("EXTRACT"), arr);
+			arr[0] = factory.makeNode(CAstNode.VOID);
+			arr[1] = factory.makeConstant("EXTRACT");
+			arr[2] = process(node.getExpression(), context);
+			arr[3] = factory.makeConstant(node.getField().toString());
+			return factory.makeNode(CAstNode.CALL, arr);
 		}
 
 		@Override

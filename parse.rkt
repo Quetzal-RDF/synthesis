@@ -42,7 +42,9 @@
             (!= ("!=") ("<>") ("not equal") ("is" "not" "equal" "to") ("is" "not" "same" "as"))
             (= ("=") ("==") ("equals") ("is") ("is" "equal" "to") ("is" "same" "as"))))
          (reserved (filter string? (flatten keywords))))
-    
+
+    ; val-f is applied to every element of the list
+    ; pred-f is applied on that transformed value
     (define (find-f pred-f val-f lst)
       (if (null? lst)
           #f
@@ -51,6 +53,10 @@
                 val
                 (find-f pred-f val-f (cdr lst))))))
 
+    ; wls is word lists that corresponds to a symbol
+    ; wl is a specific world list under consideration
+    ; tok is is the keyword we are trying to find e.g. '+
+    ; toks is the list of input tokens to be matched
     (define (parse-keyword tok xtokens)
 ;      (printf "parse-keyword tok: ~a, tokens: ~a\n" tok (if (union? xtokens) (union-contents xtokens) xtokens))
       (for/all ([tokens xtokens])
@@ -79,7 +85,7 @@
               (or
                (if (eq? (car tokens) tok) (cons tok (cdr tokens)) #f)
                (swallow word-lists tokens)))
-             (cons #f tokens))))))
+             (cons #f tokens))))))   ; found nothing, tokens is null, so return #f
     
     (define (parse-op ops)
       (lambda (xtokens)
@@ -196,7 +202,8 @@
       (for/all ([tokens xtokens])
         (if (null? tokens)
             '()
-            (let* ([binary-expr (parse-if tokens)]
+            (let* ([binary-expr (parse-if tokens)] ; parse-if returns a pair - a symbol if it finds any (or #f if it doesnt) and the rest of the tokens
+                   ; to be processed
                    [val (car binary-expr)]
                    [toks (cdr binary-expr)])
               (if val

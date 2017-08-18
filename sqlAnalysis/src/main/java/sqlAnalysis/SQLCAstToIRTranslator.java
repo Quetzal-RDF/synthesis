@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.ibm.wala.cast.ir.translator.AstTranslator;
-import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
@@ -27,12 +26,33 @@ import com.ibm.wala.util.strings.Atom;
 
 public class SQLCAstToIRTranslator extends AstTranslator {
 
-	public static final CAstType Any = new CAstType() { 
-	
+	@Override
+	protected void leaveCast(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+
+		int result = context.getValue(n);
+		String toType = ((String) n.getChild(1).getValue()).toLowerCase();
+		TypeReference toRef = TypeReference.findOrCreate(SQLClassLoaderFactory.Sql, TypeName.findOrCreate(toType));
+
+		TypeReference fromRef = makeType(Any);
+
+		context.cfg().addInstruction(insts.ConversionInstruction(context.cfg().getCurrentInstruction(), result,
+				context.getValue(n.getChild(1)), fromRef, toRef, false));
+
+	}
+
+	@Override
+	protected boolean visitCast(CAstNode n, WalkContext context, CAstVisitor<WalkContext> visitor) {
+		int result = context.currentScope().allocateTempValue();
+		context.setValue(n, result);
+		return false;
+	}
+
+	public static final CAstType Any = new CAstType() {
+
 		public String getName() {
 			return "Any";
 		}
-	
+
 		public Collection<CAstType> getSupertypes() {
 			return Collections.emptySet();
 		}
@@ -79,7 +99,8 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
 			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, TypeReference[]> catchTypes, boolean hasMonitorOp,
 			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
-		((SQLClassLoader)loader).defineFunction(N, definingContext, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo, debugInfo);
+		((SQLClassLoader) loader).defineFunction(N, definingContext, cfg, symtab, hasCatchBlock, catchTypes,
+				hasMonitorOp, lexicalInfo, debugInfo);
 	}
 
 	@Override
@@ -110,8 +131,9 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 	}
 
 	@Override
-	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {	
-		FieldReference ref = FieldReference.findOrCreate(SQLClassLoader.Any, Atom.findOrCreateUnicodeAtom((String) elt.getValue()), SQLClassLoader.Any);
+	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
+		FieldReference ref = FieldReference.findOrCreate(SQLClassLoader.Any,
+				Atom.findOrCreateUnicodeAtom((String) elt.getValue()), SQLClassLoader.Any);
 		context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, ref));
 	}
 
@@ -134,9 +156,11 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 	@Override
 	protected void doCall(WalkContext context, CAstNode call, int result, int exception, CAstNode name, int receiver,
 			int[] params) {
-		MethodReference ref= MethodReference.findOrCreate(SQLClassLoader.Any, name.getValue().toString(), "()LAny;");
-		CallSiteReference cs = CallSiteReference.make(context.cfg().getCurrentInstruction(), ref, IInvokeInstruction.Dispatch.STATIC);
-		context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, params, exception, cs, null));
+		MethodReference ref = MethodReference.findOrCreate(SQLClassLoader.Any, name.getValue().toString(), "()LAny;");
+		CallSiteReference cs = CallSiteReference.make(context.cfg().getCurrentInstruction(), ref,
+				IInvokeInstruction.Dispatch.STATIC);
+		context.cfg().addInstruction(
+				insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, params, exception, cs, null));
 	}
 
 	@Override
@@ -154,10 +178,8 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 		assert false;
 	}
 
-
-
-
 	private static final boolean DEBUG_AST = false;
+
 	@Override
 	public void translate(CAstEntity N, ModuleEntry context) {
 		if (DEBUG_AST) {
