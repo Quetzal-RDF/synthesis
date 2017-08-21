@@ -46,6 +46,15 @@
 (define (simple-selection1)
   (test analyze '(if) '() '(index-of) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 5))))
 
+(define (simple-symbolic1)
+  (test analyze '(if) '() '() 2 '(5 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
+
+(define (simple-symbolic2)
+  (test analyze '(if) '() '() 2 (list i2 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
+
+(define (simple-symbolic3)
+  (test analyze '() '() '() 2 (list s2 "B") (list s1 i1) (list (list s2 1) (list "B" 5))))
+
 (define (simple-selection1a)
   (test analyze '(if) '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))
 

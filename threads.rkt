@@ -29,9 +29,9 @@
                                                         (raise e)
                                                         (begin
                                                           (println e)
-                                                          (hook e))))])
+                                                          (hook problem e))))])
                          (let ((result (solver-check solver)))
-                           (hook result)))
+                           (hook problem result)))
                        (solver-shutdown solver)
                        (loop)))))))
        (loop)))))

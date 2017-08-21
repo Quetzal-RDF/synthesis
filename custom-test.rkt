@@ -12,6 +12,7 @@
 
 (define (test1)
   (let-values ([(fs controls) (test-custom '("i2" "*" "i3") (list s1 i2 i3))])
+    (println fs)
     (let ((result (solve (assert (and (> i2 1) (< i2 15) (> i3 1) (< i3 15) (= 15 (car fs)))))))
       (println result)
       (assert (sat? result))
@@ -70,7 +71,7 @@
                      (if (null? ctrls)                         
                          (let ((result (solve (assert (and guards extra)))))
                            (if (sat? result)
-                               (list result)
+                               (list (evaluate expr result) (hash->list (model result)))
                                '()))
                          (append
                           (models (and (car ctrls) guards) (cdr ctrls))
@@ -99,3 +100,22 @@
     (let ((models (generate-models (car fs) controls #t)))
       (println models)
       (assert (>= (length models) 2)))))
+
+(define-symbolic A string?)
+(define-symbolic B integer?)
+(define-symbolic C integer?)
+(define-symbolic D integer?)
+(define-symbolic E integer?)
+(define-symbolic F integer?)
+(define-symbolic G integer?)
+(define-symbolic H integer?)
+
+(define (test13)
+  (let-values ([(fs controls)
+                (test-custom
+                 '("if" "A" "is" "foo" "then" "B" "otherwise" "0"
+                        "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0"
+                             "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
+                 (list A B C D E F G H))])
+    (for/list ([f fs])
+      (generate-models f controls (= f 17)))))

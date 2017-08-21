@@ -24,11 +24,12 @@
   (string->symbol (format "~S" pos)))
 
 (define (val pos type)
-  (if (hash-has-key? vals pos)
-      (hash-ref vals pos)
-      (let ((v (constant (id pos) type)))
-        (hash-set! vals pos v)
-        v)))
+  (let ((name (id pos)))
+    (if (hash-has-key? vals name)
+        (hash-ref vals name)
+        (let ((v (constant name type)))
+          (hash-set! vals name v)
+          v))))
 
 (define (merge . args)
   (apply append (filter cons? args)))
@@ -554,6 +555,7 @@
            (goal 1)
            (models (list))
            (outstanding 0)
+           (universals (filter term? (flatten inputs)))
            (drain (lambda (async?)
                     (let ((x ((if async? async-channel-try-get async-channel-get) results-channel)))
                       (when x
@@ -614,14 +616,39 @@
            ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
            ; raise models, which will then be trapped by the handler code
            (engines-solve z3-engines formula
-             (lambda (result)
+             (lambda (formula result)
                ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
                ; has bugs so check.
-               (async-channel-put
-                results-channel
-                (if (and (not (exn? result)) (sat? result) (eq? #t (evaluate formula result)))
-                    (list (car y) (remove-duplicates (cadr y)) (caddr y) result null)
-                    #t))))
+               (if (and (not (exn? result)) (sat? result) (eq? #t (evaluate formula result)))
+                   (if (null? universals)
+                       (async-channel-put
+                        results-channel
+                        (list (car y) (remove-duplicates (cadr y)) (caddr y) result null))
+                       (let* ((symbolic (hash->list (model result)))
+                              (guard
+                               (letrec ((g (lambda (ss)
+                                             (if (null? ss)
+                                                 #t
+                                                 (and
+                                                  (let ((s (car ss)))
+                                                    (equal? (val (car s) (type-of (car s))) (evaluate (car s) result)))
+                                                  (g (cdr ss)))))))
+                                 (g symbolic)))
+                              (negated-formula
+                               (and 
+                                guard
+                                (not formula)))
+                              (solver (z3)))
+                         (solver-clear solver)
+                         (solver-assert solver (list negated-formula))
+                         (let ((negated-result (solver-check solver)))
+                           (solver-shutdown solver)
+                           (async-channel-put
+                            results-channel
+                            (if (sat? negated-result)
+                                #t
+                                (list (car y) (remove-duplicates (cadr y)) (caddr y) result null))))))
+                   (async-channel-put results-channel #t))))
            (drain #t)
            (when (<= goal 0)
              (raise models))))))
