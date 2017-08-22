@@ -169,4 +169,20 @@
   (let ((custom (make-custom-table text (map ~a symbolic))))
     (apply analyze custom '() '() limit outputs symbolic inputs)))
 
+(define (create-table models cols)
+  (cons cols
+    (for/list ([m models])
+      (flatten (for/list ([column-bindings (cdr m)])
+        (let ((vec (make-vector (length cols))))
+          (for ([cell column-bindings])
+            (let* ((col (car cell))
+                   (val (cdr cell))
+                   (pos (index-of cols col)))
+              (when (int? pos)
+                (vector-set! vec pos val))))
+        (vector->list vec)))))))
+      
+      
+      
+
 (provide test-custom make-custom-table analyze-custom)
