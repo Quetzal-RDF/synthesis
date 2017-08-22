@@ -71,7 +71,7 @@
                      (if (null? ctrls)                         
                          (let ((result (solve (assert (and guards extra)))))
                            (if (sat? result)
-                               (list (evaluate expr result) (hash->list (model result)))
+                               (list (list (evaluate expr result) (hash->list (model result))))
                                '()))
                          (append
                           (models (and (car ctrls) guards) (cdr ctrls))
@@ -117,5 +117,15 @@
                         "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0"
                              "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
                  (list A B C D E F G H))])
-    (for/list ([f fs])
-      (generate-models f controls (= f 17)))))
+    (apply append
+           (for/list ([f fs])
+             (generate-models f controls (= f 17))))))
+
+(define (test14)
+   (analyze-custom '("if" "A" "is" "foo" "then" "B"
+                        "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D"
+                             "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
+                   4
+                   '(100 32 17)
+                   (list A B C D E F G H)
+                   '("foo" 100 0 0 0 0 0 1) '("bar" 4 4 16 0 0 0 0) '("baz" 0 0 0 1 -17 1 -1)))
