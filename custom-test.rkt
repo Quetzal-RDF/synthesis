@@ -122,10 +122,10 @@
              (generate-models f controls (= f 17))))))
 
 (define (test14)
-   (analyze-custom '("if" "A" "is" "foo" "then" "B"
-                        "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D"
+   (analyze-custom '("if" "A" "is" "foo" "then" "B" "otherwise" "0"
+                        "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0"
                              "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
                    4
-                   '(100 32 17)
+                   '(150 100 32 17)
                    (list A B C D E F G H)
-                   '("foo" 100 0 0 0 0 0 1) '("bar" 4 4 16 0 0 0 0) '("baz" 0 0 0 1 -17 1 -1)))
+                   '("foo" 150 0 0 0 0 0 1) '("foo" 100 0 0 0 0 0 1) '("bar" 4 4 16 0 0 0 0) '("baz" 0 0 0 1 -17 1 -1)))
