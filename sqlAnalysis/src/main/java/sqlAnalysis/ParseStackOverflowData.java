@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.facebook.presto.sql.parser.SqlParser;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cfg.cdg.ControlDependenceGraph;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
@@ -24,6 +25,7 @@ import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
 import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
@@ -132,6 +134,35 @@ public class ParseStackOverflowData {
 			for(IMethod f : c.getDeclaredMethods()) {
 				IR ir = irs.makeIR(f, Everywhere.EVERYWHERE, SSAOptions.defaultOptions());
 				DefUse du = new DefUse(ir);
+				
+				ControlDependenceGraph<ISSABasicBlock> cdg = new ControlDependenceGraph<>(ir.getControlFlowGraph());
+				for(SSAInstruction inst : ir.getInstructions()) {
+					if (inst != null) {
+						ISSABasicBlock bb = ir.getBasicBlockForInstruction(inst);
+						if (bb != null) {
+							for(Iterator<ISSABasicBlock> pbs = cdg.getPredNodes(bb); pbs.hasNext(); ) {
+								ISSABasicBlock pb = pbs.next();
+								SSAInstruction cond = pb.getLastInstruction();
+								Set<SSAInstruction> vals = HashSetFactory.make();
+								for(int i = 0; i < cond.getNumberOfUses(); i++) {
+									vals.add(du.getDef(cond.getUse(i)));
+								}
+								while (! vals.isEmpty()) {
+									SSAInstruction pred = vals.iterator().next();
+									vals.remove(pred);
+									if (pred instanceof SSAPhiInstruction) {
+										for(int i = 0; i < pred.getNumberOfUses(); i++) {
+											vals.add(du.getDef(pred.getUse(i)));
+										}
+									} else if (pred != null) {
+										System.err.println(pred + " --> " + inst);
+									}
+								}
+							}
+						}
+					}
+				}
+				
 				for(int i = 0; i <= ir.getSymbolTable().getMaxValueNumber(); i++) {
 					SSAInstruction d = du.getDef(i);
 					if (d instanceof SSAInvokeInstruction || d instanceof SSAGetInstruction || d instanceof SSABinaryOpInstruction) {
