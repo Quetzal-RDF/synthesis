@@ -312,4 +312,9 @@
            (result (p '("if" "A" "<" "500" "then" "t3" "else" "if" "A" "<" "1000" "then" "t4" "else" "if" "A" "<" "1500" "then" "t5" "else" "t6"))))
     (println result)))
 
+(define (test15)
+       (letrec ((p (apply make-parser '("terms" "min_servers" "price_per_server")))
+           (result (p '("if" "terms" "==" "Committed" "then" "min_servers" "*" "price_per_server" "or" "else" "0"))))
+    (println result)))
+
 (provide make-parser find-parse)

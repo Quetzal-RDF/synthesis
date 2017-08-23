@@ -396,6 +396,16 @@ public class PrestoVisitor {
 		protected Boolean isIn = null;
 		
 		protected Boolean isComparison = null;
+		
+		protected Boolean isNegative = null;
+
+		public Boolean getIsNegative() {
+			return isNegative;
+		}
+
+		public void setIsNegative(Boolean isNegative) {
+			this.isNegative = isNegative;
+		}
 
 		public Context() {
 		}
@@ -680,7 +690,8 @@ public class PrestoVisitor {
 		
 		@Override
 		protected CAstNode visitNegativeExpression(NegativeExpression node, Context context) {
-			return factory.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_MUL, process(node.getValue(), context), factory.makeConstant(-1));
+			// KAVITHA - the fact that this is a negative expression is not of consequence to us
+			return process(node.getValue(), context);
 		}
 
 		@Override

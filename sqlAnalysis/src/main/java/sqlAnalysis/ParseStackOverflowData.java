@@ -5,7 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.facebook.presto.sql.parser.SqlParser;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
@@ -21,6 +24,8 @@ import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.SSABinaryOpInstruction;
+import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
@@ -36,13 +41,23 @@ public class ParseStackOverflowData {
 	static final SqlParser SQL_PARSER = new SqlParser();
 	static SlowSparseNumberedGraph<String> g = new SlowSparseNumberedGraph<String>(1);
 	static HashMap<String, Integer> edgeCount = new HashMap<String, Integer>();
+	static Map<String, String> srcToTargetFunction  = new HashMap<String, String>();
 	
 	public static void main(String[] args) throws Exception {
 		String content = new String(
 				Files.readAllBytes(Paths.get("../embeddingData/stackOverflowBody.doc")));
-//		String content = new String(
-//				Files.readAllBytes(Paths.get("/tmp/test")));
-
+		
+		Stream<String> mappings = Files.lines(Paths.get("functions"));
+		
+		mappings.forEach(name -> { 
+			System.out.println(name);
+			String[] arr = name.split("[|]");
+			assert arr.length == 2;
+			srcToTargetFunction.put(arr[0], arr[1]);
+		});
+		mappings.close();
+		
+		
 		int start = content.indexOf(codeStart);
 		int end = content.indexOf(codeEnd);
 		int count = 0;
@@ -84,7 +99,19 @@ public class ParseStackOverflowData {
 		
 		System.out.println("graph" + g);
 		System.out.println("edgecount" + edgeCount);
+		Iterator<String> it = g.getNodeManager().iterator();
+		while (it.hasNext()) {
+			System.out.println(it.next());
+		}
 
+	}
+	
+	public static String getFunction(String src) {
+		if (srcToTargetFunction.containsKey(src)) {
+			return srcToTargetFunction.get(src);
+		} else {
+			return src;
+		}
 	}
 
 	public static int doPresto(int prestoPasses, String code, ClassLoaderFactory loaders)
@@ -107,15 +134,33 @@ public class ParseStackOverflowData {
 				DefUse du = new DefUse(ir);
 				for(int i = 0; i <= ir.getSymbolTable().getMaxValueNumber(); i++) {
 					SSAInstruction d = du.getDef(i);
-					if (d instanceof SSAInvokeInstruction) {
+					if (d instanceof SSAInvokeInstruction || d instanceof SSAGetInstruction || d instanceof SSABinaryOpInstruction) {
 						Set<SSAInstruction> uses = HashSetFactory.make();
 						du.getUses(i).forEachRemaining((SSAInstruction x) -> { uses.add(x); });
 						while (! uses.isEmpty()) {
 							SSAInstruction use = uses.iterator().next();
 							uses.remove(use);
 							if (use instanceof SSAInvokeInstruction) {
-								String src = ((SSAInvokeInstruction) d).getCallSite().getDeclaredTarget().getName().toString();
-								String target = ((SSAInvokeInstruction) use).getCallSite().getDeclaredTarget().getName().toString();
+								String src = null;
+								if (d instanceof SSAInvokeInstruction) {
+									src = getFunction(((SSAInvokeInstruction) d).getCallSite().getDeclaredTarget().getName().toString());
+								} else if (d instanceof SSABinaryOpInstruction) {
+									src = getFunction(((SSABinaryOpInstruction) d).getOperator().toString());
+								} else if (d instanceof SSAGetInstruction) {
+									src = getFunction("column_read");
+								}
+								
+								String target = null;
+								if (use instanceof SSAInvokeInstruction) {
+									target = getFunction(((SSAInvokeInstruction) use).getCallSite().getDeclaredTarget().getName().toString());
+								} else if (use instanceof SSABinaryOpInstruction) {
+									target = getFunction(((SSABinaryOpInstruction) use).getOperator().toString());
+								}
+								
+								if (src == null || target == null) {
+									continue;
+								}
+																
 								if (!g.containsNode(src)) {
 									g.addNode(src);
 								}
@@ -130,13 +175,15 @@ public class ParseStackOverflowData {
 								int count = edgeCount.get(key) + 1;
 								edgeCount.put(key, count);
 								
+							} else if (use instanceof SSABinaryOpInstruction) {
+								
 							} else if (use instanceof SSAPhiInstruction) {
 								du.getUses(use.getDef()).forEachRemaining((SSAInstruction x) -> { 
 									uses.add(x);
 								});
 							}
 						}
-					}
+					} 
 				}
 				System.out.println(ir);
 			}
