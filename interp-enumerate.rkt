@@ -417,11 +417,19 @@
         (send p get-digits pos s)))))
 
 (define (do-all type ops size pos p f)
-  (for ([op (append
-             (hash-ref (send p extra-f) type '())
-             (hash-ref (send p extra-f) 'any '())
-             ((send p get-ordering-function) ops))])
-    (op size pos p f)))
+  (let ((extras (send p extra-f)))
+    (let ((do-custom
+           (lambda (type)
+             (when (hash-has-key? extras type)
+               (let ((fs (hash-ref extras type)))
+                 (for ([op fs])
+                   (hash-set! extras type (remove op fs))
+                   (op size pos p f)
+                   (hash-set! extras type fs)))))))
+      (do-custom type)
+      (do-custom 'any)
+      (for ([op ((send p get-ordering-function) ops)])
+        (op size pos p f)))))
 
 (define (do-all-str size pos p f)
   (do-all 'string
@@ -430,7 +438,7 @@
 
 (define (do-all-int size pos p f)
   (do-all 'number
-   (list do-in-int do-intv do-if-then-int do-basic-math do-basic-num-functions)
+   (list do-in-int do-intv do-basic-math do-if-then-int do-basic-num-functions)
    size pos p f))
 
 (define (do-all-any size pos p f)

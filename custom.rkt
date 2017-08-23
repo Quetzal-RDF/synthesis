@@ -151,18 +151,16 @@
           do-all-bool
           do-all-str
           do-all-any)))
-    (apply hasheq
+    (make-hasheq
            (for/fold ([hs '()])
                      ([fs customs])
              (letrec ((add (lambda (e l)
-                             (cond ((null? l) (list (cdr e) (list (car e))))
-                                   ((eq? (car l) (cdr e))
-                                    (cons (car l)
-                                          (cons (cons (car e) (cadr l))
-                                                (cddr l))))
-                                   (#t (cons (car l)
-                                             (cons (cadr l)
-                                                   (add e (cddr l)))))))))
+                             (cond ((null? l) (list (cons (cdr e) (list (car e)))))
+                                   ((eq? (caar l) (cdr e))
+                                    (cons (cons (caar l)
+                                                (cons (car e) (cdar l)))
+                                          (cdr l)))
+                                   (#t (cons (car l) (add e (cdr l))))))))
                (add fs hs))))))
 
 (define (analyze-custom text limit outputs symbolic . inputs)
