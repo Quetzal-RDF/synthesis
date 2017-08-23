@@ -140,7 +140,7 @@ public class ParseStackOverflowData {
 						while (! uses.isEmpty()) {
 							SSAInstruction use = uses.iterator().next();
 							uses.remove(use);
-							if (use instanceof SSAInvokeInstruction) {
+							if (use instanceof SSAInvokeInstruction || use instanceof SSABinaryOpInstruction) {
 								String src = null;
 								if (d instanceof SSAInvokeInstruction) {
 									src = getFunction(((SSAInvokeInstruction) d).getCallSite().getDeclaredTarget().getName().toString());
@@ -174,8 +174,6 @@ public class ParseStackOverflowData {
 								}
 								int count = edgeCount.get(key) + 1;
 								edgeCount.put(key, count);
-								
-							} else if (use instanceof SSABinaryOpInstruction) {
 								
 							} else if (use instanceof SSAPhiInstruction) {
 								du.getUses(use.getDef()).forEachRemaining((SSAInstruction x) -> { 
