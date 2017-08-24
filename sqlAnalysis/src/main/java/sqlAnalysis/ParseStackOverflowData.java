@@ -33,6 +33,7 @@ import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -41,8 +42,10 @@ public class ParseStackOverflowData {
 	static final String codeStart = "<code>";
 	static final String codeEnd = "</code>";
 	static final SqlParser SQL_PARSER = new SqlParser();
-	static SlowSparseNumberedGraph<String> g = new SlowSparseNumberedGraph<String>(1);
-	static HashMap<String, Integer> edgeCount = new HashMap<String, Integer>();
+	static SlowSparseNumberedGraph<String> dataflowGraph = new SlowSparseNumberedGraph<String>(1);
+	static HashMap<String, Integer> dataflowEdgeCount = new HashMap<String, Integer>();
+	static SlowSparseNumberedGraph<String> controlflowGraph = new SlowSparseNumberedGraph<String>(1);
+	static HashMap<String, Integer> controlflowEdgeCount = new HashMap<String, Integer>();
 	static Map<String, String> srcToTargetFunction  = new HashMap<String, String>();
 	
 	public static void main(String[] args) throws Exception {
@@ -99,9 +102,11 @@ public class ParseStackOverflowData {
 		System.out.println("found:" + count + " selects" + " with successes:" + (count - failures));
 		System.out.println("presto passes:" + prestoPasses);
 		
-		System.out.println("graph" + g);
-		System.out.println("edgecount" + edgeCount);
-		Iterator<String> it = g.getNodeManager().iterator();
+		System.out.println("dataflow graph" + dataflowGraph);
+		System.out.println("dataflow edgecount" + dataflowEdgeCount);
+		System.out.println("control dependence graph" + controlflowGraph);
+		System.out.println("control dependence edgecount" + controlflowEdgeCount);
+		Iterator<String> it = dataflowGraph.getNodeManager().iterator();
 		while (it.hasNext()) {
 			System.out.println(it.next());
 		}
@@ -155,7 +160,7 @@ public class ParseStackOverflowData {
 											vals.add(du.getDef(pred.getUse(i)));
 										}
 									} else if (pred != null) {
-										System.err.println(pred + " --> " + inst);
+										record(controlflowGraph, controlflowEdgeCount, getSourceName(pred), getSourceName(inst));
 									}
 								}
 							}
@@ -172,40 +177,14 @@ public class ParseStackOverflowData {
 							SSAInstruction use = uses.iterator().next();
 							uses.remove(use);
 							if (use instanceof SSAInvokeInstruction || use instanceof SSABinaryOpInstruction) {
-								String src = null;
-								if (d instanceof SSAInvokeInstruction) {
-									src = getFunction(((SSAInvokeInstruction) d).getCallSite().getDeclaredTarget().getName().toString());
-								} else if (d instanceof SSABinaryOpInstruction) {
-									src = getFunction(((SSABinaryOpInstruction) d).getOperator().toString());
-								} else if (d instanceof SSAGetInstruction) {
-									src = getFunction("column_read");
-								}
-								
-								String target = null;
-								if (use instanceof SSAInvokeInstruction) {
-									target = getFunction(((SSAInvokeInstruction) use).getCallSite().getDeclaredTarget().getName().toString());
-								} else if (use instanceof SSABinaryOpInstruction) {
-									target = getFunction(((SSABinaryOpInstruction) use).getOperator().toString());
-								}
+								String src = getSourceName(d);
+								String target = getTargetName(use);
 								
 								if (src == null || target == null) {
 									continue;
 								}
-																
-								if (!g.containsNode(src)) {
-									g.addNode(src);
-								}
-								if (!g.containsNode(target)) {
-									g.addNode(target);
-								}
-								g.addEdge(src, target);
-								String key = src + "-->" + target;
-								if (!edgeCount.containsKey(key)) {
-									edgeCount.put(key, 0);
-								}
-								int count = edgeCount.get(key) + 1;
-								edgeCount.put(key, count);
-								
+										
+								record(dataflowGraph, dataflowEdgeCount, src, target);										
 							} else if (use instanceof SSAPhiInstruction) {
 								du.getUses(use.getDef()).forEachRemaining((SSAInstruction x) -> { 
 									uses.add(x);
@@ -220,5 +199,45 @@ public class ParseStackOverflowData {
 		
 		prestoPasses++;
 		return prestoPasses;
+	}
+
+	private static void record(Graph<String> dataflowGraph, Map<String,Integer> dataflowEdgeCount, String src, String target) {
+		if (src != null && target != null) {
+			if (!dataflowGraph.containsNode(src)) {	
+				dataflowGraph.addNode(src);	
+			}
+			if (!dataflowGraph.containsNode(target)) {
+				dataflowGraph.addNode(target);
+			}
+			dataflowGraph.addEdge(src, target);
+			String key = src + "-->" + target;
+			if (!dataflowEdgeCount.containsKey(key)) {
+				dataflowEdgeCount.put(key, 0);
+			}
+			int count = dataflowEdgeCount.get(key) + 1;
+			dataflowEdgeCount.put(key, count);
+		}
+	}
+
+	private static String getTargetName(SSAInstruction use) {
+		String target = null;
+		if (use instanceof SSAInvokeInstruction) {
+			target = getFunction(((SSAInvokeInstruction) use).getCallSite().getDeclaredTarget().getName().toString());
+		} else if (use instanceof SSABinaryOpInstruction) {
+			target = getFunction(((SSABinaryOpInstruction) use).getOperator().toString());
+		}
+		return target;
+	}
+
+	private static String getSourceName(SSAInstruction d) {
+		String src = null;
+		if (d instanceof SSAInvokeInstruction) {
+			src = getFunction(((SSAInvokeInstruction) d).getCallSite().getDeclaredTarget().getName().toString());
+		} else if (d instanceof SSABinaryOpInstruction) {
+			src = getFunction(((SSABinaryOpInstruction) d).getOperator().toString());
+		} else if (d instanceof SSAGetInstruction) {
+			src = getFunction("column_read");
+		}
+		return src;
 	}
 }
