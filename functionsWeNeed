@@ -1,0 +1,15 @@
+in
+datediff
+substring_index
+coalesce
+avg
+least
+greatest
+stuff
+ltrim
+rtrim
+trim
+
+like
+regexp_substr
+regexp_replace
