@@ -163,9 +163,10 @@
                                    (#t (cons (car l) (add e (cdr l))))))))
                (add fs hs))))))
 
-(define (analyze-custom text limit outputs symbolic . inputs)
-  (let ((custom (make-custom-table text (map ~a symbolic))))
-    (apply analyze custom '() '() limit outputs symbolic inputs)))
+(define (analyze-custom text outputs symbolic . inputs)
+  (let* ((custom (make-custom-table text (map ~a symbolic)))
+         (start (length (remove-duplicates (apply append (hash-values custom))))))
+    (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
 (define (create-table models cols)
   (cons cols

@@ -754,9 +754,9 @@
 ; limit determines the total num of expressions it can use
 ; op is the top level node for the expression tree (for now) - to check if we got the right operation
 (define (test func op white raw-black limit raw-outputs symbolic raw-inputs)
-  (test-int  func op (hash) white raw-black limit raw-outputs symbolic raw-inputs))
+  (test-int  func op (hash) white raw-black 1 limit raw-outputs symbolic raw-inputs))
 
-(define (test-int func op custom white raw-black limit raw-outputs symbolic raw-inputs)
+(define (test-int func op custom white raw-black start limit raw-outputs symbolic raw-inputs)
    ; convert all reals to rational numbers in case we have any
   (let ((inputs (map (lambda(x) (map convert-to-rational x)) raw-inputs))
         (outputs (map convert-to-rational raw-outputs))
@@ -769,7 +769,7 @@
                       (if (< v limit)
                           (try-depth (+ 1 v))
                           '()))))))
-      (let ((o (try-depth 1)))
+      (let ((o (try-depth start)))
         (check-operation o op)
         (sort o
           (lambda (x y)

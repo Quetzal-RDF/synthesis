@@ -40,28 +40,25 @@
                           
 
 (define (test4)
-  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") 1 '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
+  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
 
 (define (test5)
-  (analyze-custom '("if" "s1" "==" "bad" "," "i2" "*" "i3") 2 '(40 50 0) (list s1 i2 i3) '("bad" 4 10) '("bad" 5 10) '("good" 5 10)))
+  (analyze-custom '("if" "s1" "==" "bad" "," "i2" "*" "i3") '(40 50 0) (list s1 i2 i3) '("bad" 4 10) '("bad" 5 10) '("good" 5 10)))
 
 (define (test6)
    (analyze-custom '("s1" "==" "Committed" "and" "i1" ">=" 25 "," "i3" "-" "(" "i4" "*" "i5" ")")
-                   3
                    '(5000 0 0)
                    (list s1 i1 i3 i4 i5)
                    '("Committed" 25 10000 100 50) '("Committed" 10 10000 100 50) '("Custom" 25 10000 100 50)))
 
 (define (test7)
    (analyze-custom '("if" "s1" "==" "Committed" "and" "i1" ">=" 25 "," "i3" "-" "(" "i4" "*" "i5" ")")
-                   2
                    '(5000 6000 0)
                    (list s1 i1 i3 i4 i5)
                    '("Committed" 25 10000 100 50) '("Committed" 25 10000 100 40) '("Custom" 25 10000 100 50)))
 
 (define (test8)
    (analyze-custom '("if" "s1" "==" "Committed" "and" "i1" ">=" 25 "then" "i3" "-" "(" "i4" "*" "i5" ")")
-                   1
                    '(5000 0 0)
                    (list s1 i1 i3 i4 i5)
                    '("Committed" 25 10000 100 50) '("Committed" 0 10000 100 50) '("Custom" 23 10000 100 50)))
@@ -123,9 +120,8 @@
 
 (define (test14)
    (analyze-custom '("if" "A" "is" "foo" "then" "B" "otherwise" "0"
-                        "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0"
+                        "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" 0
                              "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
-                   4
-                   '(150 100 32 17)
+                   '(23 17 17)
                    (list A B C D E F G H)
-                   '("foo" 150 0 0 0 0 0 1) '("foo" 100 0 0 0 0 0 1) '("bar" 4 4 16 0 0 0 0) '("baz" 0 0 0 1 -17 1 -1)))
+                   '("foo" 23 50 -100 100 0 0 50) '("bar" 1 1 15 100 0 0 -100) '("baz" 0 0 0 1 -17 1 -1)))
