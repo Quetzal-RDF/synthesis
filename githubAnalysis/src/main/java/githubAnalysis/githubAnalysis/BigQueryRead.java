@@ -120,7 +120,7 @@ public class BigQueryRead {
 
     // Concepts #2 and #3: Our pipeline applies the composite CountWords transform, and passes the
     // static FormatAsTextFn() to the ParDo transform.
-    p.apply("ReadLines", BigQueryIO.read().fromQuery("SELECT content FROM `quetzal-166513.quetzal.github_sql_dump` LIMIT 2").usingStandardSql())
+    p.apply("ReadLines", BigQueryIO.read().fromQuery("SELECT distinct content FROM `quetzal-166513.quetzal.results_20170824_selects`").usingStandardSql())
     .apply(ParDo.of(new ParseSQL()))
     .apply("WriteSQL", TextIO.write().to(options.getOutput()));;
 
