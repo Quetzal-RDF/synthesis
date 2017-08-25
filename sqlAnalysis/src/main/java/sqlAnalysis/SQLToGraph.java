@@ -6,11 +6,14 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.util.Util;
 import com.ibm.wala.cfg.cdg.ControlDependenceGraph;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
 import com.ibm.wala.classLoader.IClass;
@@ -18,7 +21,6 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.DefUse;
@@ -68,7 +70,7 @@ public class SQLToGraph {
 	}
 
 	public static void doPresto(String code, ClassLoaderFactory loaders)
-			throws ClassHierarchyException {
+			throws Exception {
 		
 		SourceModule M = new SQLSourceModule(code);
 		AnalysisScope scope = new AnalysisScope(Collections.singleton(SQL.sql)) {
@@ -79,6 +81,8 @@ public class SQLToGraph {
 		scope.addToScope(SQLClassLoaderFactory.Sql, M);
 		
 		IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
+		
+		Util.checkForFrontEndErrors(cha);
 
 		IRFactory<IMethod> irs = new AstIRFactory<IMethod>();
 		for(IClass c : cha) {
@@ -147,6 +151,10 @@ public class SQLToGraph {
 	
 	public static void printEdgeCounts(Map<String, Integer> edgeCounts) {
 		int count = 0;
+		edgeCounts = edgeCounts.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey())
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+				(oldValue, newValue) -> oldValue, LinkedHashMap::new));
 		for (Map.Entry<String, Integer> entry : edgeCounts.entrySet()) {
 			count += entry.getValue();
 			System.out.print(entry.getKey() + " " + entry.getValue() + "\n");
@@ -164,7 +172,7 @@ public class SQLToGraph {
 				dataflowGraph.addNode(target);
 			}
 			dataflowGraph.addEdge(src, target);
-			String key = src + "-->" + target;
+			String key = src + " --> " + target;
 			if (!dataflowEdgeCount.containsKey(key)) {
 				dataflowEdgeCount.put(key, 0);
 			}

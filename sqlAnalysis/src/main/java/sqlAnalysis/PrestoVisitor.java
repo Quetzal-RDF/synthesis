@@ -104,7 +104,7 @@ public class PrestoVisitor {
 			return CAstOperator.OP_GE;
 		} else if ("=".equals(op)) {
 			return CAstOperator.OP_EQ;
-		} else if ("!=".equals(op)) {
+		} else if ("!=".equals(op) || "<>".equals(op)) {
 			return CAstOperator.OP_NE;
 		} else if ("|".equals(op)) {
 			return CAstOperator.OP_BIT_OR;

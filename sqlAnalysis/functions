@@ -1,3 +1,10 @@
+ne|!=
+le|<=
+ge|>=
+ucase|upper
+lcase|lower
+locate|index-of
+mid|substring
 column_read|in-v
 like|like
 concat|concat
@@ -16,6 +23,7 @@ upper|upper
 substr|substring
 charindex|index-of
 getdate|current-date
+now|current-date
 trunc_date|extract-date-part
 coalesce|coalesce
 lag|lag

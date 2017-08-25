@@ -13,25 +13,48 @@ public class GitHubSelects {
 		List<String> lines = Files.readAllLines(Paths.get(args[0]));
 		StringBuffer buf = new StringBuffer();
 		int i = 0;
+		int numParses = 0;
+		int debug = 0;
 		for (String line : lines) {
-			if (line.startsWith("SELECT") || line.startsWith("select")) {
+			line = line.trim();
+			if (line.startsWith("SELECT") || line.startsWith("select") || line.startsWith("INSERT") || line.startsWith("insert")
+					|| line.startsWith("UPDATE") || line.startsWith("update")
+					|| line.startsWith("CREATE") || line.startsWith("create")
+					|| line.startsWith("ALTER") || line.startsWith("alter")
+					|| line.startsWith("WITH") || line.startsWith("with")
+					|| line.startsWith("DELETE") || line.startsWith("delete")
+					|| line.startsWith("--")
+					) {
 				
 				ClassLoaderFactory loaders = new SQLClassLoaderFactory();
-
-				// System.out.println(buf.toString());
-				try {
-					SQLToGraph.doPresto(buf.toString(), loaders);
-				} catch (Throwable e) {
-					e.printStackTrace();
+				String sql =  buf.toString().replace(';',' ');
+				sql = sql.replaceAll("\n", " ");
+				sql = sql.replace("`", "\"");
+				sql = sql.replace("?", "42");
+				sql = sql.replace(":", "");
+				sql = sql.replace("[", "");
+				sql = sql.replace("]", "");
+				
+				if (sql.startsWith("SELECT") || sql.startsWith("select")) {
+					i++;				
+					try {			
+						SQLToGraph.doPresto(sql, loaders);
+						numParses++;
+					} catch (Throwable e) {
+						System.out.println("SQL that does not parse:" + sql);
+						// debug++;
+						// e.printStackTrace();
+					}
 				}
-				i++;
 				buf = new StringBuffer();
 				buf.append(line).append("\n");
+
 			} else {
 				buf.append(line).append("\n");
 			}
 		}
 		System.out.println("num of statements:" + i);
+		System.out.println("num of statements parsed:" + numParses);
 		
 		
 		System.out.println("dataflow graph" + SQLToGraph.dataflowGraph);
