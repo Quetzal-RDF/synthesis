@@ -2,10 +2,8 @@ package sqlAnalysis;
 
 import org.junit.Test;
 
-import com.ibm.wala.cast.tree.CAstNode;
-import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
+import com.ibm.wala.util.WalaException;
 
 public class TranslatorTest {
 	private ClassLoaderFactory loaders = new SQLClassLoaderFactory();
@@ -36,28 +34,28 @@ public class TranslatorTest {
 	}
 
 	@Test
-	public void testFuns() throws ClassHierarchyException {
+	public void testFuns() throws WalaException {
 		String sql = "select a, b from c where sqrt(abs(a)) = b";
 		int i = 0;
 		ParseStackOverflowData.doPresto(i, sql, loaders);
 	}
 
 	@Test
-	public void testExists() throws ClassHierarchyException {
+	public void testExists() throws WalaException {
 		String sql = "SELECT * FROM Courses WHERE NOT EXISTS (SELECT * FROM Scores WHERE CourseID = Courses.CourseID AND UserID = userID)";
 		int i = 0;
 		ParseStackOverflowData.doPresto(i, sql, loaders);
 	}
 	
 	@Test
-	public void testExists2() throws ClassHierarchyException {
+	public void testExists2() throws WalaException {
 		String sql = "select a.acc_ref, a.bill_no from table1 a where exists (select acc_ref, bill_no, SUM (tran_amount) from table2 b where a.acc_ref = b.acc_ref and a.bill_no = b.bill_no group by acc_ref)";
 		int i = 0;
 		ParseStackOverflowData.doPresto(i, sql, loaders);
 	}
 	
 	@Test
-	public void testSubquery() throws ClassHierarchyException {
+	public void testSubquery() throws WalaException {
 		String sql = "SELECT name, height FROM people WHERE height = (SELECT MAX(height) FROM people)";
 		int i = 0;
 		ParseStackOverflowData.doPresto(i, sql, loaders);
@@ -65,7 +63,7 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testExtract() throws ClassHierarchyException {
+	public void testExtract() throws WalaException {
 		String sql = "SELECT EXTRACT(MONTH FROM bus_date) AS month, SUM (sales) AS sales FROM wmw_st_bte GROUP BY EXTRACT(MONTH FROM bus_date) ORDER BY EXTRACT(MONTH FROM bus_date)";
 		int i = 0;
 		ParseStackOverflowData.doPresto(i, sql, loaders);
@@ -73,7 +71,7 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testFunctionCalls() throws ClassHierarchyException {
+	public void testFunctionCalls() throws WalaException {
 		String sql = "select t.corridor, s.corridor_code_rb,t.roadway, s.SVYLENG2012, round(cast(t.frfpost as float), 3) as frfpost_short, " +
 				"s.FRFPOST, s.BEG_GN from SEC_FILE_IMPORT_2014 t join NORTH_VAN_DATA_VIEW_MOD_032015 s on round(cast(t.frfpost as float), 3) = s.FRFPOST and t.corridor = s.CORRIDOR_CODE";
 		int i = 0;

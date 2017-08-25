@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.facebook.presto.sql.parser.SqlParser;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.util.Util;
 import com.ibm.wala.cfg.cdg.ControlDependenceGraph;
 import com.ibm.wala.classLoader.ClassLoaderFactory;
 import com.ibm.wala.classLoader.IClass;
@@ -19,7 +20,6 @@ import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.SourceModule;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SeqClassHierarchyFactory;
 import com.ibm.wala.ssa.DefUse;
@@ -32,6 +32,7 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAPhiInstruction;
+import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
@@ -122,7 +123,7 @@ public class ParseStackOverflowData {
 	}
 
 	public static int doPresto(int prestoPasses, String code, ClassLoaderFactory loaders)
-			throws ClassHierarchyException {
+			throws WalaException {
 		
 		SourceModule M = new SQLSourceModule(code);
 		AnalysisScope scope = new AnalysisScope(Collections.singleton(SQL.sql)) {
@@ -134,6 +135,8 @@ public class ParseStackOverflowData {
 		
 		IClassHierarchy cha = SeqClassHierarchyFactory.make(scope, loaders);
 
+		Util.checkForFrontEndErrors(cha);
+		
 		IRFactory<IMethod> irs = new AstIRFactory<IMethod>();
 		for(IClass c : cha) {
 			for(IMethod f : c.getDeclaredMethods()) {
