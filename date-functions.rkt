@@ -7,7 +7,7 @@
 (define date-fields%
   (class object%
     (super-new)
-    (init-field [seconds 0] [minutes 0] [hours 0] [days 0] [months 0] [years 0] [posix-seconds 0]
+    (init-field [seconds 0] [minutes 0] [hours 0] [days 0] [months 0] [years 0]
                  [days-of-month (make-hash '((1 31) (2 28) (3 31) (4 30) (5 31) (6 30) (7 31) (8 31) (9 30) (10 31) (11 30) (12 31)))]
                  [cum-days-of-month (make-hash '((1 31) (2 59) (3 90) (4 120) (5 151) (6 181) (7 212) (8 243) (9 273) (10 304) (11 334) (12 365)))]
                  [days-of-week (make-hash '((1 0) (2 1) (3 2) (4 3) (5 4) (6 5) (0 6)))]
@@ -21,6 +21,10 @@
              (= 0 (modulo years 4)))
     )
 
+    (define/public (subtract-one-month)
+      (if (equal? months 1) 12 (- months 1)))
+      
+      
     (define/public (num-days-in-month)
       (if (and (equal? 2 months) (is-leap))
           29
@@ -43,6 +47,17 @@
             (add-minutes 1)))
         )
     )
+
+    (define/public (subtract-seconds s)
+      (assert (< s 60))
+      (let ((p (- seconds s)))
+        (if (> p 0)
+          (set-field! seconds this p)
+          (begin
+            (set-field! seconds this (+ p 60))
+            (subtract-minutes 1)))
+        )
+    )
     
     (define/public (add-minutes m)
       (assert (< m 60))
@@ -55,6 +70,17 @@
         )
      )
 
+    (define/public (subtract-minutes m)
+      (assert (< m 60))
+      (let ((p (- minutes m)))
+        (if (> p 0)
+            (set-field! minutes this p)
+            (begin
+              (set-field! minutes this (+ p 60))
+              (subtract-hours 1)))
+        )
+      )
+
     (define/public (add-hours h)
       (assert (< h 24))
       (let ((p (+ hours h)))
@@ -63,6 +89,17 @@
           (begin
           (set-field! hours this (- p 24))
           (add-days 1)))
+        )
+    )
+
+    (define/public (subtract-hours h)
+      (assert (< h 24))
+      (let ((p (- hours h)))
+      (if (> p 0)
+          (set-field! hours this p)
+          (begin
+          (set-field! hours this (+ p 24))
+          (subtract-days 1)))
         )
     )
 
@@ -77,6 +114,17 @@
       )    
     )
 
+    (define/public (subtract-days d)
+      (assert (<= d 28))  ; make sure days cannot span more than 1 month
+      (let ((p (- days d)))
+        (if (> p 0)
+          (set-field! days this p)
+          (begin
+	    (set-field! days this (+ (num-days (subtract-one-month)) p)) ;p is negative already, so take the number of days in prev month and add those
+	    (subtract-months 1)))
+      )    
+    )
+
     (define/public (add-months m)
       (assert (<= m 12))
       (let ((p (+ months m)))
@@ -88,9 +136,26 @@
         (check-valid-day))
      )
 
+    
+    (define/public (subtract-months m)
+      (assert (<= m 12))
+      (let ((p (- months m)))
+        (if (> p 0)
+            (set-field! months this p)
+            (begin
+              (set-field! months this (+ p 12))
+              (subtract-years 1)))
+        (check-valid-day))
+     )
+
     (define/public (add-years y)
       (assert (< y 100))
       (set-field! years this (+ y years))
+    )
+
+    (define/public (subtract-years y)
+      (assert (< y 100))
+      (set-field! years this (- years y))
     )
 
     (define (check-valid-day)
@@ -98,7 +163,7 @@
           (set-field! days this (num-days-in-month))))
     
     (define/public (print-fields)
-      (print (list seconds minutes hours days months years posix-seconds))
+      (print (list seconds minutes hours days months years))
     )
 
     (define/public (extract-seconds)
@@ -125,21 +190,14 @@
       (get-field years this)
     )
 
-;   (define/public (extract-day-of-year)
-;      (letrec ((k (lambda (m)
-;		    (if (zero? m)
-;			days
-;			(+ (num-days m) (k (- m 1)))))))
-;       (k (- months 1)))
-;   )
 
   (define/public (extract-day-of-year)
-    (let ((m (- months 1)))
-     (if (and (> months 2) (is-leap))
-         (+ (first (hash-ref cum-days-of-month m)) days 1)
-         (+ (first (hash-ref cum-days-of-month m)) days)
-     ))
-  )
+    (if (= months 1)
+        days
+        (let ((m (- months 1)))
+          (if (and (> months 2) (is-leap))
+              (+ (first (hash-ref cum-days-of-month m)) days 1)
+              (+ (first (hash-ref cum-days-of-month m)) days)))))
       
    ; from wikipedia, Zeller’s algorithm, last step converts to postgresql's notion of week days
    (define/public (extract-day-of-week)
@@ -201,6 +259,11 @@
        (seconds (modulo s 60)))
   (new date-fields% [years (list-ref d 0)] [months (list-ref d 1)] [days (list-ref d 2)] [hours hours] [minutes minutes] [seconds seconds]))
 )
+
+(define (date-subtract date1 date2)
+  (let ((e1 (send date1 extract-epoch))
+        (e2 (send date2 extract-epoch)))
+    (- e1 e2)))
 
 (define (test-leap)
   (let ((d (new date-fields% [years 2000])))
@@ -265,6 +328,68 @@
   )
   )
 
+(define (test-subtract-seconds)
+  ; test roll back to a difft day, difft year
+  (let ((d (new date-fields% [seconds 0] [minutes 0] [hours 0] [days 1] [months 1] [years 2000])))
+  (send d subtract-seconds 10)
+  (send d print-fields)
+  (assert (= 50 (get-field seconds d)))
+  (assert (= 59 (get-field minutes d)))
+  (assert (= 23 (get-field hours d)))
+  (assert (= 31 (get-field days d)))
+  (assert (= 12 (get-field months d)))
+  (assert (= 1999 (get-field years d)))
+  )
+
+  (let ((d (new date-fields% [seconds 10] [minutes 0] [hours 0] [days 1] [months 3] [years 2000])))
+  ; test roll back a day, leap year
+  (send d subtract-seconds 20)
+  (send d print-fields)
+  (assert (= 50 (get-field seconds d)))
+  (assert (= 59 (get-field minutes d)))
+  (assert (= 23 (get-field hours d)))
+  (assert (= 29 (get-field days d)))
+  (assert (= 2 (get-field months d)))
+  (assert (= 2000 (get-field years d)))
+  )
+
+  (let ((d (new date-fields% [seconds 10] [minutes 0] [hours 0] [days 1] [months 3] [years 1900])))
+  ; test roll back a day, non-leap year
+  (send d subtract-seconds 20)
+  (send d print-fields)
+  (assert (= 50 (get-field seconds d)))
+  (assert (= 59 (get-field minutes d)))
+  (assert (= 23 (get-field hours d)))
+  (assert (= 28 (get-field days d)))
+  (assert (= 2 (get-field months d)))
+  (assert (= 1900 (get-field years d)))
+  )
+
+  (let ((d (new date-fields% [seconds 50] [minutes 0] [hours 0] [days 1] [months 3] [years 2017])))
+  ; test no carry over at all
+  (send d subtract-seconds 20)
+  (send d print-fields)
+  (assert (= 30 (get-field seconds d)))
+  (assert (= 0 (get-field minutes d)))
+  (assert (= 0 (get-field hours d)))
+  (assert (= 1 (get-field days d)))
+  (assert (= 3 (get-field months d)))
+  (assert (= 2017 (get-field years d)))
+  )
+  
+ (let ((d (new date-fields% [seconds 40] [minutes 0] [hours 0] [days 1] [months 3] [years 2001])))
+  ; test roll back a day, non-leap year
+  (send d subtract-seconds 50)
+  (send d print-fields)
+  (assert (= 50 (get-field seconds d)))
+  (assert (= 59 (get-field minutes d)))
+  (assert (= 23 (get-field hours d)))
+  (assert (= 28 (get-field days d)))
+  (assert (= 2 (get-field months d)))
+  (assert (= 2001 (get-field years d)))
+  )
+  )
+
 (define (test-add-minutes)
   (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 28] [months 2] [years 2000])))
    ; test roll over to new day, leap year
@@ -303,6 +428,44 @@
   )
 )
 
+(define (test-subtract-minutes)
+  (let ((d (new date-fields% [seconds 59] [minutes 0] [hours 0] [days 1] [months 1] [years 2000])))
+    ; roll back a day
+    (send d subtract-minutes 20)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 40 (get-field minutes d)))
+    (assert (= 23 (get-field hours d)))
+    (assert (= 31 (get-field days d)))
+    (assert (= 12 (get-field months d)))
+    (assert (= 1999 (get-field years d)))
+    )
+
+  (let ((d (new date-fields% [seconds 59] [minutes 10] [hours 0] [days 1] [months 1] [years 2000])))
+    ; roll back a day, but subtract some subset
+    (send d subtract-minutes 20)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 50 (get-field minutes d)))
+    (assert (= 23 (get-field hours d)))
+    (assert (= 31 (get-field days d)))
+    (assert (= 12 (get-field months d)))
+    (assert (= 1999 (get-field years d)))
+    )
+
+    (let ((d (new date-fields% [seconds 59] [minutes 0] [hours 0] [days 1] [months 1] [years 2000])))
+      ; roll back a day, but subtract some subset
+      (send d subtract-minutes 59)
+      (send d print-fields)
+      (assert (= 59 (get-field seconds d)))
+      (assert (= 1 (get-field minutes d)))
+      (assert (= 23 (get-field hours d)))
+      (assert (= 31 (get-field days d)))
+      (assert (= 12 (get-field months d)))
+      (assert (= 1999 (get-field years d)))
+      )
+  )
+
 (define (test-add-hours)
   (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 28] [months 2] [years 2000])))
    ; test roll over to new day, leap year
@@ -340,6 +503,20 @@
   (assert (= 2002 (get-field years d)))
   )
 )
+
+(define (test-subtract-hours)
+  (let ((d (new date-fields% [seconds 59] [minutes 0] [hours 15] [days 1] [months 1] [years 2000])))
+    ; roll back a day
+    (send d subtract-hours 23)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 0 (get-field minutes d)))
+    (assert (= 16 (get-field hours d)))
+    (assert (= 31 (get-field days d)))
+    (assert (= 12 (get-field months d)))
+    (assert (= 1999 (get-field years d)))
+    )
+  )
 
 (define (test-add-days)
   (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 1] [years 2001])))
@@ -390,6 +567,43 @@
     (assert (= 2001 (get-field years d)))
     )
 )
+
+(define (test-subtract-days)
+  (let ((d (new date-fields% [seconds 59] [minutes 0] [hours 15] [days 1] [months 1] [years 2000])))
+    ; roll back 28 days
+    (send d subtract-days 28)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 0 (get-field minutes d)))
+    (assert (= 15 (get-field hours d)))
+    (assert (= 04 (get-field days d)))
+    (assert (= 12 (get-field months d)))
+    (assert (= 1999 (get-field years d)))
+    )
+
+  (let ((d (new date-fields% [seconds 59] [minutes 0] [hours 15] [days 3] [months 3] [years 2000])))
+    ; roll back 28 days, leap year
+    (send d subtract-days 28)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 0 (get-field minutes d)))
+    (assert (= 15 (get-field hours d)))
+    (assert (= 04 (get-field days d)))
+    (assert (= 2 (get-field months d)))
+    (assert (= 2000 (get-field years d)))
+    )
+  (let ((d (new date-fields% [seconds 59] [minutes 0] [hours 15] [days 3] [months 3] [years 1900])))
+    ; roll back 28 days, non-leap year
+    (send d subtract-days 28)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 0 (get-field minutes d)))
+    (assert (= 15 (get-field hours d)))
+    (assert (= 03 (get-field days d)))
+    (assert (= 2 (get-field months d)))
+    (assert (= 1900 (get-field years d)))
+    )
+  )
 
 (define (test-add-months)
     (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 1] [years 2001])))
@@ -453,6 +667,45 @@
     )
 )
 
+
+(define (test-subtract-months)
+    (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 3] [years 2001])))
+      ; test roll back 1 month to invalid days
+      (send d subtract-months 1)
+      (send d print-fields)
+      (assert (= 59 (get-field seconds d)))
+      (assert (= 59 (get-field minutes d)))
+      (assert (= 23 (get-field hours d)))
+      (assert (= 28 (get-field days d)))
+      (assert (= 2 (get-field months d)))
+      (assert (= 2001 (get-field years d)))
+      )
+  
+  (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 3] [years 2001])))
+      ; test roll back 11 month to invalid day
+      (send d subtract-months 11)
+      (send d print-fields)
+      (assert (= 59 (get-field seconds d)))
+      (assert (= 59 (get-field minutes d)))
+      (assert (= 23 (get-field hours d)))
+      (assert (= 30 (get-field days d)))
+      (assert (= 4 (get-field months d)))
+      (assert (= 2000 (get-field years d)))
+      )
+  
+   (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 3] [years 2000])))
+      ; test roll back 1 month to invalid day, leap year
+      (send d subtract-months 1)
+      (send d print-fields)
+      (assert (= 59 (get-field seconds d)))
+      (assert (= 59 (get-field minutes d)))
+      (assert (= 23 (get-field hours d)))
+      (assert (= 29 (get-field days d)))
+      (assert (= 2 (get-field months d)))
+      (assert (= 2000 (get-field years d)))
+      )
+)
+
 (define (test-add-years)
     (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 1] [years 2001])))
     (send d add-years 99)
@@ -466,9 +719,24 @@
     )
 )
 
+(define (test-subtract-years)
+    (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 1] [years 2001])))
+    (send d subtract-years 99)
+    (send d print-fields)
+    (assert (= 59 (get-field seconds d)))
+    (assert (= 59 (get-field minutes d)))
+    (assert (= 23 (get-field hours d)))
+    (assert (= 31 (get-field days d)))
+    (assert (= 1 (get-field months d)))
+    (assert (= 1902 (get-field years d)))
+    )
+)
+
 (define (test-doy)
     (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017])))
       (assert (= 93 (send d extract-day-of-year))))
+   (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 1] [years 2017])))
+      (assert (= 3 (send d extract-day-of-year))))
     (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 15] [months 5] [years 1964])))
       (assert (= 136 (send d extract-day-of-year))))
     (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 15] [months 5] [years 1998])))
@@ -566,16 +834,29 @@
      (let ((d (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 31] [months 12] [years 2001])))
       (assert (= 1 (send d extract-day-of-week))))
   )
- 
+
+(define (test-date-subtract)
+  (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017]))
+        (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 2] [months 4] [years 2017])))
+    (assert (= 86400 (date-subtract d1 d2))))
+  (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 1] [months 3] [years 2017]))
+        (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 28] [months 2] [years 2017])))
+    (assert (= 86400 (date-subtract d1 d2)))))
   
 (define (test-all-date-ops)
   (test-leap)
   (test-add-seconds)
+  (test-subtract-seconds)
   (test-add-minutes)
+  (test-subtract-minutes)
   (test-add-hours)
+  (test-subtract-hours)
   (test-add-days)
+  (test-subtract-days)
   (test-add-months)
+  (test-subtract-months)
   (test-add-years)
+  (test-subtract-years)
   (test-doy)
   (test-dow)
   (test-epoch)
