@@ -5,7 +5,7 @@
 
 
 (define date-fields%
-  (class object%
+  (class* object% (equal<%>)
     (super-new)
     (init-field [seconds 0] [minutes 0] [hours 0] [days 0] [months 0] [years 0]
                  [days-of-month (make-hash '((1 31) (2 28) (3 31) (4 30) (5 31) (6 30) (7 31) (8 31) (9 30) (10 31) (11 30) (12 31)))]
@@ -232,8 +232,23 @@
 
     (define/public (extract-epoch)
       (* (get-days-since-civil) 86400))
+
+    (define/public (equal-to? d recur)
+      (if (and (equal? seconds (get-field seconds d))
+               (equal? minutes (get-field minutes d))
+               (equal? hours (get-field hours d))
+               (equal? days (get-field days d))
+               (equal? months (get-field months d))
+               (equal? years (get-field years d)))
+          #t #f))
+
+    (define/public (equal-hash-code-of hash-code)
+      (hash-code (list seconds minutes hours days months years)))
+ 
+    (define/public (equal-secondary-hash-code-of hash-code)
+      (hash-code (list seconds minutes hours days months years)))
     )
-  )
+ )
 
 ; inverse of above, from http://howardhinnant.github.io/date_algorithms.html#days_from_civil.  Days from Jan 1 1970 for Unix epoch time computations
 (define (civil_from_days z)
@@ -264,6 +279,16 @@
   (let ((e1 (send date1 extract-epoch))
         (e2 (send date2 extract-epoch)))
     (- e1 e2)))
+
+(define (date-ge date1 date2)
+  (let ((e1 (send date1 extract-epoch))
+        (e2 (send date2 extract-epoch)))
+    (- e1 e2)))
+
+(define (date-compare op date1 date2)
+  (let ((e1 (send date1 extract-epoch))
+        (e2 (send date2 extract-epoch)))
+    (op e1 e2)))
 
 (define (test-leap)
   (let ((d (new date-fields% [years 2000])))
@@ -566,6 +591,10 @@
     (assert (= 1 (get-field months d)))
     (assert (= 2001 (get-field years d)))
     )
+
+   (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017])))
+     (send d1 add-days 1)
+     (send d1 print-fields))
 )
 
 (define (test-subtract-days)
@@ -842,6 +871,32 @@
   (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 1] [months 3] [years 2017]))
         (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 28] [months 2] [years 2017])))
     (assert (= 86400 (date-subtract d1 d2)))))
+
+(define (test-date-compare)
+  (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017]))
+        (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 2] [months 4] [years 2017])))
+    (assert (equal? #t (date-compare > d1 d2))))
+  (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 1] [months 3] [years 2017]))
+        (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 28] [months 2] [years 2017])))
+    (assert (equal? #f (date-compare < d1 d2)))))
+
+
+(define (test-date-equality)
+  (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017]))
+        (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017])))
+    (assert (equal? #t (send d2 equal-to? d1 '())))
+   (assert (equal? #t (equal? d1 d2)))))
+
+(define-symbolic i1 integer?)
+
+(define (test-symbolic-date-add)
+  (let ((d1 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 3] [months 4] [years 2017]))
+        (d2 (new date-fields% [seconds 59] [minutes 59] [hours 23] [days 2] [months 4] [years 2017])))
+    (send d2 add-days i1)
+    (send d2 print-fields)
+    (send d1 equal-to? d2 '())))   
+    
+  
   
 (define (test-all-date-ops)
   (test-leap)
@@ -861,5 +916,7 @@
   (test-dow)
   (test-epoch)
   (test-date-creation)
+  (test-date-subtract)
+  (test-date-compare)
   )
  
