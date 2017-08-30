@@ -480,19 +480,19 @@
                            p
                            (lambda (new-size v)
                              (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))
-      (rec 1 (- size 1) children '()))))
+      (rec 1 size children '()))))
 
 (define (do-unary-op do-arg op size pos p f)
   ((custom (lambda (p pos new-expr) (dynamic-send p op pos new-expr)) do-arg)
-   size pos p f))
+   (- size 2) pos p f))
 
 (define (do-binary-op do-arg1 do-arg2 op size pos p f)
   ((custom (lambda (p pos left-expr right-expr) (dynamic-send p op pos left-expr right-expr)) do-arg1 do-arg2)
-   size pos p f))
+   (- size 3) pos p f))
 
 (define (do-ternary-op do-arg1 do-arg2 do-arg3 op size pos p f)
   ((custom (lambda (p pos str start end) (dynamic-send p op str start end)) do-arg1 do-arg2 do-arg3)
-   size pos p f))
+   (- size 4) pos p f))
   
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
@@ -507,7 +507,7 @@
   (do-unary-op do-all-int 'basic-num-functions size pos p f))
 
 (define (do-index-of size pos p f)
-  (do-binary-op do-all-str do-all-str 'index-of size pos p f))
+  (do-binary-op do-all-str do-all-str 'index-of (- size 2) pos p f))
 
 (define (do-compare-to size pos p f)
   (do-binary-op do-all-int do-all-int 'compare-to size pos p f))
@@ -605,7 +605,7 @@
                   ; line does not refer to the parameter passed into this function
                   (new expr-processor% [inputs input])))))])
        (lambda (x y)
-         ; (println (car y))
+          (when (null? (apply append (hash-values extra)))
          (set! outstanding (+ outstanding 1))
          (let ((formula
                 (for/fold ([formula #t])
@@ -637,16 +637,21 @@
                                (letrec ((g (lambda (ss)
                                              (if (null? ss)
                                                  #t
-                                                 (and
-                                                  (let ((s (car ss)))
-                                                    (equal? (val (car s) (type-of (car s))) (evaluate (car s) result)))
-                                                  (g (cdr ss)))))))
+                                                 (let ((s (car ss))
+                                                       (rest (g (cdr ss))))
+                                                   (if (member (car s) universals)
+                                                       rest
+                                                       (and
+                                                        (equal? (car s) (evaluate (car s) result))
+                                                        rest)))))))
                                  (g symbolic)))
                               (negated-formula
                                (and 
                                 guard
                                 (not formula)))
                               (solver (z3)))
+                         (print universals)
+                         (println guard)
                          (solver-clear solver)
                          (solver-assert solver (list negated-formula))
                          (let ((negated-result (solver-check solver)))
@@ -659,7 +664,7 @@
                    (async-channel-put results-channel #t))))
            (drain #t)
            (when (<= goal 0)
-             (raise models))))))
+             (raise models)))))))
     (letrec ((finish
               (lambda ()
                 (when (and (> goal 0) (> outstanding 0))

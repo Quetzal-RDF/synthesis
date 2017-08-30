@@ -44,27 +44,27 @@
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1)
-  (test analyze '(if) '() '(index-of) 3 '(5 0) (list s1 i1) '(("A" 5)("B" 5))))
+  (test analyze '(if) '() '(index-of) 7 '(5 0) (list s1 i1) '(("A" 5)("B" 5))))
 
 (define (simple-symbolic1)
-  (test analyze '(if) '() '() 2 '(5 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
+  (test analyze '(if) '() '() 7 '(5 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
 
 (define (simple-symbolic2)
-  (test analyze '(if) '() '() 2 (list i2 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
+  (test analyze '(if) '() '() 7 (list i2 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
 
 (define (simple-symbolic3)
-  (test analyze '() '() '() 2 (list s2 "B") (list s1 i1) (list (list s2 1) (list "B" 5))))
+  (test analyze '() '() '() 7 (list s2 "B") (list s1 i1) (list (list s2 1) (list "B" 5))))
 
 (define (simple-selection1a)
-  (test analyze '(if) '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))
+  (test analyze '(if) '() '() 7 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))
 
 ; test selection of a certain column based on its string
 (define (simple-selection2)
-  (test analyze '() '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050) ("Custom" 1050))))
+  (test analyze '() '() '() 7 '(1050 0) (list s1 i1) '(("Committed" 1050) ("Custom" 1050))))
 
 ; test multiplication of 2 columns based on string in the first column - return Col 2 * Col 3 if Col1 = "Committed"
 (define (simple-selection3)
-  (test analyze '() '() '() 3 '(50000 0 1000) (list s1 i1 i2) '(("Committed" 1000 50) ("Custom" 1000 10) ("Committed" 100 10))))
+  (test analyze '() '() '() 10 '(50000 0 1000) (list s1 i1 i2) '(("Committed" 1000 50) ("Custom" 1000 10) ("Committed" 100 10))))
 
 (define math345
   (custom
@@ -100,7 +100,7 @@
 
 ; test selection of a certain column (Col2) based on value in a different column (Col1)
 (define (simple-selection1b)
-  (test analyze '(if) '() '() 3 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
+  (test analyze '(if) '() '() 7 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))  
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
@@ -112,23 +112,23 @@
 
 ; test simple boolean expression - Return expression Col3 > Col2 and Col1 == "A"
 (define (simple-boolean2)
-  (test analyze '(==) '() '(index-of substring) 5 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
+  (test analyze '(==) '() '(index-of substring) 9 '(#t #f #f #f) (list s1 i1 i2) '(("A" 5 7)("A" 7 5)("C" 7 5)("C" 5 7))))
 
 ; define (col1 + col2) / col3
 (define (simple-math1)
-  (test analyze '(+) '() '(if) 5 '(2 4 4) (list i1 i2 i3) '((1 1 1)(9 7 4)(3 5 2))))
+  (test analyze '(+) '() '(if) 6 '(2 4 4) (list i1 i2 i3) '((1 1 1)(9 7 4)(3 5 2))))
 
 ; if col1="A" then take col2 else 0
 (define (simple-eq1)
-  (test analyze '(if ==) '() '() 5 '(5 0 13) (list s1 i1) '(("A" 5)("" 7)("A" 13))))
+  (test analyze '(if ==) '() '(index-of length) 9 '(5 0 13) (list s1 i1) '(("A" 5)("AAA" 7)("A" 13))))
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-compare1)
-  (test analyze '(==) '() '(index-of substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+  (test analyze '(==) '() '(index-of substring) 9 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 ; test if col1 > .33
 (define (simple-test5)
-  (test analyze '(<=) '() '() 5 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
+  (test analyze '(<=) '() '() 7 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)
@@ -136,19 +136,19 @@
 
 ; test string equal
 (define (simple-compare2)
-  (test analyze '(==) '() '(index-of substring abs) 6 '(9 0 15) (list i1 i2 s1) '((4 3 "A") (4 3 "B") (5 5 "A"))))
+  (test analyze '(==) '() '(index-of substring abs) 10 '(9 0 15) (list i1 i2 s1) '((4 3 "A") (4 3 "B") (5 5 "A"))))
 
 ; if col1="" then take col3 else col2
 (define (simple-test2)
-  (test analyze '(==) '() '(abs index-of) 5 '(5 0) (list s1 i1) '(("A" 5)("" 5))))
+  (test analyze '(==) '() '(abs index-of length) 7 '(5 0) (list s1 i1) '(("A" 5)("" 5))))
 
 ; define (col1 + col2) / col3
 (define (simple-test3)
-  (test analyze '(/) '() '() 3 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
+  (test analyze '(/) '() '() 6 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-test4)
-  (test analyze '(<) '() '(substring) 5 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
+  (test analyze '(and) '() '(substring) 9 '(#t #f #f #f) (list i1 i2 s1) '((5 3 "A")(3 5 "A")(5 3 "B")(5 5 "A"))))
 
 
 
@@ -161,6 +161,9 @@
   (test analyze '() '() '(substring) 5 '(5000 0 0) (list s1 i1 i2 i3 i4) '(("Committed" 25 10000 100 50) ("Committed" () 10000 100 50) ("Custom" 25 10000 100 50))))
 
 
+; something wrong with strings...
+(define (simple-selection1c)
+  (test analyze '(if) '() '(index-of) 3 '("5" "0") (list s1 s2) '(("A" "5")("B" "5"))))
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)
