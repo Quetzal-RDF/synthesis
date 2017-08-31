@@ -184,4 +184,4 @@
       
       
 
-(provide test-custom make-custom-table analyze-custom)
+(provide test-custom make-custom-table analyze-custom create-table)
