@@ -320,7 +320,7 @@
 
 (define compound-processor%
   (class object%
-    (init extras children ordering-function)
+    (init children [extras '()] [ordering-function '()])
 
     (super-new)
 
@@ -815,4 +815,4 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-(provide expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)
+(provide doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)

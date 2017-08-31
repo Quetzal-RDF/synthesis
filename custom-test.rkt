@@ -13,14 +13,14 @@
 (define (test1)
   (let-values ([(fs controls) (test-custom '("i2" "*" "i3") (list s1 i2 i3))])
     (println fs)
-    (let ((result (solve (assert (and (> i2 1) (< i2 15) (> i3 1) (< i3 15) (= 15 (car fs)))))))
+    (let ((result (solve (assert (and (> i2 1) (< i2 15) (> i3 1) (< i3 15) (= 15 (cdar fs)))))))
       (println result)
       (assert (sat? result))
       (assert (= 15 (evaluate (* i2 i3) result))))))
 
 (define (test2)
   (let-values ([(fs controls) (test-custom '("if" "s1" "==" "bad" "then" "i2" "+" "i3") (list s1 i2 i3))])
-    (let ((result (solve (assert (and (> i2 1) (< i2 17) (> i3 1) (< i3 17) (equal? s1 "bad") (= 17 (car fs)))))))
+    (let ((result (solve (assert (and (> i2 1) (< i2 17) (> i3 1) (< i3 17) (equal? s1 "bad") (= 17 (cdar fs)))))))
       (println result)
       (println controls)
       (assert (sat? result))
@@ -30,7 +30,7 @@
   (let-values ([(fs controls) (test-custom '("if" "s1" "==" "bad" "then" "i2" "+" "i3") (list s1 i2 i3))])
     (letrec ((test (lambda (guards ctrls)
                      (if (null? ctrls)                         
-                         (let ((result (solve (assert (and guards (= (car fs) 17))))))
+                         (let ((result (solve (assert (and guards (= (cdar fs) 17))))))
                            (assert (sat? result))
                            (list result))
                          (append
@@ -68,7 +68,17 @@
                      (if (null? ctrls)                         
                          (let ((result (solve (assert (and guards extra)))))
                            (if (sat? result)
-                               (list (list (evaluate expr result) (hash->list (model result))))
+                               (let* ((answer (evaluate expr result))
+                                      (row1
+                                       (if (term? answer)
+                                           (let ((a1 (if (string? answer) "" 0)))
+                                             (list a1 (hash->list (model (solve (assert (and guards extra (equal? expr a1))))))))
+                                           (list answer (hash->list (model result)))))
+                                      (result2
+                                       (solve (assert (and guards extra (not (equal? expr (car row1))))))))
+                                  (if (sat? result2)
+                                     (list row1 (list (evaluate expr result2) (hash->list (model result2))))
+                                     (list row1)))
                                '()))
                          (append
                           (models (and (car ctrls) guards) (cdr ctrls))
@@ -82,20 +92,18 @@
                         "if" "s1" "==" "good" "then" "i2" "else"
                         "if" "i3" ">" "i2" "then" "i3")
                  (list s1 i2 i3))])
-    (let ((models (generate-models (car fs) controls (= (car fs) 17))))
+    (let ((models (generate-models (cdar fs) controls #t)))
       (println models)
       (assert (>= (length models) 4)))))
 
 (define (test11)
   (let-values ([(fs controls) (test-custom '("if" "s1" "is" "foo" "then" "i1" "otherwise" 0) (list s1 i1))])
-    (let ((models (generate-models (car fs) controls (= (car fs) 17))))
-      (println models)
-      (assert (= (length models) 1)))))
+    (let ((models (generate-models (cdar fs) controls #t)))
+      (assert (>= (length models) 1)))))
 
 (define (test12)
   (let-values ([(fs controls) (test-custom '("if" "s1" "is" "foo" "then" "i1" "otherwise" 0) (list s1 i1))])
-    (let ((models (generate-models (car fs) controls #t)))
-      (println models)
+    (let ((models (generate-models (cdar fs) controls #t)))
       (assert (>= (length models) 2)))))
 
 (define-symbolic A string?)
@@ -114,14 +122,15 @@
                         "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" "0"
                              "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
                  (list A B C D E F G H))])
-    (apply append
-           (for/list ([f fs])
-             (generate-models f controls (= f 17))))))
+    (for/list ([f fs])
+      (list (car f) (generate-models (cdr f) controls #t)))))
 
 (define (test14)
    (analyze-custom '("if" "A" "is" "foo" "then" "B" "otherwise" "0"
                         "+" "if" "A" "is" "bar" "then" "(" "B" "*" "C" ")" "+" "D" "else" 0
                              "+" "if" "A" "is" "baz" "then" "E" "*" "F" "*" "G" "*" "H")
-                   '(23 17 17)
+                   '(0 1 0 -1 0 -1)
                    (list A B C D E F G H)
-                   '("foo" 23 50 -100 100 0 0 50) '("bar" 1 1 15 100 0 0 -100) '("baz" 0 0 0 1 -17 1 -1)))
+                   '("foo" 0 0 0 0 0 0 0) '("foo" 1 0 0 0 0 0 0)
+                   '("bar" 0 0 0 0 0 0 0) '("bar" 0 0 -1 0 0 0 0)
+                   '("baz" 0 0 0 0 0 0 0) '("baz" 0 0 0 1 1 1 -1)))
