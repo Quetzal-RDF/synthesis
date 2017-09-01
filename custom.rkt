@@ -124,30 +124,28 @@
     (override if-then-else)))
 
 (define (test-custom text columns)
-  (let* ((trace (new tracing-expr-processor% [inputs columns]))
-         (p (new compound-processor%
-                 [children
-                  (list
-                   (new doc-processor%)
-                   trace)]))
-         (pair (lambda (x) (list x x)))
+  (let* ((pair (lambda (x) (list x x)))
          (int (lambda (size pos p f) (f 5 (pair (val pos integer?)))))
          (bool (lambda (size pos p f) (f 5 (pair (val pos boolean?)))))
          (str (lambda (size pos p f) (f 5 (pair (val pos string?))))))
-    (values
-     (map (lambda (f)
-            (let ((expr '())
+    (map (lambda (f)
+           (let* ((trace (new tracing-expr-processor% [inputs columns]))
+                  (p (new compound-processor%
+                          [children
+                           (list
+                            (new doc-processor%)
+                            trace)]))
+                  (expr '())
                   (doc '()))
-              (f 5 '() p (lambda (x y) (println y) (set! expr (cadr y)) (set! doc (car y))))
-              (cons doc expr)))
+             (f 5 '() p (lambda (x y) (println y) (set! expr (cadr y)) (set! doc (car y))))
+             (list doc expr (send trace controls))))
           (map car
                (make-custom-functions
                 (map ~a columns)
                 text
                 int bool str
                 (lambda (size pos p f)
-                  ([choose* int bool str] size pos p f)))))
-     (send trace controls))))
+                  ([choose* int bool str] size pos p f)))))))
 
 (define (make-custom-table text column-names)
   (let ((customs
