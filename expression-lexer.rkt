@@ -158,9 +158,9 @@
     ["as" "as"]
     ["("  "("]
     [")"  ")"]
-    [(seq (char-range #\a #\z) (:* (:or (char-range #\a #\z) (char-range #\A #\Z) (char-range #\0 #\9) #\_))) lexeme]
+    [(seq (:or (char-range #\a #\z) (char-range #\A #\Z)) (:* (:or (char-range #\a #\z) (char-range #\A #\Z) (char-range #\0 #\9) #\_))) lexeme]
     [(seq (char-range #\0 #\9) (char-range #\0 #\9) (:or #\/ #\-) (char-range #\0 #\9) (char-range #\0 #\9)  (:or #\/ #\-) (char-range #\0 #\9) (char-range #\0 #\9)(char-range #\0 #\9) (char-range #\0 #\9) ) lexeme]
-    [(seq (:? #\-) (:+ (char-range #\0 #\9)) (:? #\.) (:+ (char-range #\0 #\9))) lexeme]
+    [(seq (:? (:or #\- #\+)) (:+ (char-range #\0 #\9)) (:? (seq #\. (:+ (char-range #\0 #\9))))) lexeme]
    ))
 
 (define (lex in)
@@ -177,3 +177,5 @@
 
 (define (test3)
   (lex (open-input-string "funny same as foo")))
+
+(provide lex)

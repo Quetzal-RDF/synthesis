@@ -1,6 +1,7 @@
 #lang rosette
 
 (require "custom.rkt")
+(require "expression-lexer.rkt")
 
 (define-symbolic s1 string?)
 
@@ -63,28 +64,6 @@
                    (list s1 i1 i3 i4 i5)
                    '("Committed" 25 10000 100 50) '("Committed" 0 10000 100 50) '("Custom" 23 10000 100 50)))
 
-(define (generate-models expr controls extra)
-  (letrec ((models (lambda (guards ctrls)
-                     (if (null? ctrls)                         
-                         (let ((result (solve (assert (and guards extra)))))
-                           (if (sat? result)
-                               (let* ((answer (evaluate expr result))
-                                      (row1
-                                       (if (term? answer)
-                                           (let ((a1 (if (string? answer) "" 0)))
-                                             (list a1 (hash->list (model (solve (assert (and guards extra (equal? expr a1))))))))
-                                           (list answer (hash->list (model result)))))
-                                      (result2
-                                       (solve (assert (and guards extra (not (equal? expr (car row1))))))))
-                                  (if (sat? result2)
-                                     (list row1 (list (evaluate expr result2) (hash->list (model result2))))
-                                     (list row1)))
-                               '()))
-                         (append
-                          (models (and (car ctrls) guards) (cdr ctrls))
-                          (models (and (not (car ctrls)) guards) (cdr ctrls)))))))
-    (models #t controls)))
-
 (define (test10)
   (let-values ([(fs controls)
                 (test-custom
@@ -124,6 +103,18 @@
                  (list A B C D E F G H))])
     (for/list ([f fs])
       (list (car f) (generate-models (cdr f) controls #t)))))
+
+(define (test13a)
+  (parse-generate-data (lex (open-input-string "if A is foo then B otherwise 0 + if A is bar then (B*C)+D else 0 + if A is baz then E*F*G*H"))
+                       (list A B C D E F G H)))
+
+(define-symbolic terms string?)
+(define-symbolic price_per_server integer?)
+(define-symbolic min_servers integer?)
+
+(define (test13b)
+    (parse-generate-data (lex (open-input-string "if terms = Committed then price_per_server else 0 + if terms = Standard then price_per_server * min_servers else 0"))
+                       (list terms price_per_server min_servers)))
 
 (define (test14)
    (analyze-custom '("if" "A" "is" "foo" "then" "B" "otherwise" "0"
