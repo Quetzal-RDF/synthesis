@@ -4,6 +4,7 @@
 
 (require "interp-enumerate.rkt")
 (require "parse.rkt")
+(require "expression-lexer.rkt")
 
 (define (to-custom-int form nested-pos)
          (println form)
@@ -173,20 +174,57 @@
          (start (length (remove-duplicates (apply append (hash-values custom))))))
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
-(define (create-table models cols)
+(define (parse-generate-data tokens cols)
+   (let-values ([(fs controls)
+                (test-custom
+                 tokens
+                 cols)])
+    (let ((result (for/list ([f fs])
+      (list (car f) (generate-models (cdr f) controls #t)))))
+      (create-table result cols))))
+
+(define (generate-models expr controls extra)
+  (letrec ((models (lambda (guards ctrls)
+                     (if (null? ctrls)                         
+                         (let ((result (solve (assert (and guards extra)))))
+                           (if (sat? result)
+                               (let* ((answer (evaluate expr result))
+                                      (row1
+                                       (if (term? answer)
+                                           (let ((a1 (if (string? answer) "" 0)))
+                                             (list a1 (hash->list (model (solve (assert (and guards extra (equal? expr a1))))))))
+                                           (list answer (hash->list (model result)))))
+                                      (result2
+                                       (solve (assert (and guards extra (not (equal? expr (car row1))))))))
+                                  (if (sat? result2)
+                                     (list row1 (list (evaluate expr result2) (hash->list (model result2))))
+                                     (list row1)))
+                               '()))
+                         (append
+                          (models (and (car ctrls) guards) (cdr ctrls))
+                          (models (and (not (car ctrls)) guards) (cdr ctrls)))))))
+    (models #t controls)))
+
+(define (create-table result cols)
   (cons cols
-    (for/list ([m models])
-      (flatten (for/list ([column-bindings (cdr m)])
-        (let ((vec (make-vector (length cols))))
-          (for ([cell column-bindings])
-            (let* ((col (car cell))
-                   (val (cdr cell))
-                   (pos (index-of cols col)))
-              (when (int? pos)
-                (vector-set! vec pos val))))
-        (vector->list vec)))))))
-      
-      
+    ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
+    ; is the expected output for that subexpression, and the second element is a list of column bindings
+    (for/fold ([r '()]) ([e result])
+      (append r
+      (for/fold ([rr '()]) ([m (cdr e)])
+        (println m)
+        (append rr (for/list ([row m])
+          (let ((vec (make-vector (+ (length cols) 2))))
+            (println row)
+            (for ([cell (cadr row)])
+              (let* ((col (car cell))
+                     (val (cdr cell))
+                     (pos (index-of cols col)))
+                (when (int? pos)
+                  (vector-set! vec pos val))))
+            (vector-set! vec (length cols) (car row))
+            (vector-set! vec (+ 1 (length cols)) (car e))
+            (vector->list vec)))))))))
       
 
-(provide test-custom make-custom-table analyze-custom)
+(provide test-custom make-custom-table analyze-custom generate-models parse-generate-data)
