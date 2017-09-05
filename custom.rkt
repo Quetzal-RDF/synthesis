@@ -6,6 +6,9 @@
 (require "parse.rkt")
 (require "expression-lexer.rkt")
 
+(define-namespace-anchor anc)
+(define ns (namespace-anchor->namespace anc))
+
 (define (to-custom-int form nested-pos)
          (println form)
   (if (list? form)
@@ -83,7 +86,7 @@
     (println x)
     (values
      (map cadr (car x))
-     (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))))
+     (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)
      (third x))))
 
 (define (make-custom-function do-all-int do-all-bool do-all-str do-all-any)
@@ -206,25 +209,44 @@
     (models #t controls)))
 
 (define (create-table result cols)
-  (cons cols
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
     ; is the expected output for that subexpression, and the second element is a list of column bindings
-    (for/fold ([r '()]) ([e result])
-      (append r
-      (for/fold ([rr '()]) ([m (cdr e)])
-        (println m)
-        (append rr (for/list ([row m])
-          (let ((vec (make-vector (+ (length cols) 2))))
-            (println row)
-            (for ([cell (cadr row)])
-              (let* ((col (car cell))
-                     (val (cdr cell))
-                     (pos (index-of cols col)))
-                (when (int? pos)
-                  (vector-set! vec pos val))))
-            (vector-set! vec (length cols) (car row))
-            (vector-set! vec (+ 1 (length cols)) (car e))
-            (vector->list vec)))))))))
-      
+  (let ((used-cols (gather-cols (flatten result) cols)))
+    (cons used-cols
+          (for/fold ([r '()]) ([e result])
+            (append r
+                    (for/fold ([rr '()]) ([m (cdr e)])
+                      (println m)
+                      (append rr (for/list ([row m])
+                                   (let ((vec (make-vector (+ (length used-cols) 2))))
+                                     (println row)
+                                     (for ([cell (cadr row)])
+                                       (let* ((col (car cell))
+                                              (val (cdr cell))
+                                              (pos (index-of used-cols col)))
+                                         (vector-set! vec pos val)))
+                                     (vector-set! vec (length used-cols) (car row))
+                                     (vector-set! vec (+ 1 (length used-cols)) (car e))
+                                     (vector->list vec))))))))))
 
-(provide test-custom make-custom-table analyze-custom generate-models parse-generate-data)
+(define (gather-cols result cols)
+  (cond [(null? cols) '()]
+        [(index-of result (car cols)) (cons (car cols) (gather-cols result (cdr cols)))]
+        [#t (gather-cols result (cdr cols))]))
+    
+
+(define (parse-column-metadata p)
+ (for/list ([i p])
+      (let ((type (car (list-ref i 3)))
+            (colName (cadr i)))
+        (val (string->symbol colName)
+             (cond [(= type 1) integer?]
+                   ; type 2 is a date and needs to be changed because a symblic date type wont be accepted by Rosette
+                   [(= type 2) integer?]
+                   [(= type 3) string?]
+                   [(= type 4) boolean?]
+                   [(= type 5) real?]
+                   [#t string?])))))
+
+
+(provide test-custom make-custom-table analyze-custom generate-models parse-generate-data parse-column-metadata)

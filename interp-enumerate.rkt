@@ -6,6 +6,7 @@
 (require math/base)
 (require math/statistics)
 (require racket/async-channel)
+(require rosette/solver/smt/z3)
 
 (require "../rosette/rosette/solver/smt/server.rkt")
 
