@@ -124,7 +124,7 @@
      (let ((h (if (= 1 (length result))
                   (hasheq 'html (to-html (car result) columnMetadata)
                           'json (jsonify (car result) columnMetadata))
-                  (let ((sample (parse-generate-data query symbolics)))
+                  (let ((sample (parse-generate-data query symbolics columnMetadata)))
                     (hasheq 'html (string-join (map (lambda (x) (to-html x columnMetadata)) result))
                             'table sample)))))
        (println h)

@@ -117,7 +117,7 @@
       (list f v))
     
     (define/public (basic-binary f l r)
-      (list (if (equal? f equal?) '== f) l r))
+      (list (if (equal? f equal?) '== (string->symbol (~v f))) l r))
     
     (define/public (is-null-v? mb v pos)
         (list (if mb 'is-null 'is-not-null) v))

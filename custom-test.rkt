@@ -6,6 +6,7 @@
 (require "utils.rkt")
 
 
+
 (define-symbolic s1 string?)
 
 (define-symbolic i1 integer?)
@@ -150,5 +151,5 @@
                (columnName "parent_account_id" primitiveTypes (1)) (columnName "is_valid" primitiveTypes (4))))
          (symbolics (parse-column-metadata col)))
           (parse-generate-data (lex (open-input-string "if terms = Committed then price_per_server else 0 + if terms = Standard then price_per_server * min_servers else 0"))
-                       symbolics)))
+                       symbolics col)))
     
