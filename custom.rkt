@@ -178,27 +178,29 @@
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
 (define (parse-generate-data tokens cols)
-   (let-values ([(fs controls)
-                (test-custom
-                 tokens
-                 cols)])
-    (let ((result (for/list ([f fs])
-      (list (car f) (generate-models (cdr f) controls #t)))))
-      (create-table result cols))))
+  (let* ((fs (test-custom tokens cols))
+         (result
+          (for/list ([f fs])
+            (list (car f) (generate-models (cadr f) (caddr f) #t)))))
+    (create-table result cols)))
 
 (define (generate-models expr controls extra)
-  (letrec ((models (lambda (guards ctrls)
+  (letrec ((solve (lambda (formula)
+                    (let ((solver (z3)))
+                      (solver-assert solver (list formula))
+                      (solver-check solver))))
+           (models (lambda (guards ctrls)
                      (if (null? ctrls)                         
-                         (let ((result (solve (assert (and guards extra)))))
+                         (let ((result (solve (and guards extra))))
                            (if (sat? result)
                                (let* ((answer (evaluate expr result))
                                       (row1
                                        (if (term? answer)
                                            (let ((a1 (if (string? answer) "" 0)))
-                                             (list a1 (hash->list (model (solve (assert (and guards extra (equal? expr a1))))))))
+                                             (list a1 (hash->list (model (solve (and guards extra (equal? expr a1)))))))
                                            (list answer (hash->list (model result)))))
                                       (result2
-                                       (solve (assert (and guards extra (not (equal? expr (car row1))))))))
+                                       (solve (and guards extra (not (equal? expr (car row1)))))))
                                   (if (sat? result2)
                                      (list row1 (list (evaluate expr result2) (hash->list (model result2))))
                                      (list row1)))
@@ -213,21 +215,27 @@
     ; is the expected output for that subexpression, and the second element is a list of column bindings
   (let ((used-cols (gather-cols (flatten result) cols)))
     (cons used-cols
-          (for/fold ([r '()]) ([e result])
+          (filter (lambda (l) (not (null? l)))
+           (for/fold ([r '()]) ([e result])
             (append r
                     (for/fold ([rr '()]) ([m (cdr e)])
                       (println m)
                       (append rr (for/list ([row m])
-                                   (let ((vec (make-vector (+ (length used-cols) 2))))
-                                     (println row)
-                                     (for ([cell (cadr row)])
-                                       (let* ((col (car cell))
-                                              (val (cdr cell))
-                                              (pos (index-of used-cols col)))
-                                         (vector-set! vec pos val)))
-                                     (vector-set! vec (length used-cols) (car row))
-                                     (vector-set! vec (+ 1 (length used-cols)) (car e))
-                                     (vector->list vec))))))))))
+                                   (let/ec return
+                                     (let ((vec (make-vector (+ (length used-cols) 2))))
+                                       (println row)
+                                       (for ([cell (cadr row)])
+                                         (let* ((col (car cell))
+                                                (val (cdr cell))
+                                                (pos (index-of used-cols col)))
+                                           (print "cell ")
+                                           (println cell)
+                                           (if pos
+                                               (vector-set! vec pos val)
+                                               (return (list)))))
+                                       (vector-set! vec (length used-cols) (car row))
+                                       (vector-set! vec (+ 1 (length used-cols)) (car e))
+                                       (vector->list vec))))))))))))
 
 (define (gather-cols result cols)
   (cond [(null? cols) '()]
