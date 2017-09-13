@@ -31,6 +31,8 @@ import com.facebook.presto.sql.tree.IntervalLiteral;
 import com.facebook.presto.sql.tree.IsNotNullPredicate;
 import com.facebook.presto.sql.tree.IsNullPredicate;
 import com.facebook.presto.sql.tree.Join;
+import com.facebook.presto.sql.tree.JoinCriteria;
+import com.facebook.presto.sql.tree.JoinOn;
 import com.facebook.presto.sql.tree.LikePredicate;
 import com.facebook.presto.sql.tree.LogicalBinaryExpression;
 import com.facebook.presto.sql.tree.LogicalBinaryExpression.Type;
@@ -140,7 +142,7 @@ public class PrestoVisitor {
 		return e;
 	}
 	
-	private static void getQuerySpecifications(Query query, List<QuerySpecification> sp) {
+	public static void getQuerySpecifications(Query query, List<QuerySpecification> sp) {
 		QueryBody body = query.getQueryBody();
 		List<Query> queries = new LinkedList<Query>();
 
@@ -480,6 +482,17 @@ public class PrestoVisitor {
 		}
 
 		@Override
+		protected CAstNode visitJoin(Join node, Context context) {
+			Optional<JoinCriteria> join = node.getCriteria();
+			if (join.isPresent()) {
+				if (join.get() instanceof JoinOn) {
+					System.out.println(((JoinOn) join.get()).getExpression());
+					return process(((JoinOn) join.get()).getExpression(), context);
+				}
+			}
+			return null;
+		}
+		@Override
 		protected CAstNode visitSingleColumn(SingleColumn node, Context context) {
 			String colName = node.getExpression().toString();
 			return factory.makeNode(CAstNode.OBJECT_REF, factory.makeNode(CAstNode.VOID),
@@ -520,6 +533,17 @@ public class PrestoVisitor {
 			
 			if (node.getWhere().isPresent()) {
 				where = process(node.getWhere().get(), context);
+			}
+			
+			for (Relation r : node.getFrom()) {
+				if (r instanceof Join) {
+					CAstNode join = visitJoin((Join) r, null);
+					if (where == null) {
+						where = join;
+					} else {
+						where = factory.makeNode(CAstNode.ANDOR_EXPR, OP_AND, where, join);
+					}
+				}
 			}
 			
 			return createQueryNode(select, where, context);
