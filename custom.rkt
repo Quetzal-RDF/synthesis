@@ -5,6 +5,7 @@
 (require "interp-enumerate.rkt")
 (require "parse.rkt")
 (require "expression-lexer.rkt")
+(require "expression-writer.rkt")
 
 (define-namespace-anchor anc)
 (define ns (namespace-anchor->namespace anc))
@@ -177,12 +178,12 @@
          (start (length (remove-duplicates (apply append (hash-values custom))))))
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
-(define (parse-generate-data tokens cols)
+(define (parse-generate-data tokens cols columnMetadata)
   (let* ((fs (test-custom tokens cols))
          (result
           (for/list ([f fs])
             (list (car f) (generate-models (cadr f) (caddr f) #t)))))
-    (create-table result cols)))
+    (create-table result cols columnMetadata)))
 
 (define (generate-models expr controls extra)
   (letrec ((solve (lambda (formula)
@@ -210,37 +211,34 @@
                           (models (and (not (car ctrls)) guards) (cdr ctrls)))))))
     (models #t controls)))
 
-(define (create-table result cols)
+(define (create-table result cols columnMetadata)
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
     ; is the expected output for that subexpression, and the second element is a list of column bindings
   (let ((used-cols (gather-cols (flatten result) cols)))
-    (cons used-cols
+    (cons (map ~v used-cols)
           (filter (lambda (l) (not (null? l)))
            (for/fold ([r '()]) ([e result])
             (append r
                     (for/fold ([rr '()]) ([m (cdr e)])
-                      (println m)
                       (append rr (for/list ([row m])
                                    (let/ec return
                                      (let ((vec (make-vector (+ (length used-cols) 2))))
-                                       (println row)
                                        (for ([cell (cadr row)])
                                          (let* ((col (car cell))
                                                 (val (cdr cell))
                                                 (pos (index-of used-cols col)))
-                                           (print "cell ")
-                                           (println cell)
                                            (if pos
                                                (vector-set! vec pos val)
                                                (return (list)))))
                                        (vector-set! vec (length used-cols) (car row))
-                                       (vector-set! vec (+ 1 (length used-cols)) (car e))
+                                       (vector-set! vec (+ 1 (length used-cols)) (to-html (car e) columnMetadata))
                                        (vector->list vec))))))))))))
 
 (define (gather-cols result cols)
   (cond [(null? cols) '()]
         [(index-of result (car cols)) (cons (car cols) (gather-cols result (cdr cols)))]
         [#t (gather-cols result (cdr cols))]))
+
     
 
 (define (parse-column-metadata p)

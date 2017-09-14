@@ -88,17 +88,16 @@
   (letrec ((parsed (parse-post (request-post-data/raw request)))
            (input (read (open-input-string (hash-ref parsed 'inputStr))))
            (output (read (open-input-string (hash-ref parsed 'outputStr))))
-           (blackList (if (hash-has-key? parsed 'blackList)
-                          (read (open-input-string (hash-ref parsed 'blackList)))
-                          '()))
+           (query (lex (open-input-string (hash-ref parsed 'query))))
            (columnMetadata (read (open-input-string (hash-ref parsed 'columnMetadata))))
            (symbolics (parse-column-metadata parsed)))
     (println input)
     (println output)
+    (println query)
     (println columnMetadata)
-    (println blackList)
+    (println symbolics)
     ; analyze returns multiple solutions, support only 1 solution for now
-    (let ((result (car (test analyze '() '() blackList 5 output symbolics input))))
+    (let ((result (car (apply analyze-custom query output symbolics input))))
       (let ((h (hasheq 'html (to-html (cadr result) columnMetadata) 'json (jsonify (cadr result) columnMetadata))))
         (send/back
          (json-response-maker 202 '() h))))))
@@ -124,7 +123,7 @@
      (let ((h (if (= 1 (length result))
                   (hasheq 'html (to-html (car result) columnMetadata)
                           'json (jsonify (car result) columnMetadata))
-                  (let ((sample (parse-generate-data query symbolics)))
+                  (let ((sample (parse-generate-data query symbolics columnMetadata)))
                     (hasheq 'html (string-join (map (lambda (x) (to-html x columnMetadata)) result))
                             'table sample)))))
        (println h)
@@ -146,6 +145,13 @@
                    [(= type 4) boolean?]
                    [(= type 5) real?]
                    [#t string?])))))
+
+(define (test16)
+  (let* ((col '((columnName "terms" primitiveTypes (3)) (columnName "min_servers" primitiveTypes (1)) (columnName "price_per_server" primitiveTypes (1))))
+         (symbolics (parse-column-metadata2 col))
+         (query '("if" "terms" "=" "Committed" "then" "price_per_server" "else" "0" "+" "if" "terms" "=" "Standard" "then" "price_per_server" "*" "min_servers" "else" "0"))
+         (output '(0 1 0 0 -1 0)))
+    (apply analyze-custom query output symbolics '(("Committed" 0 0)("Committed" 0 1)("!0!" 0 0)("Standard" 0 0)("Standard" 1 -1)("!0!" 0 0)))))
 
 (define (test15)
   (let* ((col '((columnName "parent_name" primitiveTypes (3)) (columnName "country" primitiveTypes (3))
