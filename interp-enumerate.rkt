@@ -104,7 +104,18 @@
       (cons do-concat (merge left right)))
 
     (define/public (get-digits pos str)
-      (merge (list do-get-digits) str))))
+      (merge (list do-get-digits) str))
+
+    (define/public (aggregate pos type v)
+      (let* ((op
+              (if (eq? type 'string)
+                  'group-concat
+                  (let ((v1 (val (cons 1 pos) boolean?))
+                        (v2 (val (cons 2 pos) boolean?)))
+                    (cond ((and v1 v2) 'sum)
+                          ((and v1 (not v2)) 'max)
+                          (#t 'min))))))
+        (merge (list op) v)))))
 
 (define doc-processor%
   (class object%
@@ -117,7 +128,7 @@
       (list f v))
     
     (define/public (basic-binary f l r)
-      (list (if (equal? f equal?) '== f) l r))
+      (list (if (equal? f equal?) '== (string->symbol (~v f))) l r))
     
     (define/public (is-null-v? mb v pos)
         (list (if mb 'is-null 'is-not-null) v))
@@ -184,7 +195,18 @@
       (list 'concat left right))
 
     (define/public (get-digits pos str)
-      (list 'get-digits str))))
+      (list 'get-digits str))
+
+    (define/public (aggregate pos type v)
+      (let ((op
+             (if (eq? type 'string)
+                 'group-concat
+                 (let ((v1 (val (cons 1 pos) boolean?))
+                       (v2 (val (cons 2 pos) boolean?)))
+                   (cond ((and v1 v2) 'sum)
+                         ((and v1 (not v2)) 'max)
+                         (#t 'min))))))
+        (list 'agg op v)))))
 
 ;(define (basic-math-op r pos + - * / quotient remainder)
 ;  (let ((m1 (val (cons 'm1 pos) boolean?))
@@ -325,11 +347,9 @@
 
     (super-new)
 
-    (define extra-functions extras)
-    
-    (define processors children)
-
-    (define ordering ordering-function)
+    (init-field [extra-functions extras]
+                [processors children]
+                [ordering ordering-function])
 
     (define/public (extra-f)
       extra-functions)
@@ -415,7 +435,39 @@
 
     (define/public (get-digits pos strs)
       (for/list ([p processors] [s strs])
-        (send p get-digits pos s)))))
+        (send p get-digits pos s)))
+
+    (define/public (aggregate pos type vs)
+      (for/list ([p processors] [v vs])
+        (send p aggregate pos type v)))))
+      
+
+(define aggregating-processor%
+  (class compound-processor%
+
+    (super-new)
+
+    (inherit-field processors)
+    
+    (define (aggregate pos type v)
+      (let* ((op
+              (if (eq? type 'string)
+                  string-append
+                  (let ((v1 (val (cons 1 pos) boolean?))
+                        (v2 (val (cons 2 pos) boolean?)))
+                    (cond ((and v1 v2) +)
+                          ((and v1 (not v2)) max)
+                          (#t min)))))
+             (val
+              (for/fold ([f (cadr v)])
+                        ([e (cddr v)])
+                (op f e))))
+        (cons
+         (op (car v) val)
+         (for/list ([p processors])
+           val))))
+
+    (override aggregate)))
 
 (define (do-all type ops size pos p f)
   (let ((extras (send p extra-f)))
@@ -434,12 +486,12 @@
 
 (define (do-all-str size pos p f)
   (do-all 'string
-   (list do-in-str do-strv do-if-then-str do-concat do-substring do-get-digits)
+   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-get-digits)
    size pos p f))
 
 (define (do-all-int size pos p f)
   (do-all 'number
-   (list do-in-int do-intv do-basic-math do-if-then-int do-basic-num-functions)
+   (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions)
    size pos p f))
 
 (define (do-all-any size pos p f)
@@ -494,7 +546,7 @@
 (define (do-ternary-op do-arg1 do-arg2 do-arg3 op size pos p f)
   ((custom (lambda (p pos str start end) (dynamic-send p op str start end)) do-arg1 do-arg2 do-arg3)
    (- size 4) pos p f))
-  
+
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
 
@@ -533,7 +585,21 @@
 
 (define (do-substring size pos p f)
   (do-ternary-op do-all-str do-all-int do-all-int 'substr size pos p f))
-        
+
+(define (do-aggregate do-all-op type size pos p f)
+  (when (> size 0)
+    (do-all-op
+     (- size 1) (cons 'agg pos) p
+     (lambda (size expr)
+       (when (> size 0)
+         (f (- size 1) (send p aggregate pos type expr)))))))
+
+(define (do-int-aggregate size pos p f)
+  (do-aggregate do-all-int 'integer size pos p f))
+
+(define (do-str-aggregate size pos p f)
+  (do-aggregate do-all-str 'string size pos p f))
+
 (define (symbolic? x) 
   (or (union? x) (term? x)))
 
@@ -597,21 +663,23 @@
             [children
              (cons
               (new doc-processor%)
-              (cons
+              (list
                (new logging-processor%)
-               (cons
-                (new expr-processor% [inputs symbolic])
-                (for/list ([input inputs])
-                  ; initialize the field inputs in the expr-processor object with current row inputs.  Note the inputs in the following
-                  ; line does not refer to the parameter passed into this function
-                  (new expr-processor% [inputs input])))))])
+               (new aggregating-processor%
+                    [children
+                     (cons
+                      (new expr-processor% [inputs symbolic])
+                      (for/list ([input inputs])
+                        ; initialize the field inputs in the expr-processor object with current row inputs.  Note the inputs in the following
+                        ; line does not refer to the parameter passed into this function
+                        (new expr-processor% [inputs input])))])))])
        (lambda (x y)
           (when (null? (apply append (hash-values extra)))
          (set! outstanding (+ outstanding 1))
          (let ((formula
                 (for/fold ([formula #t])
                           ([out outputs]
-                           [in (cdddr y)])
+                           [in (cdr (third y))])
                   ; collect up all expressions generated by the expression processor in y (cddr y)
                   ; and create a single condition in formula for a solver to assert on with ANDs linking across rows.
                   (and
@@ -632,7 +700,7 @@
                    (if (null? universals)
                        (async-channel-put
                         results-channel
-                        (list (car y) (remove-duplicates (cadr y)) (caddr y) result null))
+                        (list (car y) (remove-duplicates (cadr y)) (car (third y)) result null))
                        (let* ((symbolic (hash->list (model result)))
                               (guard
                                (letrec ((g (lambda (ss)

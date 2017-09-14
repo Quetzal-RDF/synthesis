@@ -116,7 +116,7 @@
 
 ; define (col1 + col2) / col3
 (define (simple-math1)
-  (test analyze '(+) '() '(if) 6 '(2 4 4) (list i1 i2 i3) '((1 1 1)(9 7 4)(3 5 2))))
+  (test analyze '(+) '() '() 6 '(2 4 5) (list i1 i2 i3) '((1 1 1)(9 7 4)(4 6 2))))
 
 ; if col1="A" then take col2 else 0
 (define (simple-eq1)
