@@ -108,7 +108,7 @@
   (let ((txt (handle-args l replaceArg text f)))
     (for/fold ([t txt])
               ([i replaceArg])
-      (string-replace t i "&lt; insert formula part here &gt;" #:all? #f))))
+      (string-replace t i "**insert missing formula part here**" #:all? #f))))
 
 
 ; create an HTML text around this solution.  Add spans for functions so that they can get turned into 'black lists'
