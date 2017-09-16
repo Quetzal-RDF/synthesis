@@ -697,10 +697,10 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		List<Pair<String, String>> ret = new LinkedList<Pair<String, String>>();
 		
 		for (String s : expressions) {
-			StringBuffer exps = new StringBuffer("(");
-			exps.append(s).append(" ");
-			exps.append(")");
-			ret.add(Pair.make(exps.toString(), types.toString()));
+			if (s == null) {
+				continue;
+			}
+			ret.add(Pair.make(s, types.toString()));
 		}
 
 		return ret;

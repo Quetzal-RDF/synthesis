@@ -92,8 +92,7 @@ public class GitHubGetExpressions {
         .forEach(System.out::println); 
 
 		System.out.println("Expressions");
-		expressions.entrySet().stream().forEach(System.out::println); 
+		expressions.forEach((k, v) -> System.out.println("(" + k + " " + v + ")")); 
 	}
-
 
 }
