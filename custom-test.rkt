@@ -155,7 +155,7 @@
 
 (define (test16)
   (let* ((col '((columnName "parent_name" primitiveTypes (3)) (columnName "country" primitiveTypes (3))
-               (columnName "coterminating_billing" primitiveTypes (4))
+               (columnName "min_servers" primitiveTypes (5))
                (columnName "city" primitiveTypes (3))
                (columnName "billing_contact" primitiveTypes (3))
                (columnName "flat_rate" primitiveTypes (1)) (columnName "valid_from" primitiveTypes (2))
@@ -178,7 +178,7 @@
 
 (define (test17)
   (let* ((col '((columnName "parent_name" primitiveTypes (3)) (columnName "country" primitiveTypes (3))
-               (columnName "coterminating_billing" primitiveTypes (4))
+               (columnName "min_servers" primitiveTypes (3))
                (columnName "city" primitiveTypes (3))
                (columnName "billing_contact" primitiveTypes (3))
                (columnName "flat_rate" primitiveTypes (1)) (columnName "valid_from" primitiveTypes (2))
