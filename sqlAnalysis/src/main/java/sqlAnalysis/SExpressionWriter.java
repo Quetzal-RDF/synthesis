@@ -85,7 +85,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("trim", l);
 		functionNameMap.put("trim", "trim");
-		functionNameMap.put("ltrim", "ltrim");
+		functionNameMap.put("ltrim", "trim");
 		
 		l = new LinkedList<Integer>();
 		l.add(4);
