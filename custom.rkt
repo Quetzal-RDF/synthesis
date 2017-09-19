@@ -6,6 +6,7 @@
 (require "parse.rkt")
 (require "expression-lexer.rkt")
 (require "expression-writer.rkt")
+(require rosette/solver/smt/z3)
 
 (define-namespace-anchor anc)
 (define ns (namespace-anchor->namespace anc))
