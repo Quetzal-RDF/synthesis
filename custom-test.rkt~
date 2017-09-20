@@ -76,10 +76,8 @@
                   "if" "i3" ">" "i2" "then" "i3")
            (list s1 i2 i3)))
          (models (generate-models (cadar fs) (caddar fs) #t)))
-    (println models)
-    (assert (>= (length models) 4))
-    models))
-    
+      (println models)
+      (assert (>= (length models) 4))))
 
 (define (test11)
   (let* ((fs (test-custom '("if" "s1" "is" "foo" "then" "i1" "otherwise" 0) (list s1 i1)))
