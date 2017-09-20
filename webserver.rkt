@@ -123,7 +123,7 @@
      (let ((h (if (= 1 (length result))
                   (hasheq 'html (to-html (car result) columnMetadata)
                           'json (jsonify (car result) columnMetadata))
-                  (let ((sample (parse-generate-data query symbolics columnMetadata)))
+                  (let ((sample (generate-data query symbolics columnMetadata)))
                     (hasheq 'html (string-join (map (lambda (x) (to-html x columnMetadata)) result))
                             'table sample)))))
        (println h)
@@ -173,7 +173,7 @@
                (columnName "auto_renew" primitiveTypes (4)) (columnName "org_id" primitiveTypes (1))
                (columnName "parent_account_id" primitiveTypes (1)) (columnName "is_valid" primitiveTypes (4))))
          (symbolics (parse-column-metadata2 col)))
-          (parse-generate-data (lex (open-input-string "if terms = Committed then price_per_server else 0 + if terms = Standard then price_per_server * min_servers else 0"))
+          (generate-data (lex (open-input-string "if terms = Committed then price_per_server else 0 + if terms = Standard then price_per_server * min_servers else 0"))
                        symbolics)))
 
 (define (log req)

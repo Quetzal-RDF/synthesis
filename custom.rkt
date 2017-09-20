@@ -6,6 +6,7 @@
 (require "parse.rkt")
 (require "expression-lexer.rkt")
 (require "expression-writer.rkt")
+(require rosette/solver/smt/z3)
 
 (define-namespace-anchor anc)
 (define ns (namespace-anchor->namespace anc))
@@ -104,15 +105,11 @@
                     arg-types))
             funtype))))
 
-(define (make-custom-functions columns text do-all-int do-all-bool do-all-str do-all-any)
+(define (make-custom-functions columns fragments do-all-int do-all-bool do-all-str do-all-any)
   (let* ((make-custom 
-          (make-custom-function do-all-int do-all-bool do-all-str do-all-any))
-         (parse
-          (apply make-parser columns))
-         (stuff
-          (parse text)))
+          (make-custom-function do-all-int do-all-bool do-all-str do-all-any)))
     (println make-custom)
-    (map make-custom (filter cons? stuff))))
+    (map make-custom (filter cons? fragments))))
 
 (define tracing-expr-processor%
   (class expr-processor%
@@ -128,7 +125,7 @@
       (super if-then-else case l r))    
     (override if-then-else)))
 
-(define (test-custom text columns)
+(define (test-custom fragments columns)
   (let* ((pair (lambda (x) (list x x)))
          (int (lambda (size pos p f) (f 5 (pair (val pos integer?)))))
          (bool (lambda (size pos p f) (f 5 (pair (val pos boolean?)))))
@@ -147,7 +144,7 @@
           (map car
                (make-custom-functions
                 (map ~a columns)
-                text
+                fragments
                 int bool str
                 (lambda (size pos p f)
                   ([choose* int bool str] size pos p f)))))))
@@ -174,12 +171,16 @@
                (add fs hs))))))
 
 (define (analyze-custom text outputs symbolic . inputs)
-  (let* ((custom (make-custom-table text (map ~a symbolic)))
+  (let* ((parse (apply make-parser (map ~a symbolic)))
+         (stuff (parse text))
+         (custom (make-custom-table stuff (map ~a symbolic)))
          (start (length (remove-duplicates (apply append (hash-values custom))))))
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
-(define (parse-generate-data tokens cols columnMetadata)
-  (let* ((fs (test-custom tokens cols))
+(define (generate-data text cols columnMetadata)
+  (let* ((parse (apply make-parser (map ~a cols)))
+         (stuff (parse text))
+         (fs (test-custom stuff cols))
          (result
           (for/list ([f fs])
             (list (car f) (generate-models (cadr f) (caddr f) #t)))))
@@ -189,17 +190,20 @@
   (letrec ((solve (lambda (formula)
                     (let ((solver (z3)))
                       (solver-assert solver (list formula))
+                      (println formula)
                       (let ((x (solver-check solver)))
                         (solver-shutdown solver)
                         x))))
            (models (lambda (guards ctrls)
-                     (if (null? ctrls)                         
+                      (if (null? ctrls)                         
                          (let ((result (solve (and guards extra))))
                            (if (sat? result)
                                (let* ((answer (evaluate expr result))
                                       (row1
                                        (if (term? answer)
-                                           (let ((a1 (if (string? answer) "" 0)))
+                                           (let ((a1 (cond ((string? answer) "")
+                                                           ((boolean? answer) #t)
+                                                           (#t 0))))
                                              (list a1 (hash->list (model (solve (and guards extra (equal? expr a1)))))))
                                            (list answer (hash->list (model result)))))
                                       (result2
@@ -256,5 +260,14 @@
                    [(= type 5) real?]
                    [#t string?])))))
 
+(define-symbolic s1 string?)
 
-(provide test-custom make-custom-table analyze-custom generate-models parse-generate-data parse-column-metadata)
+(define-symbolic i1 integer?)
+(define-symbolic i2 integer?)
+(define-symbolic i3 integer?)
+(define-symbolic i4 integer?)
+(define-symbolic i5 integer?)
+
+
+
+(provide test-custom make-custom-table analyze-custom generate-models generate-data parse-column-metadata)
