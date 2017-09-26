@@ -9,6 +9,7 @@
 (require rosette/solver/smt/z3)
 
 (require "../rosette/rosette/solver/smt/server.rkt")
+(require "dates.rkt")
 
 (require "threads.rkt")
 
@@ -106,6 +107,25 @@
     (define/public (get-digits pos str)
       (merge (list do-get-digits) str))
 
+    (define/public (date-diff pos left right)
+      (merge (list do-date-diff) left right))
+
+    (define/public (date-compare pos left right)
+      (merge (list do-date-compare) left right))
+    
+    (define/public (date-interval pos left right)
+       (merge (list do-date-interval) left right))
+
+    (define/public (date-extract pos v)
+       (merge (list do-date-extract) v))
+
+    (define/public (date-to-epoch pos v)
+      (merge (list do-date-to-epoch) v))
+
+    (define/public (date-from-epoch pos v)
+      (merge (list do-date-from-epoch) v))
+
+    
     (define/public (aggregate pos type v)
       (let* ((op
               (if (eq? type 'string)
@@ -193,6 +213,51 @@
 
     (define/public (concat pos left right)
       (list 'concat left right))
+
+    (define/public (date-diff pos left right)
+      (list 'date-subtract left right))
+
+    (define/public (date-compare pos left right)
+      (list 'date-compare left right))
+    
+    (define/public (date-interval pos left right)
+      (let ((di1 (val (cons 'di1 pos) boolean?))
+            (di2 (val (cons 'di2 pos) boolean?))
+            (di3 (val (cons 'di3 pos) boolean?))
+            (di4 (val (cons 'di4 pos) boolean?)))
+            (list
+                  (if di1
+                      (if di2
+                          (if di3
+                              (if di4 'add-seconds 'add-minutes)
+                              (if di4 'add-hours 'add-days))
+                          (if di3
+                              (if di4 'add-months 'add-years)
+                              (if di4 'subtract-seconds 'subtract-minutes)))
+                      (when di2
+                          (if di3
+                              (if di4 'subtract-hours 'subtract-days)
+                              (if di4 'subtract-months 'subtract-years))))
+                  left right)))
+
+    (define/public (date-extract pos v)
+          (let ((de1 (val (cons 'de1 pos) boolean?))
+                (de2 (val (cons 'de2 pos) boolean?))
+                (de3 (val (cons 'de3 pos) boolean?)))
+            (list
+                  (if de1
+                      (if de2
+                          (if de3 'extract-seconds 'extract-minutes)
+                          (if de3 'extract-hours 'extract-days))
+                      (if de2
+                          (if de3 'extract-months 'extract-years)
+                          (if de3 'extract-day-of-year 'extract-day-of-week))) v)))
+
+    (define/public (date-to-epoch pos v)
+      (list 'date-to-epoch v))
+
+    (define/public (date-from-epoch pos v)
+      (list 'date-from-epoch v))
 
     (define/public (get-digits pos str)
       (list 'get-digits str))
@@ -333,6 +398,79 @@
           (send this basic-binary string-append left right)
           'invalid))
 
+    (define/public (date-diff pos left right)
+      (if (and (vector? left) (vector? right))
+          (date-subtract left right)
+          'invalid))
+
+    (define/public (date-compare pos left right)
+      (if (and (vector? left) (integer? right))
+          (let ((di1 (val (cons 'di1 pos) boolean?))
+                (di2 (val (cons 'di2 pos) boolean?))
+                (di3 (val (cons 'di3 pos) boolean?)))
+            (send this basic-binary
+                  (if di1
+                      (if di2
+                          (if di3 date-le date-ge)
+                          (if di3 date-gt date-lt))
+                      (if di2 date-equal 'invalid))))
+          'invalid))
+    
+    (define/public (date-interval pos left right)
+      (if (and (vector? left) (integer? right))
+          (let ((d (make-date left))
+                (di1 (val (cons 'di1 pos) boolean?))
+                (di2 (val (cons 'di2 pos) boolean?))
+                (di3 (val (cons 'di3 pos) boolean?))
+                (di4 (val (cons 'di4 pos) boolean?)))
+            (send this basic-binary
+                  (if di1
+                      (if di2
+                          (if di3
+                              (if di4 add-seconds add-minutes)
+                              (if di4 add-hours add-days))
+                          (if di3
+                              (if di4 add-months add-years)
+                              (if di4 subtract-seconds subtract-minutes)))
+                      (if di2
+                          (if di3
+                              (if di4 subtract-hours subtract-days)
+                              (if di4 subtract-months subtract-years))
+                          'invalid))
+                  d right)
+            d)
+          'invalid))
+
+    (define/public (date-extract-bin pos v f)
+      (if (vector? v)
+          (f v)
+          'invalid))
+
+    (define/public (date-extract pos v)
+      (if (vector? v)
+          (let ((de1 (val (cons 'de1 pos) boolean?))
+                (de2 (val (cons 'de2 pos) boolean?))
+                (de3 (val (cons 'de3 pos) boolean?)))
+            (date-extract-bin pos v 
+                  (if de1
+                      (if de2
+                          (if de3 extract-seconds extract-minutes)
+                          (if de3 extract-hours extract-days))
+                      (if de2
+                          (if de3 extract-months extract-years)
+                          (if de3 extract-day-of-year extract-day-of-week)))))  
+          'invalid))
+
+    (define/public (date-to-epoch pos v)
+      (if (vector? v)
+          (send this basic-unary extract-epoch v)
+          'invalid))
+
+    (define/public (date-from-epoch pos v)
+      (if (integer? v)
+          (send this basic-unary extract-date-from-epoch v)
+          'invalid))
+
     (define/public (get-digits pos str)
       (let ((s1 (val (cons 'b str) string?))
             (s2 (val (cons 'd str) string?))
@@ -403,6 +541,10 @@
     (define/public (index-of pos left right)
       (for/list ([p processors] [l left] [r right])
         (send p index-of pos l r)))
+        
+    (define/public (date-compare pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p date-compare pos l r)))
     
     (define/public (compare-to pos left right)
       (for/list ([p processors] [l left] [r right])
@@ -415,7 +557,7 @@
     (define/public (logic-op-not pos v)
       (for/list ([p processors] [vs v])
         (send p logic-op-not pos vs)))
-  
+    
     (define/public (if-then-else cases left right)
       (for/list ([p processors] [case cases] [l left] [r right])
         (send p if-then-else case l r)))
@@ -439,6 +581,26 @@
     (define/public (get-digits pos strs)
       (for/list ([p processors] [s strs])
         (send p get-digits pos s)))
+
+    (define/public (date-diff pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p date-diff pos l r)))
+    
+    (define/public (date-interval pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p date-interval pos l r)))
+
+    (define/public (date-extract pos v)
+     (for/list ([p processors] [vs v])
+        (send p date-extract pos vs)))
+    
+    (define/public (date-to-epoch pos v)
+    (for/list ([p processors] [vs v])
+        (send p date-to-epoch pos vs)))
+
+    (define/public (date-from-epoch pos v)
+      (for/list ([p processors] [vs v])
+        (send p date-from-epoch pos vs)))
 
     (define/public (aggregate pos type vs)
       (for/list ([p processors] [v vs])
@@ -498,7 +660,9 @@
 
 (define (do-all-int size pos p f)
   (do-all 'number
-   (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions)
+ ;  (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff do-date-extract do-date-to-epoch)
+ (list do-in-int do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff)
+ 
    size pos p f))
 
 (define (do-all-any size pos p f)
@@ -511,18 +675,29 @@
    (list do-in-int do-intv do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
    size pos p f))
 
+(define (do-all-date size pos p f)
+  (do-all 'vector
+          (list do-in-date do-date-from-epoch do-date-interval)
+          size pos p f))
+
+
 (define (do-all-bool size pos p f)
   (do-all 'boolean
-   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null?)
+   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null? do-date-compare)
    size pos p f))
 
 (define (do-in-int size pos p f) (f size (send p in pos number?)))
 
 (define (do-in-str size pos p f) (f size (send p in pos string?)))
 
+; dates are represented as vectors
+(define (do-in-date size pos p f) (f size (send p in pos vector?)))
+
 (define (do-intv size pos p f) (f size (send p symbolic (cons 'int pos) integer?)))
 
 (define (do-strv size pos p f) (f size (send p symbolic (cons 'str pos) string?)))
+
+(define (do-datev size pos p f) (f size (send p symbolic (cons 'date pos) vector?)))
 
 (define (do-is-null? size pos p f)
   (when (>= size 0)
@@ -562,6 +737,24 @@
 
 (define (do-basic-math size pos p f)
   (do-binary-op do-math-int do-math-int 'basic-math size pos p f))
+
+(define (do-date-compare size pos p f)
+  (do-binary-op do-all-date do-all-date 'date-compare size pos p f))
+
+(define (do-date-diff size pos p f)
+  (do-binary-op do-all-date do-all-date 'date-diff size pos p f))
+
+(define (do-date-interval size pos p f)
+  (do-binary-op do-all-date do-all-date 'date-interval size pos p f))
+
+(define (do-date-extract size pos p f)
+  (do-unary-op do-all-date 'date-extract size pos p f))
+
+(define (do-date-to-epoch size pos p f)
+  (do-unary-op do-all-date 'date-to-epoch size pos p f))
+
+(define (do-date-from-epoch size pos p f)
+  (do-unary-op do-all-int 'date-from-epoch size pos p f))
 
 (define (do-basic-num-functions size pos p f)
   (do-unary-op do-all-int 'basic-num-functions size pos p f))
@@ -653,6 +846,7 @@
       ((let ((v (car outputs)))
          (cond ((boolean? v) do-all-bool)
                ((number? v) do-all-int)
+               ((vector? v) do-all-date)
                (#t do-all-str)))
        ; do-all-bool/do-all-int etc will be called with limit, an empty list (list) to indicate the root node of the expression tree we are developing
        ; a list of processors which include 1 for printing (doc-processor) and 1 expression processor initialized with inputs per row (cdr inputs discards
