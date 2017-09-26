@@ -58,6 +58,48 @@
            (list (append (car l) (car r))
                  (list 'send 'p 'basic-binary op (cadr l) (cadr r))
                  'number))]
+        [(add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours
+                      subtract-days subtract-months subtract-years)
+         (case (length form)
+           [(2)
+            (let ((date (to-custom-int (cadr form) (cons 1 nested-pos)))
+                  (interval (gensym 'p)))
+              (list (append (car date) (list (list interval 'number)))
+                    (list 'send 'p 'date-interval (cadr date) interval)
+                    'date))]
+           [(3)
+            (let ((date (to-custom-int (cadr form) (cons 1 nested-pos)))
+                  (interval (third form)))
+              (list (append (car date) (car interval)))
+                    (list 'send 'p 'date-interval (cadr date) (cadr interval))
+                    'date)]
+           )
+        ]
+        [(extract-seconds extract-minutes extract-hours extract-days extract-months extract-years extract-day-of-year extract-day-of-week)
+         (let ((date (to-custom-int (cadr form) (cons 1 nested-pos))))
+              (list (car date)
+                    (list 'send 'p 'date-extract-bin (cadr date) (car form))
+                    'number))
+        ]
+        [(extract-from-date)
+         (let ((date (to-custom-int (cadr form) (cons 1 nested-pos))))
+           (list (car date)
+                 (list 'send 'p 'date-extract (cadr date))
+                 'number))
+        ]
+        [(extract-epoch-from-date)
+         (let ((date (to-custom-int (cadr form) (cons 1 nested-pos))))
+           (list (car date)
+                 (list 'send 'p 'date-to-epoch (cadr date))
+                 'number))
+        ]
+        [(date-diff)
+         (let ((date1 (to-custom-int (cadr form) (cons 1 nested-pos)))
+               (date2 (to-custom-int (third form) (cons 2 nested-pos))))
+           (list (append (car date1) (car date2))
+                 (list 'send 'p 'date-diff (cadr date1) (cadr date2))
+                 'number))
+        ]
         [(=)
          (let ((op (car form))
                (l (to-custom-int (second form) (cons 1 nested-pos)))

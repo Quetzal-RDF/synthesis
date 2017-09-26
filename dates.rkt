@@ -4,11 +4,11 @@
 
 (require racket/date)
 
-(define days-of-month (make-hash '((1 31) (2 28) (3 31) (4 30) (5 31) (6 30) (7 31) (8 31) (9 30) (10 31) (11 30) (12 31))))
+(define days-of-month #(0 31 28 31 30 31 30 31 31 30 31 30 31))
 
-(define cum-days-of-month (make-hash '((1 31) (2 59) (3 90) (4 120) (5 151) (6 181) (7 212) (8 243) (9 273) (10 304) (11 334) (12 365))))
+(define cum-days-of-month #(0 31 59 90 120 151 181 212 243 273 304 334 365))
 
-(define days-of-week (make-hash '((1 0) (2 1) (3 2) (4 3) (5 4) (6 5) (0 6))))
+(define days-of-week #(6 0 1 2 3 4 5))
 
 (define (new-date)
   (make-vector 6))
@@ -87,7 +87,7 @@
   (let ((months (get-field date "months")))
     (if (and (equal? 2 months) (is-leap date))
         29
-        (first (hash-ref days-of-month months)))))
+        (vector-ref days-of-month months))))
 
 (define (add-days date d)
   (assert (<= d 28))  ; make sure days cannot span more than 1 month
@@ -149,7 +149,7 @@
 (define (num-days date m)
   (if (and (equal? 2 m) (is-leap date))
       29
-      (first (hash-ref days-of-month m))))
+      (vector-ref days-of-month m)))
 
 
 (define (subtract-one-month date)
@@ -194,7 +194,7 @@
             (list y m d))))
 
 ; extraction of date from epoch
-(define (date-from-epoch t)
+(define (extract-date-from-epoch t)
  (let* ((s (modulo t 86400))
        (d (civil_from_days (floor (/ t 86400))))
        (hours (quotient s (* 60 60)))
@@ -232,17 +232,32 @@
 (define (date-subtract date1 date2)
   (let ((e1 (extract-epoch date1))
         (e2 (extract-epoch date2)))
-    (- e1 e2)))
+    (/ (- e1 e2) 86400)))
 
 (define (date-ge date1 date2)
   (let ((e1 (extract-epoch date1))
         (e2 (extract-epoch date2)))
-    (- e1 e2)))
+    (>= e1 e2)))
 
-(define (date-compare op date1 date2)
+(define (date-le date1 date2)
   (let ((e1 (extract-epoch date1))
         (e2 (extract-epoch date2)))
-    (op e1 e2)))
+    (<= e1 e2)))
+
+(define (date-gt date1 date2)
+  (let ((e1 (extract-epoch date1))
+        (e2 (extract-epoch date2)))
+    (> e1 e2)))
+
+(define (date-lt date1 date2)
+  (let ((e1 (extract-epoch date1))
+        (e2 (extract-epoch date2)))
+    (< e1 e2)))
+
+(define (date-equal date1 date2)
+  (let ((e1 (extract-epoch date1))
+        (e2 (extract-epoch date2)))
+    (= e1 e2)))
 
 (define (extract-seconds date)
   (get-field date "seconds"))
@@ -270,8 +285,8 @@
         days
         (let ((m (- months 1)))
           (if (and (> months 2) (is-leap date))
-              (+ (first (hash-ref cum-days-of-month m)) days 1)
-              (+ (first (hash-ref cum-days-of-month m)) days))))))
+              (+ (vector-ref  cum-days-of-month m) days 1)
+              (+ (vector-ref  cum-days-of-month m) days))))))
       
 ; from wikipedia, Zeller’s algorithm, last step converts to postgresql's notion of week days
 (define (extract-day-of-week date)
@@ -292,7 +307,8 @@
                          (floor (/ c 4)))
                       (* 2 c))
                    7)))
-      (first (hash-ref days-of-week dow)))))
+      (vector-ref days-of-week dow))))
 
 (provide new-date add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours subtract-days subtract-months subtract-years
-         set-field get-field is-leap create-date date-from-epoch date-subtract date-compare extract-day-of-year extract-epoch extract-day-of-week)
+         set-field get-field is-leap create-date extract-date-from-epoch date-subtract date-le date-ge date-lt date-gt date-equal extract-seconds extract-minutes extract-hours extract-days extract-months extract-years
+         extract-day-of-year extract-epoch extract-day-of-week)
