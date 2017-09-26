@@ -182,11 +182,13 @@
          (stuff (parse text))
          (fs (test-custom stuff cols))
          (result
-          (for/list ([f fs])
+          (for/list ([f (filter (lambda (v) (not (eq? (cadr v) 'invalid))) fs)])
+            (println f)
             (list (car f) (generate-models (cadr f) (caddr f) #t)))))
     (create-table result cols columnMetadata)))
 
 (define (generate-models expr controls extra)
+  (println controls)
   (letrec ((solve (lambda (formula)
                     (let ((solver (z3)))
                       (solver-assert solver (list formula))
@@ -212,9 +214,11 @@
                                      (list row1 (list (evaluate expr result2) (hash->list (model result2))))
                                      (list row1)))
                                '()))
-                         (append
-                          (models (and (car ctrls) guards) (cdr ctrls))
-                          (models (and (not (car ctrls)) guards) (cdr ctrls)))))))
+                         (if (eq? #f guards)
+                             '()
+                             (append
+                              (models (and (car ctrls) guards) (cdr ctrls))
+                              (models (and (not (car ctrls)) guards) (cdr ctrls))))))))
     (models #t controls)))
 
 (define (create-table result cols columnMetadata)

@@ -228,6 +228,9 @@
       [(and (not m1) m2) -]
       [#t +])))
 
+(define (lifted-round v)
+  (truncate (+ v .5)))
+
 (define expr-processor%
   (class object%
     (init inputs)
@@ -281,7 +284,7 @@
           (let ((m1 (val (cons 'm1 pos) boolean?))
                 (m2 (val (cons 'm2 pos) boolean?))
                 (m3 (val (cons 'm3 pos) boolean?)))
-            (send this basic-unary (if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) floor) v))
+            (send this basic-unary (if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) (if m2 floor lifted-round)) v))
           'invalid))
     
     (define/public (index-of pos l r)
@@ -450,22 +453,26 @@
     (inherit-field processors)
     
     (define (aggregate pos type v)
-      (let* ((op
-              (if (eq? type 'string)
-                  string-append
-                  (let ((v1 (val (cons 1 pos) boolean?))
-                        (v2 (val (cons 2 pos) boolean?)))
-                    (cond ((and v1 v2) +)
-                          ((and v1 (not v2)) max)
-                          (#t min)))))
-             (val
-              (for/fold ([f (cadr v)])
-                        ([e (cddr v)])
-                (op f e))))
-        (cons
-         (op (car v) val)
-         (for/list ([p processors])
-           val))))
+      (let-values ([(op is-average)
+                    (if (eq? type 'string)
+                        (values string-append #f)
+                        (let ((v1 (val (cons 1 pos) boolean?))
+                              (v2 (val (cons 2 pos) boolean?)))
+                          (values
+                           (cond ((and v1 v2) min)
+                                 ((and v1 (not v2)) max)
+                                 (#t +))
+                           (and (not v1) (not v2)))))])
+        (let ((val
+               (for/fold ([f (cadr v)])
+                         ([e (cddr v)])
+                 (op f e))))
+          (cons
+           (let ((v1 (op (car v) val)))
+             (if is-average (/ v1 (length v)) v1))
+           (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
+             (for/list ([p processors])
+               v1))))))
 
     (override aggregate)))
 
