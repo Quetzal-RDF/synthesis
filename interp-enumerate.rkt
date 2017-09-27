@@ -651,11 +651,16 @@
    (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-get-digits)
    size pos p f))
 
+(define (do-all-int-no-date size pos p f)
+  (do-all 'number
+    (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions)
+   size pos p f))
+
 (define (do-all-int size pos p f)
   (do-all 'number
- ;  (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff do-date-extract do-date-to-epoch)
- (list do-in-int do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff)
- 
+     (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff do-date-extract do-date-to-epoch)
+;    (list do-in-int do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff do-date-extract do-date-to-epoch)
+;    (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions)
    size pos p f))
 
 (define (do-all-any size pos p f)
@@ -788,7 +793,7 @@
          (f (- size 1) (send p aggregate pos type expr)))))))
 
 (define (do-int-aggregate size pos p f)
-  (do-aggregate do-all-int 'integer size pos p f))
+  (do-aggregate do-all-int-no-date 'integer size pos p f))
 
 (define (do-str-aggregate size pos p f)
   (do-aggregate do-all-str 'string size pos p f))
