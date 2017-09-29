@@ -93,7 +93,7 @@
                  (list 'send 'p 'date-to-epoch (cadr date))
                  'number))
         ]
-        [(date-diff)
+        [(date-subtract)
          (let ((date1 (to-custom-int (cadr form) (cons 1 nested-pos)))
                (date2 (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car date1) (car date2))
@@ -225,7 +225,6 @@
          (fs (test-custom stuff cols))
          (result
           (for/list ([f (filter (lambda (v) (not (eq? (cadr v) 'invalid))) fs)])
-            (println f)
             (list (car f) (generate-models (cadr f) (caddr f) #t)))))
     (create-table result cols columnMetadata)))
 
@@ -234,14 +233,13 @@
   (letrec ((solve (lambda (formula)
                     (let ((solver (z3)))
                       (solver-assert solver (list formula))
-                      (println formula)
                       (let ((x (solver-check solver)))
                         (solver-shutdown solver)
                         x))))
            (models (lambda (guards ctrls)
-                      (if (null? ctrls)                         
-                         (let ((result (solve (and guards extra))))
-                           (if (sat? result)
+                     (let ((result (solve (and guards extra))))
+                       (if (sat? result)
+                           (if (null? ctrls)                         
                                (let* ((answer (evaluate expr result))
                                       (row1
                                        (if (term? answer)
@@ -252,15 +250,13 @@
                                            (list answer (hash->list (model result)))))
                                       (result2
                                        (solve (and guards extra (not (equal? expr (car row1)))))))
-                                  (if (sat? result2)
+                                 (if (sat? result2)
                                      (list row1 (list (evaluate expr result2) (hash->list (model result2))))
                                      (list row1)))
-                               '()))
-                         (if (eq? #f guards)
-                             '()
-                             (append
-                              (models (and (car ctrls) guards) (cdr ctrls))
-                              (models (and (not (car ctrls)) guards) (cdr ctrls))))))))
+                               (append
+                                (models (and (car ctrls) guards) (cdr ctrls))
+                                (models (and (not (car ctrls)) guards) (cdr ctrls))))
+                           '())))))
     (models #t controls)))
 
 (define (create-table result cols columnMetadata)

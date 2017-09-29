@@ -65,14 +65,15 @@
     (for/list ([i m])
       (let ((type (car (list-ref i 3)))
             (colName (cadr i)))
-        (val (make-col-name colName)
-             (cond [(= type 1) integer?]
-                   ; type 2 is a date and needs to be changed because a symblic date type wont be accepted by Rosette
-                   [(= type 2) integer?]
-                   [(= type 3) string?]
-                   [(= type 4) boolean?]
-                   [(= type 5) real?]
-                   [#t string?]))))))
+	(if (= type 2)
+	    (for/vector ([elt '("s" "m" "h" "dy" "mn" "yr")])
+	       (val (make-col-name-for-date colName elt) integer?))
+	  (val (make-col-name colName)
+	       (cond [(= type 1) integer?]
+		     [(= type 3) string?]
+		     [(= type 4) boolean?]
+		     [(= type 5) real?]
+		     [#t string?])))))))
 
 (define (json-response-maker status headers body)
   (println (jsexpr->string body))

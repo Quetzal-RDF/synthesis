@@ -226,19 +226,19 @@
             (di3 (val (cons 'di3 pos) boolean?))
             (di4 (val (cons 'di4 pos) boolean?)))
             (list
-                  (if di1
-                      (if di2
-                          (if di3
-                              (if di4 'add-seconds 'add-minutes)
-                              (if di4 'add-hours 'add-days))
-                          (if di3
-                              (if di4 'add-months 'add-years)
-                              (if di4 'subtract-seconds 'subtract-minutes)))
-                      (when di2
-                          (if di3
-                              (if di4 'subtract-hours 'subtract-days)
-                              (if di4 'subtract-months 'subtract-years))))
-                  left right)))
+             (if di1
+                 (if di2
+                     (if di3
+                         (if di4 'add-seconds 'add-minutes)
+                         (if di4 'add-hours 'add-days))
+                     (if di3
+                         (if di4 'add-months 'add-years)
+                         (if di4 'subtract-seconds 'subtract-minutes)))
+                 (when di2
+                   (if di3
+                       (if di4 'subtract-hours 'subtract-days)
+                       (if di4 'subtract-months 'subtract-years))))
+             left right)))
 
     (define/public (date-extract pos v)
           (let ((de1 (val (cons 'de1 pos) boolean?))
@@ -418,7 +418,7 @@
     
     (define/public (date-interval pos left right)
       (if (and (vector? left) (integer? right))
-          (let ((d (make-date left))
+          (let ((d (copy-date left))
                 (di1 (val (cons 'di1 pos) boolean?))
                 (di2 (val (cons 'di2 pos) boolean?))
                 (di3 (val (cons 'di3 pos) boolean?))
@@ -615,27 +615,32 @@
     (inherit-field processors)
     
     (define (aggregate pos type v)
-      (let-values ([(op is-average)
-                    (if (eq? type 'string)
-                        (values string-append #f)
-                        (let ((v1 (val (cons 1 pos) boolean?))
-                              (v2 (val (cons 2 pos) boolean?)))
-                          (values
-                           (cond ((and v1 v2) min)
-                                 ((and v1 (not v2)) max)
-                                 (#t +))
-                           (and (not v1) (not v2)))))])
-        (let ((val
-               (for/fold ([f (cadr v)])
-                         ([e (cddr v)])
-                 (op f e))))
-          (cons
-           (let ((v1 (op (car v) val)))
-             (if is-average (/ v1 (length v)) v1))
-           (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
-             (for/list ([p processors])
-               v1))))))
-
+      (if (member 'invalid v)
+          (for/list ([p processors])
+            'invalid)
+          (let* ((stuff
+                  (if (eq? type 'string)
+                      (list string-append #f)
+                      (let ((v1 (val (cons 1 pos) boolean?))
+                            (v2 (val (cons 2 pos) boolean?)))
+                        (list
+                         (cond ((and v1 v2) min)
+                               ((and v1 (not v2)) max)
+                               (#t +))
+                         (and (not v1) (not v2))))))
+                 (op (car stuff))
+                 (is-average (cadr stuff)))
+            (let ((val
+                   (for/fold ([f (cadr v)])
+                             ([e (cddr v)])
+                     (op f e))))
+              (cons
+               (let ((v1 (op (car v) val)))
+                 (if is-average (/ v1 (length v)) v1))
+               (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
+                 (for/list ([p processors])
+                   v1)))))))
+      
     (override aggregate)))
 
 (define (do-all type ops size pos p f)
@@ -750,7 +755,7 @@
   (do-binary-op do-all-date do-all-date 'date-diff size pos p f))
 
 (define (do-date-interval size pos p f)
-  (do-binary-op do-all-date do-all-date 'date-interval size pos p f))
+  (do-binary-op do-all-date do-all-int 'date-interval size pos p f))
 
 (define (do-date-extract size pos p f)
   (do-unary-op do-all-date 'date-extract size pos p f))

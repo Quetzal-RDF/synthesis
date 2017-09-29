@@ -85,7 +85,11 @@
                   "if" "s1" "==" "good" "then" "i2" "else"
                   "if" "i3" ">" "i2" "then" "i3")))
          (fs
-          (test-custom stuff columns))
+          (let ((x (test-custom stuff columns)))
+            (println "models")
+            (println x)
+            (println "models")
+            x))
          (models (generate-models (cadar fs) (caddar fs) #t)))
     (println models)
     (assert (>= (length models) 4))

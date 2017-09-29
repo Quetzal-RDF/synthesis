@@ -104,8 +104,10 @@
     )
 
     (define/public (add-days d)
-      (assert (<= d 28))  ; make sure days cannot span more than 1 month
+      ; (assert (<= d 28))  ; make sure days cannot span more than 1 month
       (let ((p (+ days d)))
+        (println p)
+        (println (<= p (num-days-in-month)))
         (if (<= p (num-days-in-month))
           (set-field! days this p)
           (begin

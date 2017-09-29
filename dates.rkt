@@ -39,7 +39,7 @@
         [(equal? field "months") (vector-ref date 4)]
         [(equal? field "years") (vector-ref date 5)]))
 
-(define (make-date date)
+(define (copy-date date)
   (let ((d (new-date)))
     (set-field d "seconds" (get-field date "seconds"))
     (set-field d "minutes" (get-field date "minutes"))
@@ -311,4 +311,4 @@
 
 (provide new-date add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours subtract-days subtract-months subtract-years
          set-field get-field is-leap create-date extract-date-from-epoch date-subtract date-le date-ge date-lt date-gt date-equal extract-seconds extract-minutes extract-hours extract-days extract-months extract-years
-         extract-day-of-year extract-epoch extract-day-of-week)
+         copy-date extract-day-of-year extract-epoch extract-day-of-week)
