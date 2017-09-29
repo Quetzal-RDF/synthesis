@@ -14,6 +14,7 @@
 (define-symbolic i3 integer?)
 (define-symbolic i4 integer?)
 (define-symbolic i5 integer?)
+(define-symbolic i6 integer?)
 (define-symbolic s1 string?)
 (define-symbolic s2 string?)
 (define-symbolic r1 real?)
@@ -164,5 +165,10 @@
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)
-  (test analyze '(*) '() '() 3 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 10 9.7 1.3)("B" "G" 4 1.23 .3))))
-  
+  (test analyze '(*) '() '() 10 '(2.6 0 0) (list s1 s2 i1 i2 r1) '(("A" "FOO" 5 4 .6)("A" "G" 10 9.7 1.3)("B" "G" 4 1.23 .3))))
+
+(define v #(i1 i2 i3 i4 i5 i6))
+
+; add a second to date
+(define (simple-date-test1)
+  (test analyze '(*) '() '() 10 '(#(0 0 0 29 2 2000) #(23 59 23 28 2 2000) #(0 46 23 28 2 2000)) (list v) '((#(59 59 23 28 2 2000))(#(22 59 23 28 2 2000))(#(59 45 23 28 2 2000)))))
