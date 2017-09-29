@@ -55,9 +55,6 @@
 (define (simple-symbolic3)
   (test analyze '() '() '() 7 (list s2 "B") (list s1 i1) (list (list s2 1) (list "B" 5))))
 
-(define (simple-selection1a)
-  (test analyze '(if) '() '() 7 '(1050 0) (list s1 i1) '(("Committed" 1050)("Custom" 1050))))
-
 ; test selection of a certain column based on its string
 (define (simple-selection2)
   (test analyze '() '() '() 7 '(1050 0) (list s1 i1) '(("Committed" 1050) ("Custom" 1050))))
