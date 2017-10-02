@@ -1,0 +1,201 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{13}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{#1}\fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[\protect\citeauthoryear{Androutsopoulos}{Androutsopoulos}{1995}]%
+        {Androutsopoulos}
+\bibfield{author}{\bibinfo{person}{L. Androutsopoulos}.}
+  \bibinfo{year}{1995}\natexlab{}.
+\newblock \showarticletitle{Natural Language Interfaces to Databases - An
+  Introduction}.
+\newblock \bibinfo{journal}{{\em Journal of Natural Language Engineering\/}}
+  \bibinfo{volume}{1} (\bibinfo{year}{1995}), \bibinfo{pages}{29--81}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Bergamaschi, Guerra, Interlandi, Trillo-Lado,
+  and Velegrakis}{Bergamaschi et~al\mbox{.}}{2013}]%
+        {Bergamaschi}
+\bibfield{author}{\bibinfo{person}{Sonia Bergamaschi},
+  \bibinfo{person}{Francesco Guerra}, \bibinfo{person}{Matteo Interlandi},
+  \bibinfo{person}{Raquel Trillo-Lado}, {and} \bibinfo{person}{Yannis
+  Velegrakis}.} \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{QUEST: A Keyword Search System for Relational Data
+  Based on Semantic and Machine Learning Techniques}.
+\newblock \bibinfo{journal}{{\em Proc. VLDB Endow.\/}} \bibinfo{volume}{6},
+  \bibinfo{number}{12} (\bibinfo{date}{Aug.} \bibinfo{year}{2013}),
+  \bibinfo{pages}{1222--1225}.
+\newblock
+\showISSN{2150-8097}
+\showDOI{%
+\url{https://doi.org/10.14778/2536274.2536281}}
+
+
+\bibitem[\protect\citeauthoryear{Databricks}{Databricks}{2017}]%
+        {Apache_Spark}
+\bibfield{author}{\bibinfo{person}{Databricks}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \bibinfo{title}{Apache Spark}.
+\newblock \bibinfo{howpublished}{\url{https://spark.apache.org}}.
+  (\bibinfo{year}{2017}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Datastax}{Datastax}{2017}]%
+        {CQL}
+\bibfield{author}{\bibinfo{person}{Datastax}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \bibinfo{title}{CQL}.
+\newblock
+  \bibinfo{howpublished}{\url{https://docs.datastax.com/en/cql/3.3/cql/cql_using/useQueryDataTOC.html}}.
+    (\bibinfo{year}{2017}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Foundation}{Foundation}{2017a}]%
+        {Cassandra}
+\bibfield{author}{\bibinfo{person}{Apache~Software Foundation}.}
+  \bibinfo{year}{2017}\natexlab{a}.
+\newblock \bibinfo{title}{Apache Cassandra}.
+\newblock \bibinfo{howpublished}{\url{http://cassandra.apache.org}}.
+  (\bibinfo{year}{2017}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Foundation}{Foundation}{2017b}]%
+        {Apache_Flink}
+\bibfield{author}{\bibinfo{person}{Apache~Software Foundation}.}
+  \bibinfo{year}{2017}\natexlab{b}.
+\newblock \bibinfo{title}{Apache Flink}.
+\newblock \bibinfo{howpublished}{\url{https://flink.apache.org}}.
+  (\bibinfo{year}{2017}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Foundation}{Foundation}{2017c}]%
+        {Hive}
+\bibfield{author}{\bibinfo{person}{Apache~Software Foundation}.}
+  \bibinfo{year}{2017}\natexlab{c}.
+\newblock \bibinfo{title}{Apache Hive}.
+\newblock \bibinfo{howpublished}{\url{https://hive.apache.org}}.
+  (\bibinfo{year}{2017}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Github}{Github}{2017}]%
+        {GitHub_repo}
+\bibfield{author}{\bibinfo{person}{Github}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \bibinfo{title}{Google public datasets on BigQuery: Github}.
+\newblock \bibinfo{howpublished}{\url{bigquery-public-data:github_repos}}.
+  (\bibinfo{year}{2017}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Li and Jagadish}{Li and Jagadish}{2014}]%
+        {Fei-Li}
+\bibfield{author}{\bibinfo{person}{Fei Li} {and} \bibinfo{person}{H.~V.
+  Jagadish}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{Constructing an Interactive Natural Language
+  Interface for Relational Databases}.
+\newblock \bibinfo{journal}{{\em Proc. VLDB Endow.\/}} \bibinfo{volume}{8},
+  \bibinfo{number}{1} (\bibinfo{date}{Sept.} \bibinfo{year}{2014}),
+  \bibinfo{pages}{73--84}.
+\newblock
+\showISSN{2150-8097}
+\showDOI{%
+\url{https://doi.org/10.14778/2735461.2735468}}
+
+
+\bibitem[\protect\citeauthoryear{Wang, Cheung, and Bod{\'{\i}}k}{Wang
+  et~al\mbox{.}}{2017a}]%
+        {BodikSIGMOD}
+\bibfield{author}{\bibinfo{person}{Chenglong Wang}, \bibinfo{person}{Alvin
+  Cheung}, {and} \bibinfo{person}{Rastislav Bod{\'{\i}}k}.}
+  \bibinfo{year}{2017}\natexlab{a}.
+\newblock \showarticletitle{Interactive Query Synthesis from Input-Output
+  Examples}. In \bibinfo{booktitle}{{\em Proceedings of the 2017 {ACM}
+  International Conference on Management of Data, {SIGMOD} Conference 2017,
+  Chicago, IL, USA, May 14-19, 2017}}. \bibinfo{pages}{1631--1634}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1145/3035918.3058738}}
+
+
+\bibitem[\protect\citeauthoryear{Wang, Cheung, and Bod{\'{\i}}k}{Wang
+  et~al\mbox{.}}{2017b}]%
+        {BodikPLDI}
+\bibfield{author}{\bibinfo{person}{Chenglong Wang}, \bibinfo{person}{Alvin
+  Cheung}, {and} \bibinfo{person}{Rastislav Bod{\'{\i}}k}.}
+  \bibinfo{year}{2017}\natexlab{b}.
+\newblock \showarticletitle{Synthesizing highly expressive {SQL} queries from
+  input-output examples}. In \bibinfo{booktitle}{{\em Proceedings of the 38th
+  {ACM} {SIGPLAN} Conference on Programming Language Design and Implementation,
+  {PLDI} 2017, Barcelona, Spain, June 18-23, 2017}}. \bibinfo{pages}{452--466}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1145/3062341.3062365}}
+
+
+\bibitem[\protect\citeauthoryear{{Zhong}, {Xiong}, and {Socher}}{{Zhong}
+  et~al\mbox{.}}{2017}]%
+        {Seq2SQL}
+\bibfield{author}{\bibinfo{person}{V. {Zhong}}, \bibinfo{person}{C. {Xiong}},
+  {and} \bibinfo{person}{R. {Socher}}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{Seq2SQL: Generating Structured Queries from
+  Natural Language using Reinforcement Learning}}.
+\newblock \bibinfo{journal}{{\em ArXiv e-prints\/}} (\bibinfo{date}{Aug.}
+  \bibinfo{year}{2017}).
+\newblock
+\showeprint[arxiv]{cs.CL/1709.00103}
+
+
+\bibitem[\protect\citeauthoryear{Zloof}{Zloof}{1975}]%
+        {Zloof}
+\bibfield{author}{\bibinfo{person}{Mosh{\'e}~M. Zloof}.}
+  \bibinfo{year}{1975}\natexlab{}.
+\newblock \showarticletitle{Query-by-example: The Invocation and Definition of
+  Tables and Forms}. In \bibinfo{booktitle}{{\em Proceedings of the 1st
+  International Conference on Very Large Data Bases}} {\em
+  (\bibinfo{series}{VLDB '75})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{1--24}.
+\newblock
+\showISBNx{978-1-4503-3920-9}
+\showDOI{%
+\url{https://doi.org/10.1145/1282480.1282482}}
+
+
+\end{thebibliography}

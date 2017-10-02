@@ -1,0 +1,69 @@
+This is BibTeX, Version 0.99d (TeX Live 2015)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: synthesis.aux
+The style file: ACM-Reference-Format.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: synthesis.bib
+A bad cross reference---entry "BodikPLDI"
+refers to entry "DBLP:conf/pldi/2017", which doesn't exist
+A bad cross reference---entry "BodikSIGMOD"
+refers to entry "DBLP:conf/sigmod/2017", which doesn't exist
+Warning--I didn't find a database entry for "DBLP:conf/pldi/2017"
+Warning--I didn't find a database entry for "DBLP:conf/sigmod/2017"
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=20001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--numpages field, but no articleno or eid field, in Bergamaschi
+Warning--numpages field, but no articleno or eid field, in Fei-Li
+Warning--empty publisher in BodikSIGMOD
+Warning--empty address in BodikSIGMOD
+Warning--empty publisher in BodikPLDI
+Warning--empty address in BodikPLDI
+Warning--no number and no volume in Seq2SQL
+Warning--page numbers missing in both pages and numpages fields in Seq2SQL
+Warning--numpages field, but no articleno or eid field, in Zloof
+You've used 13 entries,
+            5795 wiz_defined-function locations,
+            1408 strings with 17711 characters,
+and the built_in function-call counts, 13301 in all, are:
+= -- 1688
+> -- 379
+< -- 0
++ -- 116
+- -- 134
+* -- 882
+:= -- 1345
+add.period$ -- 65
+call.type$ -- 13
+change.case$ -- 77
+chr.to.int$ -- 10
+cite$ -- 22
+duplicate$ -- 1220
+empty$ -- 871
+format.name$ -- 153
+if$ -- 3160
+int.to.chr$ -- 5
+int.to.str$ -- 1
+missing$ -- 31
+newline$ -- 155
+num.names$ -- 101
+pop$ -- 415
+preamble$ -- 1
+purify$ -- 187
+quote$ -- 0
+skip$ -- 427
+stack$ -- 0
+substring$ -- 1024
+swap$ -- 111
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 316
+warning$ -- 9
+while$ -- 104
+width$ -- 0
+write$ -- 279
+(There were 2 error messages)

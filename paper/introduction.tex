@@ -1,0 +1,22 @@
+\section{Introduction}
+
+SQL is arguably the de-facto query language for structured data, with an increasing number of non-relational databases such as Apache Spark \cite{Apache_Spark}, Apache Flink \cite{Apache_Flink} and Cassandra \cite{Cassandra} that either support SQL directly or some variant of SQL such as Hive \cite{Hive} or CQL \cite{CQL}. This attests to the expressive power of SQL, but the language itself is challenging to use for most users, making it the language of choice for developers but not non-technical users.  As data science gets increasingly popular, there is a growing need to help users generate complex queries.  In fact, the average data scientist who is a technical user in one context (machine learning) is not a technical user in a SQL context, would likely appreciate better tooling support to ease the burden of accessing and manipulating data.
+
+There have been many past attempts to make complex querying capabilities accessible to non-technical users.  For instance, query by example took the approach of combining examples from the user with a graphical query language to construct queries \cite{Zloof}.  Others have tried to provide natural language interfaces to databases \cite{Fei-Li}, \cite{Androutsopoulos}, \cite{Seq2SQL}, or explored the combination of keyword style queries with machine learning to construct queries \cite{Bergamaschi}.  Still others have tried to synthesize SQL using input and output examples \cite{BodikPLDI}, \cite{BodikSIGMOD}.  In this paper, we examine an approach which is a combination of SQ synthesis with a user's specification of subexpressions to help users reconstruct the whole expression.  
+
+TBD: Need to add details of exactly what was done before, how our approach is different, why we need to focus on SQL expressions as opposed to all of SQL.
+
+As we point out, our approach of using an SMT solver to synthesize queries allows us more greater flexibility(is this true?) than existing approaches.  However, it does have at least three important drawbacks:
+\begin{enumerate}
+\item First, we have the issue of scalability.  As one increases the number of SQL functions supported by the solver mechanism, the problem becomes intractable, even if one restricts oneself to generating queries of limited levels of nesting.
+\item Second, even a relatively simple query requires a significant number of input/output examples from the user.  The process cannot be onerous to the user, so the system should be able to generate at least some set of input/output examples if users can specify 'fragments' of the query.
+\item Third, certain types of functions are inherently difficult to support because of difficulties in the solver machinery.  Examples of such functions involve regex patterns with variables in them, or functions like $\sin$ that operate on real numbers.
+\end{enumerate} 
+  
+Our contributions are as follows:
+\begin{enumerate}
+\item How do we handle scalability?
+\item How do we handle the problem of multiple examples?  By using the solver machinery in reverse basically - that is given a query the system can generate the set of constraints needed in the form of input output examples
+\item We provide a mechanism to interface functions that are impossible to handle within the solver machinery to instead try a limited set of functions in code?
+\item We provide a comprehensive evaluation of the feasibility of this approach.  We mined all the SQL files in Github, using Google's public GitHub repository \cite{GitHub_repo} to create a benchmark set of xxx SQL expressions with corresponding datasets of input and desired output examples that were synthesized by the same solver machinery as what we use for expression synthesis. We use these datasets as input/output examples to synthesize the query based purely on the examples.  We also show how one can use fragments of the query along with subsets of the input output examples to see if the synthesizer can effectively fill in the rest of the query.  
+\end{enumerate}
