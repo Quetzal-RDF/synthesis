@@ -25,12 +25,15 @@
 (define (id pos)
   (string->symbol (format "~S" pos)))
 
+(define (clear-vals!)
+  (hash-clear! vals))
+
 (define (val pos type)
   (let ((name (id pos)))
-    (if (hash-has-key? vals name)
-        (hash-ref vals name)
+    (if (hash-has-key? vals (cons name type))
+        (hash-ref vals (cons name type))
         (let ((v (constant name type)))
-          (hash-set! vals name v)
+          (hash-set! vals (cons name type) v)
           v))))
 
 (define (merge . args)
@@ -311,6 +314,8 @@
       (f v))
     
     (define/public (basic-binary f l r)
+      (println (type-of l))
+      (println (type-of r))
       (f l r))
     
     (define/public (is-null-v? mb v pos)
@@ -389,14 +394,25 @@
           'invalid))
 
     (define/public (substr str l r)
-      (if (and (string? str) (integer? l) (integer? r) (>= l 0) (<= l r) (<= r (string-length str)))
-          (substring str l r)
-          'invalid))
+      (println "types")
+      (println str)
+      (println (type-of str))
+      (println (type-of l))
+      (println (type-of r))
+      (let ((v (if (and (string? str) (integer? l) (integer? r) (>= l 0) (<= l r) (<= r (string-length str)))
+                  (substring str l r)
+                  'invalid)))
+        (println "substr")
+        (println v)
+        v))
 
     (define/public (concat pos left right)
-      (if (and (string? left) (string? right))
+      (let (( v (if (and (string? left) (string? right))
           (send this basic-binary string-append left right)
-          'invalid))
+          'invalid)))
+        (println "concat")
+        (println v)
+        v))
 
     (define/public (date-diff pos left right)
       (if (and (vector? left) (vector? right))
@@ -1095,4 +1111,4 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-(provide doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to)
+(provide doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to clear-vals!)
