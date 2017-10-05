@@ -632,7 +632,7 @@
     
     (define (aggregate pos type v)
       (if (member 'invalid v)
-          (for/list ([p processors])
+          (for/list ([x v])
             'invalid)
           (let* ((stuff
                   (if (eq? type 'string)
@@ -654,7 +654,7 @@
                (let ((v1 (op (car v) val)))
                  (if is-average (/ v1 (length v)) v1))
                (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
-                 (for/list ([p processors])
+                 (for/list ([x (cdr v)])
                    v1)))))))
       
     (override aggregate)))
