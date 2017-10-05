@@ -200,15 +200,8 @@
        (hours (quotient s (* 60 60)))
        (rem (modulo s (* 60 60)))
        (minutes (quotient rem 60))
-       (seconds (modulo s 60))
-       (date (new-date)))
-  (begin
-    (set-field date "years" (list-ref d 0))
-    (set-field date "months" (list-ref d 1))
-    (set-field date "days" (list-ref d 2))
-    (set-field date "hours" hours)
-    (set-field date "minutes" minutes)
-    (set-field date "seconds" seconds)) date))
+       (seconds (modulo s 60)))
+  (create-date seconds minutes hours (list-ref d 2) (list-ref d 1) (list-ref d 0))))
 
 
 ; http://howardhinnant.github.io/date_algorithms.html#days_from_civil.  Days from Jan 1 1970 for Unix epoch time computations

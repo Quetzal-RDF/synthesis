@@ -170,8 +170,101 @@
 (define v #(i1 i2 i3 i4 i5 i6))
 
 ; add a second to date
-(define (simple-date-test1)
+(define (simple-date-add1)
   (test analyze '() '() '() 10 (list #(0 0 0 29 2 2000) #(23 59 23 28 2 2000) #(0 46 23 28 2 1999)) (list v) (list (list #(59 59 23 28 2 2000)) (list #(22 59 23 28 2 2000)) (list #(59 45 23 28 2 1999)))))
 
+; add a minute to date
+(define (simple-date-add2)
+  (test analyze '() '() '() 10 (list #(59 0 0 1 3 2001)  #(22 23 23 28 2 2000) #(59 0 0 1 1 2000)) (list v) (list (list #(59 59 23 28 2 2001)) (list #(22 22 23 28 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; add hour to date
+(define (simple-date-add3)
+  (test analyze '() '() '() 10 (list #(59 59 0 1 3 2001)  #(22 22 0 29 2 2000)  #(59 59 0 1 1 2000)) (list v) (list (list #(59 59 23 28 2 2001)) (list #(22 22 23 28 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; add days to date
+(define (simple-date-add4)
+  (test analyze '() '() '() 10 (list #(59 59 23 2 3 2001)  #(22 22 23 27 2 2000)  #(59 59 23 2 1 2000)) (list v) (list (list #(59 59 23 28 2 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; add months to date
+(define (simple-date-add5)
+  (test analyze '() '() '() 10 (list #(59 59 23 28 2 2001)  #(22 22 23 25 3 2000)  #(59 59 23 31 1 2000)) (list v) (list (list #(59 59 23 30 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; add years to date
+(define (simple-date-add6)
+  (test analyze '() '() '() 10 (list #(59 59 23 30 1 2016)  #(22 22 23 25 2  2015)  #(59 59 23 31 12 2014)) (list v) (list (list #(59 59 23 30 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; subtract seconds from date
+(define (simple-date-subtract1)
+  (test analyze '() '() '() 10 (list #(59 59 23 31 12 2000)  #(21 22 23 25 2  2000)  #(58 59 23 31 12 1999)) (list v) (list (list #(0 0 0 1 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; subtract 1 minute from date
+(define (simple-date-subtract2)
+  (test analyze '() '() '() 10 (list #(0 59 23 31 12 2000)  #(22 21 23 25 2  2000)  #(59 58 23 31 12 1999)) (list v) (list (list #(0 0 0 1 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; subtract 1 hour from date
+(define (simple-date-subtract3)
+  (test analyze '() '() '() 10 (list #(0 0 23 31 12 2000)  #(22 22 22 25 2  2000)  #(59 59 22 31 12 1999)) (list v) (list (list #(0 0 0 1 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; subtract 1 day from date
+(define (simple-date-subtract4)
+  (test analyze '() '() '() 10 (list #(0 0 0 31 12 2000)  #(22 22 23 24 2  2000)  #(59 59 23 30 12 1999)) (list v) (list (list #(0 0 0 1 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+; subtract 1 month from date
+(define (simple-date-subtract5)
+  (test analyze '() '() '() 10 (list #(0 0 0 1 3 2001)  #(59 59 23 30 11 1999)) (list v) (list (list #(0 0 0 1 4 2001)) (list #(59 59 23 31 12 1999)))))
+
+; subtract 10 years from date
+(define (simple-date-subtract6)
+  (test analyze '() '() '() 10 (list #(0 0 0 1 1 1991)  #(22 22 23 31 3 1990)  #(59 59 23 31 12 1989)) (list v) (list (list #(0 0 0 1 1 2001)) (list #(22 22 23 31 3 2000)) (list #(59 59 23 31 12 1999)))))
+
+; epoch to date
+(define (epoch-to-date-test1)
+  (test analyze '() '() '() 10 (list #(28 26 18 4 10 2017)  #(0 24 8 4 10 2016)  #(0 0 2 1 1 2016)) (list v) (list (list 1507141588) (list 1475569440) (list 1451613600))))
+
+; epoch to date + add 1 s
+(define (epoch-to-date-test2)
+  (test analyze '() '() '() 10 (list #(29 26 18 4 10 2017)  #(1 24 8 4 10 2016)  #(1 0 2 1 1 2016)) (list v) (list (list 1507141588) (list 1475569440) (list 1451613600))))
+
+; date extract
+(define (date-extract1)
+  (test analyze '() '() '() 5 (list 59 22 59 59 59) (list v) (list (list #(59 59 23 28 2 2000)) (list #(22 59 23 28 2 2000))(list #(59 45 23 28 2 2000))(list #(59 45 23 28 2 1999))(list #(59 45 23 28 2 1990)))))
+
+(define (date-extract2)
+  (test analyze '() '() '() 5 (list 59 59 45) (list v) (list (list #(59 59 23 28 2 2000)) (list #(22 59 23 28 2 2000))(list #(59 45 23 28 2 2000)))))
+
+(define (date-extract3)
+  (test analyze '() '() '() 5 (list 22 23 21) (list v) (list (list #(59 59 22 28 2 2000)) (list #(22 59 23 28 2 2000))(list #(59 45 21 28 2 2000)))))
+
+(define (date-extract4)
+  (test analyze '() '() '() 5 (list 28 22 1) (list v) (list (list #(59 59 22 28 2 2000)) (list #(22 59 23 22 2 2000))(list #(59 45 21 1 2 2000)))))
+
+(define (date-extract5)
+  (test analyze '() '() '() 5 (list 1 12 8) (list v) (list (list #(59 59 22 28 1 2000)) (list #(22 59 23 22 12 2000))(list #(59 45 21 1 8 2000)))))
+
+(define (date-extract6)
+  (test analyze '() '() '() 5 (list 2001 2004 2008) (list v) (list (list #(59 59 22 28 1 2001)) (list #(22 59 23 22 12 2004))(list #(59 45 21 1 8 2008)))))
+
+; diff dates - only works for days as defined by the function
+(define (date-diff-test)
+    (test analyze '() '() '() 5 (list 1 4 8) (list v) (list (list #(59 59 22 28 1 2000) #(59 59 22 27 1 2000)) (list #(22 59 23 22 12 2000) #(22 59 23 18 12 2000))(list #(59 45 21 10 8 2000) #(59 45 21 2 8 2000)))))
+
+; filter dates that are >= 2000
 (define (simple-date-filter1)
   (test analyze '() '() '() 5 (list #t #t #t #f #f) (list v) (list (list #(59 59 23 28 2 2000)) (list #(22 59 23 28 2 2000))(list #(59 45 23 28 2 2000))(list #(59 45 23 28 2 1999))(list #(59 45 23 28 2 1990)))))
+
+; filter dates that are == 2000
+(define (simple-date-filter2)
+  (test analyze '() '() '() 5 (list #t #t #t #f #f) (list v) (list (list #(59 59 23 28 2 2000)) (list #(22 59 23 28 2 2000))(list #(59 45 23 28 2 2000))(list #(59 45 23 28 2 2002))(list #(59 45 23 28 2 2001)))))
+
+; date to epoch
+(define (date-to-epoch-test1)
+  (test analyze '() '() '() 10 (list 1507075200 1475539200 1451606400) (list v) (list (list #(28 26 18 4 10 2017))  (list #(0 24 8 4 10 2016))  (list #(0 0 2 1 1 2016)))))
+
+
+; DOES NOT WORK FUNCTIONS
+; compose add years + add seconds
+; add years to date
+(define (simple-date-add7)
+  (test analyze '() '() '() 10 (list #(0 0 0 31 1 2016)  #(23 22 23 25 2 2015)  #(0 0 0 1 1 2015)) (list v) (list (list #(59 59 23 30 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
+
+

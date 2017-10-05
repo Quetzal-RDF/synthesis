@@ -703,6 +703,7 @@
 
 (define (do-all-date size pos p f)
   (do-all 'vector
+          ; (list do-in-date do-date-interval)
           (list do-in-date do-date-from-epoch do-date-interval)
           size pos p f))
 
