@@ -219,7 +219,10 @@
 
 ; extract epoch from date
 (define (extract-epoch date)
-  (* (get-days-since-civil date) 86400))
+  (+ (* (get-days-since-civil date) 86400)
+     (* 3600 (get-field date "hours"))
+     (* 60 (get-field date "minutes"))
+     (get-field date "seconds")))
 
 ; date comparison/subtraction operations
 (define (date-subtract date1 date2)

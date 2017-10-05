@@ -480,8 +480,8 @@
 )
 
 (define (test-epoch)
-    (let ((d (create-date 0 0 0 3 4 2017)))
-      (assert (= 1491177600 (extract-epoch d))))
+    (let ((d (create-date 28 26 18 4 10 2017)))
+      (assert (= 1507141588 (extract-epoch d))))
     (let ((d (create-date 0 0 0 1 1 1970)))
       (assert (= 0 (extract-epoch d))))
     (let ((d (create-date 0 0 0 1 1 1969)))
@@ -682,7 +682,6 @@
     (let ((m1 (solve (assert (= 2017 (extract-years d))))))
          (println (evaluate i1 m1))
          (assert (= 17 (evaluate i1 m1))))))
-
 
 (define (test-symbolic-date-diff)
   (let ((d1 (create-date 10 59 23 1 3 2000))
