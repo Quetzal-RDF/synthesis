@@ -87,11 +87,17 @@
                  (list 'send 'p 'date-extract (cadr date))
                  'number))
         ]
-        [(extract-epoch-from-date)
+        [(date-to-epoch)
          (let ((date (to-custom-int (cadr form) (cons 1 nested-pos))))
            (list (car date)
                  (list 'send 'p 'date-to-epoch (cadr date))
                  'number))
+        ]
+        [(date-from-epoch)
+         (let ((epoch (to-custom-int (cadr form) (cons 1 nested-pos))))
+           (list (car epoch)
+                 (list 'send 'p 'date-from-epoch (cadr epoch))
+                 'date))
         ]
         [(date-subtract)
          (let ((date1 (to-custom-int (cadr form) (cons 1 nested-pos)))

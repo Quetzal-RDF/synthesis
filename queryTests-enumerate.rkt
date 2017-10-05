@@ -258,7 +258,7 @@
 
 ; date to epoch
 (define (date-to-epoch-test1)
-  (test analyze '() '() '() 10 (list 1507075200 1475539200 1451606400) (list v) (list (list #(28 26 18 4 10 2017))  (list #(0 24 8 4 10 2016))  (list #(0 0 2 1 1 2016)))))
+  (test analyze '() '() '() 10 (list 1507141588 1475569440 1451613600) (list v) (list (list #(28 26 18 4 10 2017))  (list #(0 24 8 4 10 2016))  (list #(0 0 2 1 1 2016)))))
 
 
 ; DOES NOT WORK FUNCTIONS
