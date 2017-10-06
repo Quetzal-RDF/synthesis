@@ -192,3 +192,4 @@
                #:servlet-regexp #rx".*" 
                #:launch-browser? #f)
 
+(provide parse-column-metadata)
