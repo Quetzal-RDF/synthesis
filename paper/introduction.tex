@@ -1,22 +1,62 @@
 \section{Introduction}
 
-SQL is arguably the de-facto query language for structured data, with an increasing number of non-relational databases such as Apache Spark \cite{Apache_Spark}, Apache Flink \cite{Apache_Flink} and Cassandra \cite{Cassandra} that either support SQL directly or some variant of SQL such as Hive \cite{Hive} or CQL \cite{CQL}. This attests to the expressive power of SQL, but the language itself is challenging for most users to use, especially for non-technical users.  As data science gets increasingly popular, and there is an increasing need for non-technical users to manipulate and explore their data, there is a growing need to help users generate complex queries.  In fact, even the technical user would likely appreciate better tooling support to ease the burden of accessing and manipulating data with SQL.
+SQL is arguably the de-facto query language for structured data, with an increasing number of non-relational databases such as Apache Spark \cite{Apache_Spark}, Apache Flink \cite{Apache_Flink} and Cassandra \cite{Cassandra} that either support SQL directly or some variant of SQL such as Hive \cite{Hive} or CQL \cite{CQL}. This attests to the expressive power of SQL, but the language itself is challenging for most users to use, especially for non-technical users.  As data science becomes increasingly popular, and there is an increasing need for better tooling for non-technical users to be able to manipulate and explore their data.  In fact, even seasoned data scientists would likely appreciate better support to ease the burden of generating complex SQL.
 
-There have been many past attempts to make complex querying capabilities accessible to non-technical users.  For instance, query by example took the approach of combining examples from the user with a graphical query language to construct queries \cite{Zloof}.  Others have tried to provide natural language interfaces to databases \cite{Fei-Li}, \cite{Androutsopoulos}, \cite{Seq2SQL}, or explored the combination of keyword style queries with machine learning to construct queries \cite{Bergamaschi}.  Still others have tried to synthesize SQL using input and output examples \cite{BodikPLDI}, \cite{BodikSIGMOD}, \cite{Zhang}.  In this paper, we examine an approach to synthesize SQL expressions from input and output examples.  Our approach differs from prior work in this space in two important ways
+There have been many past attempts to make complex querying capabilities accessible to non-technical users.  For instance, the classic query by example approach combines examples from the user with a graphical query language to construct queries \cite{Zloof}.  Others have tried to provide natural language interfaces to databases \cite{Fei-Li}, \cite{Androutsopoulos}, \cite{Seq2SQL}, or explored the combination of keyword style queries with machine learning to construct queries \cite{Bergamaschi}.  Still others have tried to synthesize SQL using input and output examples \cite{BodikPLDI}, \cite{BodikSIGMOD}, \cite{Zhang}.  In this paper, we examine a novel approach to help users synthesize SQL expressions from input and output examples.  Our approach differs from prior work in this space in two important ways.
 
-First, our work attempts to support SQL expressions with a \emph{rich set of datatypes and functions} that are commonly supported by database vendors.  Prior work in synthesis has been restricted to mostly integer and boolean data types, and a highly simplified set of SQL operators on these types (e.e., comparisons).  Yet SQL expressions are normally composed of a large number of functions on datatypes that include integers, strings, dates, and reals.  The nature of SQL functions on these types is also complex; for instance arbitrarily complex arithmetic functions can be composed in SQL, but these have not been in the purview of past work.  Second, our work uses the same machinery we use for synthesis of SQL to \emph{generate} input output examples if the user can provide the system with snippets from the SQL expression.  This latter capability is extremely powerful, because in our experience, users often know snippets of the query and have no trouble telling the system that they need Column A to be less some constant such as 50.  However, they have a harder time fitting the different pieces of what they need together.  Being able to generate input and output examples from the snippet reduces the burden on the user of generating input and output examples to cover all the cases.  Instead, they can focus on just correcting the output to fit inputs and have the system generate the fabric to stitch the snippets together. (JULIAN: I think we can make this point very well with the if clause that we most recently tested.  I'd like to put this in as an example for the reader to understand the motivation of our work better. Let me know if you agree).
+First, to the best of our knowledge, our approach is the first to support the synthesis of SQL expressions with a \emph{rich set of datatypes and functions} that are commonly supported by database vendors.  Prior work in synthesis has been restricted to mostly integer and boolean data types, and a highly simplified set of SQL operators on these types (e.g., comparison or boolean operators).  Yet SQL expressions are normally composed of a large number of functions on datatypes that include integers, strings, dates, and reals.  SQL functions on these types can also be composed; for instance arbitrarily complex arithmetic functions can be composed in SQL, but these have not been addressed in past work.  Our observation is that we can actually extend synthesis to richer datatypes by relying heavily on solver technologies; specifically we leverage the Z3 SMT solver \cite{Z3} which can solve for constraints involving strings and reals (along with the traditional boolean or boolean types supported by SAT solvers).  Another key component of our solution is Rosette \cite{Rosette}, Rosette is a solver-aided programming language that allows us to translate SQL functions into code.  Rosette compiles these functions to logical constraints solved with Z3, and thus enables support for both complex custom functions needed for SQL, along with the rich datatype support that Z3 provides. We show that by building on these two sets of technologies, one can support a large set of SQL functions on rich datatypes. 
 
-%As we point out, our approach of using an SMT solver to synthesize queries allows us more greater flexibility(is this true?) than existing approaches.  However, it does have at least three important drawbacks:
-%\begin{enumerate}
-%\item First, we have the issue of scalability.  As one increases the number of SQL functions supported by the solver mechanism, the problem becomes intractable, even if one restricts oneself to generating queries of limited levels of nesting.
-%\item Second, even a relatively simple query requires a significant number of input/output examples from the user.  The process cannot be onerous to the user, so the system should be able to generate at least some set of input/output examples if users can specify 'fragments' of the query.
-%\item Third, certain types of functions are inherently difficult to support because of difficulties in the solver machinery.  Examples of such functions involve regex patterns with variables in them, or functions like $\sin$ that operate on real numbers.
-%\end{enumerate} 
-  
-Our contributions are as follows:
+Second, we describe a mechanism to use the same machinery we use for synthesis of SQL to \emph{generate} input and output examples if the user can provide the system with snippets from the SQL expression.  We use the example in Figure \ref{fig:1} to illustrate this with an example.  Figure \ref{fig:1} shows a CASE expression.  For most non-technical users, this is a difficult expression to express syntactically, but users have no trouble expressing the snippets of the query such as the fact that the Customer Column needs to be `Regular' or  `Standard' to be interesting.  Examples of snippets a user might be able to express easily are provided in Figure \ref{fig:1}.  Our work can use any of the snippets the user can provide to generate input and output examples for users to correct rather than having the user generate the examples themselves.  This not only reduces the burden on the user to provide enough examples but additionally allows the generation of the right set of examples for the problem.  In fact, our observation is that left to their own devices, many users (including the authors) often generate underspecified examples, which result in the synthesis of expressions that are valid for the examples, but clearly not what the user intended.  Table \ref{table:1} shows an example of what a user might enter as plausible input and output examples for the synthesis of the expression in Figure \ref{fig:1}.  However, the examples are not sufficient to constrain the problem because the last row can be interpreted as satisfying either branch of the CASE statement.  Being able to generate input and output examples from snippets allows users to focus on just correcting the data and lets the synthesis process generate the fabric to stitch the snippets together. 
+
+Snippets also allows synthesis to scale better, given that the problem of searching over all possible combinations of functions, even to a limited depth is not very practical.  Snippets generalize ideas in earlier work \cite{BodikPLDI} which asks users to specify the constant terms in the query such as `Standard' in the example shown in Figure \ref{fig:1} to help narrow the search space.  We provide a mechanism to incorporate these snippets into the search so that when users are finished with their corrections of the examples provided by the system, the system uses snippets along with the examples to synthesize the SQL expression.
+
+We evaluate our ideas against a large benchmark of SQL expressions mined from XX SQL queries gathered from SQL files in Google's public GitHub \cite{GitHub_repo} dataset.  INSERT SOME RESULTS HERE from the benchmark.  We make this benchmark and our code for synthesis and input output generation available at GitHub \cite{Quetzal}.
+
+To summarize, our contributions are as follows:
 \begin{enumerate}
-\item How do we handle scalability?
-\item How do we handle the problem of multiple examples?  By using the solver machinery in reverse basically - that is given a query the system can generate the set of constraints needed in the form of input output examples
-\item We provide a mechanism to interface functions that are impossible to handle within the solver machinery to instead try a limited set of functions in code?
-\item We provide a comprehensive evaluation of the feasibility of this approach.  We mined all the SQL files in Github, using Google's public GitHub repository \cite{GitHub_repo} to create a benchmark set of xxx SQL expressions with corresponding datasets of input and desired output examples that were synthesized by the same solver machinery as what we use for expression synthesis. We use these datasets as input/output examples to synthesize the query based purely on the examples.  We also show how one can use fragments of the query along with subsets of the input output examples to see if the synthesizer can effectively fill in the rest of the query.  
+\item We describe a novel approach to the problem of SQL synthesis which allows us to extend synthesis for rich datatypes and complex SQL functions that are common in SQL queries.
+\item We describe an approach to automatically generate the input output examples needed for synthesis if users can specify any snippets in the expression.  
+\item We illustrate how those snippets can be incorporated along with the corrected input output examples into synthesis to make it more scalable and to have the synthesis process quickly converge on the solution the user had in mind.
+\item We provide a comprehensive real life benchmark of SQL expressions by mining GitHub, and use these expressions to evaluate our own approach to input-output example creation, and the problem of synthesizing SQL expressions for rich datatypes and functions.
 \end{enumerate}
+
+The paper is organized as follows.  Section \ref{section:2} outlines the types of SQL functions and datatypes that are supported in our current synthesis approach, and what in general limits support for functions over these datatypes using solver technologies.  Section \ref{section:2} also gives a background of how Rosette along with SMT solvers can be harnessed to solve this problem.  Section \ref{section:3} covers the algorithms for input output generation.  Section \ref{section:4} describes the algorithm used in search, including the use of existing snippets.  Section \ref{section:5} describes the evaluation, as well as details about how the benchmark was generated.  Section \ref{section:6} summarizes the related work, and Section \ref{section:7} presents the conclusions and future work.
+
+\begin{figure}
+\caption{An example SQL expression}
+\label{fig:1}
+\begin{lstlisting}[
+           language=SQL,
+           showspaces=false,
+           basicstyle=\ttfamily,
+           numbers=left,
+           numberstyle=\footnotesize,
+           commentstyle=\color{gray}
+  ]
+  CASE WHEN Customer='Regular'
+     THEN price * product_qty
+  WHEN Customer='Bulk' 
+     THEN bulk_price * case_qty
+  ELSE 0
+\end{lstlisting}
+
+Snippets: 
+$Customer=$`$Regular$', $Customer=$`$Bulk$'
+$bulk\_price * case\_qty$, $price * product\_qty$
+\end{figure}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c|c|c| }
+\hline
+Customer & bulk price & case qty & price & product qty & out \\
+Bulk & 3 & 4 & 0 & 0 & 12 \\
+Regular & 0 & 0 & 2 & 3 & 6 \\
+Foo & 0 & 0 & 0 & 0 & 0 \\
+\hline
+\end{tabular}
+\caption{Table of user specified inputs and output}
+\label{table:1}
+\end{table}
+
+
