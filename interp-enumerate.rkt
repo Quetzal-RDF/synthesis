@@ -308,15 +308,36 @@
     (define input-vals inputs)
     
     (define/public (constant v)
-      v)
-
+      (let ((r
+             (if (not (vector? v))
+                 v
+                 (let ((s (extract-seconds v))
+                       (m (extract-minutes v))
+                       (h (extract-hours v))
+                       (dy (extract-days v))
+                       (mn (extract-months v))
+                       (yr (extract-years v)))
+                   (if (and (>= s 0) (< s 60)
+                            (>= m 0) (< m 60)
+                            (>= h 0) (< h 24)
+                            (> dy 0) (<= dy 31)
+                            (> mn 0) (<= mn 12)
+                            (> yr 0))
+                       v
+                       'invalid)))))
+        (println "value")
+        (println r)
+        r))
+    
     (define/public (basic-unary f v)
       (f v))
     
     (define/public (basic-binary f l r)
       (println (type-of l))
       (println (type-of r))
-      (f l r))
+      (if (or (eq? l 'invalid) (eq? r 'invalid))
+          'invalid
+          (f l r)))
     
     (define/public (is-null-v? mb v pos)
       (send this basic-unary (lambda (v) (if mb (equal? v '()) (not (equal? v '())))) v))
@@ -338,7 +359,7 @@
     (define/public (in-v pos v type-f)
       (let ((val (list-ref input-vals (- v 1))))
         (if (type-f val)
-            val
+            (send this constant val)
             'invalid)))
     
     (define/public (symbolic pos type)
@@ -930,17 +951,14 @@
                         results-channel
                         (list (car y) (remove-duplicates (cadr y)) (car (third y)) result null))
                        (let* ((symbolic (hash->list (model result)))
+                              (constraints (filter (lambda (p) (not (member (car p) universals))) symbolic))
                               (guard
                                (letrec ((g (lambda (ss)
                                              (if (null? ss)
                                                  #t
-                                                 (let ((s (car ss))
-                                                       (rest (g (cdr ss))))
-                                                   (if (member (car s) universals)
-                                                       rest
-                                                       (and
-                                                        (equal? (car s) (evaluate (car s) result))
-                                                        rest)))))))
+                                                 (and
+                                                  (equal? (caar ss) (cdar ss))
+                                                  (g (cdr ss)))))))
                                  (g symbolic)))
                               (negated-formula
                                (and 

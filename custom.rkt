@@ -6,6 +6,7 @@
 (require "parse.rkt")
 (require "expression-lexer.rkt")
 (require "expression-writer.rkt")
+(require "dates.rkt")
 (require rosette/solver/smt/z3)
 
 (define-namespace-anchor anc)
@@ -136,15 +137,31 @@
                        (if (eq? op 'and) (list 'send 'p 'constant #f) (cadr r)))
                  'boolean))]
         [(< > <= >=)
-         (let ((op (car form))
-               (l (to-custom-int (second form) (cons 1 nested-pos)))
-               (r (to-custom-int (third form) (cons 2 nested-pos))))
-           (list (append (car l) (car r))
-                 (list 'send 'p 'basic-binary op (cadr l) (cadr r))
-                 'boolean))])
+         (let* ((op (car form))
+                (l (to-custom-int (second form) (cons 1 nested-pos)))
+                (r (to-custom-int (third form) (cons 2 nested-pos)))
+                (type
+                 (cond ((eq? (caddr l) 'date) 'date)
+                       ((eq? (caddr r) 'date) 'date)
+                       (#t 'number))))
+               (list (append (car l) (car r))
+                     (list 'send 'p 'basic-binary
+                           (cond ((eq? type 'number) op)
+                                 ((eq? op '<) date-lt)
+                                 ((eq? op '<=) date-le)
+                                 ((eq? op '>) date-gt)
+                                 ((eq? op '>=) date-ge)
+                                 (#t op))
+                           (cadr l) (cadr r))
+                     'boolean))])
+               
      (list '()
            (list 'send 'p 'constant form)
-           'any)))
+           (cond ((number? form) 'number)
+                 ((string? form) 'string)
+                 ((vector? form) 'date)
+                 ((boolean? form) 'boolean)
+                 (#t 'any)))))
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
@@ -311,19 +328,26 @@
     
 
 (define (parse-column-metadata p)
- (for/list ([i p])
+  (let ((sym (lambda (colName type)
+               (val (string->symbol (string-append colName "_" (~v type)))
+                    (cond [(= type 1) integer?]
+                          [(= type 3) string?]
+                          [(= type 4) boolean?]
+                          [(= type 5) real?]
+                          [#t string?])))))
+    (for/list ([i p])
       (let ((type (car (list-ref i 3)))
             (colName (cadr i)))
-        (println type)
-        (val (string->symbol (string-append colName "_" (~v type)))
-             (cond [(= type 1) integer?]
-                   ; type 2 is a date and needs to be changed because a symblic date type wont be accepted by Rosette
-                   [(= type 2) integer?]
-                   [(= type 3) string?]
-                   [(= type 4) boolean?]
-                   [(= type 5) real?]
-                   [#t string?])))))
-
+        (if (= type 2)
+            (vector
+             (sym (string-append colName "_s") 1)
+             (sym (string-append colName "_m") 1)
+             (sym (string-append colName "_h") 1)
+             (sym (string-append colName "_dy") 1)
+             (sym (string-append colName "_mn") 1)
+             (sym (string-append colName "_yr") 1))
+            (sym colName type))))))
+      
 (define-symbolic s1 string?)
 
 (define-symbolic i1 integer?)

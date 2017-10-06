@@ -1,0 +1,6 @@
+((and (>= (in 1) 381600) (< (in 1) 381700)) ((columnName "col1" primitiveTypes (1 )) ))  
+((and (= (in 1) 10000) (and (< (in 2) 10010) (> (in 2) 10000))) ((columnName "col1" primitiveTypes (1 )) (columnName "col2" primitiveTypes (1 )) )) 
+((and (< (in 1) 5708.999116341185) (> (in 1) 5649.326319770025)) ((columnName "col1" primitiveTypes (5 )) )) 
+((concat "12345" (in 1) ) ((columnName "col1" primitiveTypes (3 )) (columnName "col2" primitiveTypes (3 )) (columnName "col3" primitiveTypes (1 )) (columnName "col4" primitiveTypes (1 )) )) 
+((concat (concat (concat (in 1) "(" ) (substr (in 2) 0 1 ) ) ")" ) ((columnName "col1" primitiveTypes (3 )) (columnName "col2" primitiveTypes (3 )) ))
+((and (and (= (in 2) 10010) (= (in 3) "ABRC")) (and (< (in 4) #(0 0 0 10 10 1970)) (> (in 4) #(0 0 0 1 1 1970)))) ((columnName "col1" primitiveTypes (1 )) (columnName "col2" primitiveTypes (1 )) (columnName "col3" primitiveTypes (3 )) (columnName "col4" primitiveTypes (2 )) (columnName "col5" primitiveTypes (1 )) (columnName "col6" primitiveTypes (1 )) ))
