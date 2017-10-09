@@ -1,0 +1,131 @@
+\section{Preliminaries}\label{prelims}
+
+In this section, we describe the sets of SQL functions we support, and illustrate how we provide that support using Rosette as a key enabling technology. We also describe functions that are currently difficult to support using our approach, and provide insight into why the problem is hard. 
+ 
+\subsection{SQL functions}
+Table \ref{table:SQL} lists the functions or operators we support grouped by datatypes.  Numeric datatypes include reals and integers. We provide descriptions of the functions because the actual SQL function name differs across vendors.
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{250pt}{|l|X| }
+\hline
+Datatype & Functions \\
+All & is null, is not null \\
+Boolean & and, or, not, case when  \\
+Numeric & +, -, *, /, abs, truncate, sign, ceiling, floor, >=, <=, >, <, =, <>  \\
+String & index of substring, substring, concatenate, =, <>, length of string \\
+Date & extract fields from date (e.g. year), add intervals to date (e.g. add 1 day or 1 year), convert dates to epochs (and vice versa), <, > <=, >=, =, <>, subtract two dates \\
+Aggregates & max, min, avg, count, sum \\
+\hline
+\end{tabularx}
+\caption{Table of supported SQL functions}
+\label{table:SQL}
+\end{table}
+
+As shown in the table, SQL functions on custom datatypes such as dates can be supported using the solver based approach we outline in this paper.  A key enabling technology to do so is Rosette, which allows us to write code that underlies the function operation in a high level programming language (Racket \cite{Racket}), and have it be compiled into logical constraints that can be used an inputs to an SMT solver such as Z3 \cite{Z3}.  This process is illustrated in the next section for a relatively simple example.
+
+\subsection{Translation of functions to SMT using Rosette}
+For the sake of simplicity, we assume that we are at a point where we are trying to search for appropriate values for the arguments of a substring function.  In particular, we want to compute the third argument of the substring function, if we knew `abcd' should be the output, and `abcdefg' was the input, and 0 is the start of the string to do the search from.  Our first step is to translate this problem into Rosette \cite{Rosette} code, as show in the first two lines of Figure \ref{fig:2}.  The rest of Figure \ref{fig:2} illustrates how Rosette converts that code into a set of constraints for an SMT solver to solve.  In this case, Z3 has internal support for string functions such as \emph{substring} which we exploit here.  Note that our example is deliberately simplified; we would actually convert all three arguments to symbolic variables in the assertion code on line 2, if we had no snippets available.   
+
+\begin{figure}
+\caption{Searching for the third argument to a substring function}
+\label{fig:2}
+\begin{lstlisting}[
+           language=Scheme,
+           numberstyle=\footnotesize,
+           commentstyle=\color{gray}
+  ]
+; define a symbolic variable i1 of type integer
+(define-symbolic i1 integer?)
+; call Rosette's solve function asserting that substring must return expected output
+(solve (assert (equal? "abcd" (substring "abcdefg" 0 i1))))
+\end{lstlisting}
+
+Rosette compiles the above program to:
+
+\begin{lstlisting}[
+           language=Scheme,
+           numberstyle=\footnotesize,
+           commentstyle=\color{gray}
+  ]
+; c0 corresponds to i1
+(declare-fun c0 () Int)
+; e1 contains the return value of the call to Z3's str.substr function.  
+str.sybstr takes length of the string rather than an index, 
+which accounts for the (- c0 0) argument.
+(define-fun e1 () String (str.substr "abcdefg" 0 (- c0 0)))
+; e2 checks if the string returned by e1 is the expected output
+(define-fun e2 () Bool (= "abcd" e1))
+; e3 and e4 bound the search and state that c0 must be between 0 and 7 which is the maximum length of the input string
+(assert e2)(define-fun e3 () Bool (<= 0 c0))
+(define-fun e4 () Bool (<= c0 7))
+; e5 insists that both e3 and e4 need to be true
+(define-fun e5 () Bool (and e3 e4))
+(assert e5)
+(check-sat)
+
+\end{lstlisting}
+\end{figure}
+
+In the case where the functions (and their corresponding datatypes) are not available as Rosette and Z3 functions, we can use the more basic data structures that Rosette provides to search over the functions.  All the date functions are supported in our implementation by exploiting this mechanism.  We modeled a date as a vector composed of its different fields, as shown in Figure \ref{fig:date}.  The vector is a data structure that is `lifted' in Rosette, meaning Rosette can compile vector operations into constraints for Z3.  All date functions were then written as mathematical expressions over date fields.  So, despite the fact that one cannot create a symbolic date variable in Rosette, we can in fact manufacture such a structure by inventing symbolic integers for a concrete vector, and asking Rosette to solve for the sub-fields of date.  Figure \ref{fig:date} gives a concrete example of working with symbolic fields of dates, and illustrates how a function that adds seconds to a date can be used with Rosette's support to reason over symbolic variables.
+\begin{figure}
+\caption{Supporting date functions}
+\label{fig:date}
+\begin{lstlisting}[
+           language=Scheme,
+           numberstyle=\footnotesize,
+           commentstyle=\color{gray}
+  ]
+
+(define (create-date seconds minutes hours days months years)
+  (let ((d (make-vector 6)))
+    ; set field is a simple vector set operation
+    (set-field d "seconds" seconds)
+    (set-field d "minutes" minutes)
+    (set-field d "hours" hours)
+    (set-field d "days" days)
+    (set-field d "months" months)
+    (set-field d "years" years)
+    d))
+
+; add-minutes, add-hours etc not shown
+(define (add-seconds date s)
+  (assert (< s 60))
+  (let ((p (+ (get-field date "seconds") s)))
+    (if (< p 60)
+        (set-field date "seconds" p)
+        (begin
+          (set-field date "seconds" (- p 60))
+          (add-minutes date 1)))))
+
+
+(define (test-symbolic-add-seconds)
+  (let ((d (create-date 10 59 23 28 2 2000)))
+    (add-seconds d i1)
+    (let ((m1 (solve (assert (= 20 (extract-seconds d))))))
+         (assert (= 10 (evaluate i1 m1))))
+    (println d)))
+\end{lstlisting}
+
+Rosette output for d:
+\begin{lstlisting}[
+           language=Scheme,
+           numberstyle=\footnotesize,
+           commentstyle=\color{gray}
+  ]
+(vector 
+  ; Rosette puts in guards based on the code to check to see if value of seconds is under 60, else adjusts accordingly
+  (ite (< (+ 10 i1) 60) (+ 10 i1) (+ -50 i1))
+  ; similar logic for all other fields
+  (ite (< (+ 10 i1) 60) 59 0) 
+  (ite (< (+ 10 i1) 60) 23 0) 
+  (ite (< (+ 10 i1) 60) 28 29) 
+  ; note Rosette uses partial evaluation of the code for the month and year constants to infer that the month cannot possibly change to 3 and the year stays constant
+  2 
+  2000)
+
+\end{lstlisting}
+\end{figure}
+
+\subsection{Functions that are difficult to support}
+In general, synthesis of certain SQL functions are just not possible to support using solver based technologies.  Examples are real valued functions such as exponents or sin, where the value of the function is approximated using complex mathematics.  Other examples include regular expression support for strings.  Here solvers can support a regular expression pattern if it is a constant.  Support for patterns themselves being symbolic variables is not supported by any of the current solvers.  It should be pointed out that our choice of Z3 as an SMT solver was based on its support for strings.  The theory of strings in Z3 was much better than support in other SMT solvers.
