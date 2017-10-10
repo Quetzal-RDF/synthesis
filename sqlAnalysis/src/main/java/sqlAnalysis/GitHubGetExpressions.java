@@ -51,6 +51,8 @@ public class GitHubGetExpressions {
 						writer.process(st, null);
 						
 						List<Pair<String, String>> exps = writer.getExpressionsAndTypes();
+//						System.out.println("GRAPH:" + writer.graph);
+						
 						for (Pair<String, String> p : exps) {
 							if (!expressions.containsKey(p.fst)) {
 							//	System.out.println("SQL:" + sql);

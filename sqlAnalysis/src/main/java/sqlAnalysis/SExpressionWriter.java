@@ -1,6 +1,7 @@
 package sqlAnalysis;
 
 import java.time.LocalDate;
+
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -487,7 +488,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			columnNumber += 1;
 			colNamesToInt.put(node.getExpression().toString(), columnNumber);
 		}
-		return "col" + colNamesToInt.get(node.getExpression().toString());
+		return "(in" + colNamesToInt.get(node.getExpression().toString()) + ")";
 
 	}
 
@@ -617,44 +618,44 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		return val;
 	}
 	
-	private LocalDate tryDateParse(StringLiteral s) {
+	private LocalDate tryDateParse(String s) {
 		LocalDate ret = null;
 		
 		try {
-			ret = LocalDate.parse(s.getValue(), DateTimeFormatter.BASIC_ISO_DATE);
+			ret = LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
 		} catch (Exception e1) {
 			try {
-				ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_DATE);
+				ret = LocalDate.parse(s, DateTimeFormatter.ISO_DATE);
 			} catch (Exception e2) {
 				try {
-					ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_DATE_TIME);
+					ret = LocalDate.parse(s, DateTimeFormatter.ISO_DATE_TIME);
 				} catch (Exception e3) {
 					try {
-						ret = LocalDate.parse(s.getValue(), DateTimeFormatter.BASIC_ISO_DATE);
+						ret = LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
 					} catch (Exception e4) {
 						try {
-							ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_LOCAL_DATE);
+							ret = LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE);
 						} catch (Exception e5) {
 							try {
-								ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+								ret = LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 							} catch (Exception e6) {
 								try {
-									ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_LOCAL_TIME);
+									ret = LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_TIME);
 								} catch (Exception e7) {
 									try {
-										ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_OFFSET_DATE);
+										ret = LocalDate.parse(s, DateTimeFormatter.ISO_OFFSET_DATE);
 									} catch (Exception e8) {
 										try {
-											ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+											ret = LocalDate.parse(s, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 										} catch (Exception e9) {
 											try {
-												ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_OFFSET_TIME);
+												ret = LocalDate.parse(s, DateTimeFormatter.ISO_OFFSET_TIME);
 											} catch (Exception e10) {
 												try {
-													ret = LocalDate.parse(s.getValue(), DateTimeFormatter.ISO_INSTANT);
+													ret = LocalDate.parse(s, DateTimeFormatter.ISO_INSTANT);
 												} catch (Exception e11) {
 													try {
-														ret = LocalDate.parse(s.getValue(), DateTimeFormatter.RFC_1123_DATE_TIME);
+														ret = LocalDate.parse(s, DateTimeFormatter.RFC_1123_DATE_TIME);
 													} catch (Exception e12) {
 														
 													}
@@ -686,7 +687,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			}
 			t.append(")");
 			
-			if (n.name.startsWith("col")) {
+			if (n.name.startsWith("(in ")) {
 				types.append("(").append("columnName").append(" ").append("\"")
 				.append(n.name).append("\"").append(" ").append("primitiveTypes").append(" ")
 				.append(t).append(")").append(" ");
@@ -749,7 +750,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			type = 5;
 		} else if (l instanceof StringLiteral) {
 			StringLiteral s = (StringLiteral) l;
-			LocalDate d = tryDateParse(s);
+			LocalDate d = tryDateParse(s.getValue());
 			if (d != null) {
 				type = 2;
 			} else {
@@ -808,6 +809,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			TypedNode src = null;
 			if (lhs instanceof Literal || rhs instanceof Literal) {
 				Literal l = null;
+
 				if (lhs instanceof Literal) {
 					l = (Literal) lhs;
 				} else if (rhs instanceof Literal) {
@@ -836,10 +838,18 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitComparisonExpression(ComparisonExpression node, Void context) {
-		record(node.getLeft(), node.getRight(), context);
+		// assume strings are dates if we have an operator is something other than equals
+		if (node.getRight() instanceof StringLiteral && !(processOp(node.getType().getValue()).equals("=")) && !(processOp(node.getType().getValue()).equals("!="))) {
+			record(node.getLeft(), getLiteralForType(2), context);
+			return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
+			+ "#(0 0 0 1 1 1970)";
+		} else {
+			record(node.getLeft(), node.getRight(), context);
+			return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
+			+ process(node.getRight(), context) + ")";
+		}
 
-		return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
-				+ process(node.getRight(), context) + ")";
+
 	}
 
 	@Override
@@ -848,7 +858,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			columnNumber += 1;
 			colNamesToInt.put(node.getName().toString(), columnNumber);
 		}
-		return "col" + colNamesToInt.get(node.getName().toString());
+		return "(in " + colNamesToInt.get(node.getName().toString()) + ")";
 
 	}
 
@@ -858,7 +868,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		record(node.getValue(), l.getValues().get(0), context);
 
 		String args = process(node.getValueList(), context);
-		return "(" + "in" + " " + process(node.getValue(), context) + " " + args + ")";
+		return "(" + "in-list" + " " + process(node.getValue(), context) + " " + args + ")";
 	}
 
 	private Literal getLiteralForType(int type) {
@@ -906,7 +916,11 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 		String args = createArgs(context, l);
 
-		return "(" + node.getName().toString() + " " + args + ")";
+		String n = node.getName().toString();
+		if (node.getName().toString().equals("in")) {
+			n = "in-list";
+		}
+		return "(" + n + " " + args + ")";
 	}
 
 	@Override
@@ -1049,8 +1063,21 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitStringLiteral(StringLiteral node, Void context) {
-		// TODO Auto-generated method stub
-		return "\"" + node.getValue() + "\"";
+		LocalDate d = tryDateParse(node.getValue());
+		String ret = null;
+		if (d != null) {
+			StringBuffer buf = new StringBuffer("#(");
+			buf.append("0").append(" ");
+			buf.append("0").append(" ");
+			buf.append("0").append(" ");
+			buf.append(d.getDayOfMonth()).append(" ");
+			buf.append(d.getMonthValue()).append(" ");
+			buf.append(d.getYear()).append(")");
+			ret = buf.toString();
+		} else {
+			ret = "\"" + node.getValue() + "\"";
+		}
+		return ret;
 	}
 
 	@Override
