@@ -173,12 +173,16 @@
     
     (define/public (basic-math pos l r)
       (let ((m1 (val (cons 'm1 pos) boolean?))
-            (m2 (val (cons 'm2 pos) boolean?)))
+            (m2 (val (cons 'm2 pos) boolean?))
+            (m3 (val (cons 'm3 pos) boolean?)))
         (list
-         (cond [(and m1 (not m2)) '/]
-               [(and m1 m2) '*]
-               [(and (not m1) m2) '-]
-               [#t '+])
+         (cond
+           [(and m1 m2 m3) quotient] 
+           [(and m1 m2 (not m3)) remainder]
+           [(and m1 (not m2) m3) /]
+           [(and m1 (not m2) (not m3)) *]
+           [(and (not m1) m2 m3) -]
+           [#t +])
          l r)))
 
     (define/public (basic-num-functions pos v)
@@ -276,25 +280,16 @@
                          (#t 'min))))))
         (list 'agg op v)))))
 
-;(define (basic-math-op r pos + - * / quotient remainder)
-;  (let ((m1 (val (cons 'm1 pos) boolean?))
-;        (m2 (val (cons 'm2 pos) boolean?))
-;        (m3 (val (cons 'm3 pos) boolean?)))
-;    (cond [(and m1 m2 m3 (integer? r) (not (= r 0))) quotient]
-;          [(and m1 m2 (not m3) (integer? r) (not (= r 0))) remainder]
-;          [(and m1 (not m2) m3 (not (= r 0))) /]
-;          [(and m1 (not m2) (not m3)) *]
-;          [(and (not m1) m2 m3) -]
-;          [#t +])))
-
 (define (basic-math-op r pos + - * / quotient remainder)
   (let ((m1 (val (cons 'm1 pos) boolean?))
-        (m2 (val (cons 'm2 pos) boolean?)))
-    (cond 
-      [(and m1 (not m2) (not (= r 0))) /]
-      [(and m1 m2) *]
-      [(and (not m1) m2) -]
-      [#t +])))
+        (m2 (val (cons 'm2 pos) boolean?))
+        (m3 (val (cons 'm3 pos) boolean?)))
+    (cond [(and m1 m2 m3) (if (and (integer? r) (not (= r 0))) quotient 'invalid)]
+          [(and m1 m2 (not m3)) (if (and (integer? r) (not (= r 0))) remainder 'invalid)]
+          [(and m1 (not m2) m3) (if (not (= r 0)) / 'invalid)]
+          [(and m1 (not m2) (not m3)) *]
+          [(and (not m1) m2 m3) -]
+          [#t +])))
 
 (define (lifted-round v)
   (truncate (+ v .5)))
@@ -367,7 +362,10 @@
 
     (define/public (basic-math pos l r)
       (if (and (number? l) (number? r))
-          (send this basic-binary (basic-math-op r pos + - * / quotient remainder) l r)
+          (let ((op (basic-math-op r pos + - * / quotient remainder)))
+            (if (eq? op 'invalid)
+                'invalid
+                (send this basic-binary op l r)))
           'invalid))
 
     (define/public (basic-num-functions pos v)

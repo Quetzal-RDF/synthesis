@@ -47,6 +47,9 @@
 (define (simple-selection1)
   (test analyze '(if) '() '(index-of) 7 '(5 0) (list s1 i1) '(("A" 5)("B" 5))))
 
+(define (simple-remainder1)
+  (test analyze '() '() '(index-of) 7 '(2 0 3) (list i1 i2) '((18 4) (10 5) (17 7))))
+
 (define (simple-symbolic1)
   (test analyze '(if) '() '() 7 '(5 0) (list s1 i1) (list (list "A" i2) (list "B" 5))))
 
