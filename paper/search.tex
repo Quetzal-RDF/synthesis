@@ -1,0 +1,58 @@
+\section{Synthesis}\label{synthesis}
+The core algorithm for synthesis is an exhaustive type based search over all the possible queries (and all possible constants) that can be synthesized for the input and output examples at hand.  The algorithm is described in \ref{synthesis}.
+
+\begin{algorithm}
+\caption{Synthesis algorithm}
+\label{synthesis}
+\begin{algorithmic}[1]
+
+\Procedure{synthesize}{$I,O,D$}
+\Statex
+\Comment{I: list of rows in input table with each row being a list of columns, O: list of a single output column, D: maximum depth}
+   \State $d\gets 0$
+   \State $t := O[0].type$
+
+   \If{$t = boolean$}
+      \textbf{return} $doAllBoolean(D, d)$
+   \ElsIf{$t = date$}
+      \textbf{return} $doAllDate(D, d)$
+   \ElsIf{$t = numeric$}
+      \textbf{return} $doAllNumeric(D, d)$
+   \Else
+     $\ doAllString(D, d)$
+\EndIf
+\EndProcedure
+
+\Statex
+\Procedure{doAllNumeric}{$D, d$}
+\State $ d := d + 1 $
+\If{$d \le D$}
+  \textbf{return} $doBasicMath(D, d,$
+\Statex $doAllNumeric, doAllNumeric)$
+\Statex
+  \Comment{search other all function templates like basic math that return numerics}
+\EndIf
+\EndProcedure
+
+\Statex
+\Procedure{doBasicMath}{$D, d, left, right$}
+\State $ c1 := define-symbolic(c1, boolean) $
+\State $ c2 := define-symbolic(c2, boolean) $
+\If{$c1 \land \neg c2 $}
+ \If{$right > 0$}
+  \textbf{return} $left/right$
+ \Else
+  \ \textbf{return} $invalid$
+ \EndIf
+\ElsIf{$c1 \land c2$}
+  \textbf{return} $left*right$
+\ElsIf{$\neg c1 \land c2$}
+  \textbf{return} $left-right$
+\Else
+  \ \textbf{return} $left+right$
+\EndIf
+\EndProcedure
+
+
+\end{algorithmic}
+\end{algorithm}
