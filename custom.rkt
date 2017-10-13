@@ -257,13 +257,29 @@
          (start (length (remove-duplicates (apply append (hash-values custom))))))
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
+(define (get-rows fs)
+  (map (lambda (f)
+         (let ((doit
+                (lambda (f p)
+                  (if (not (eq? (cadr f) 'invalid))
+                      (list (car f) (generate-models (cadr f) (caddr f) p))
+                      '()))))
+           (if (not (union? (cadr f)))
+               (doit f #t)
+               (apply append
+                      (map
+                       (lambda (x)
+                         (let ((guard (car x))
+                               (expr (cdr x)))
+                           (doit (list (car f) expr (caddr f)) guard)))
+                       (union-contents (cadr f)))))))
+       fs))
+
 (define (generate-data text cols columnMetadata)
   (let* ((parse (apply make-parser (map ~a cols)))
          (stuff (parse text))
          (fs (test-custom stuff cols))
-         (result
-          (for/list ([f (filter (lambda (v) (not (eq? (cadr v) 'invalid))) fs)])
-            (list (car f) (generate-models (cadr f) (caddr f) #t)))))
+         (result (get-rows fs)))
     (create-table result cols columnMetadata)))
 
 (define (generate-models expr controls extra)
@@ -325,7 +341,6 @@
         [(index-of result (car cols)) (cons (car cols) (gather-cols result (cdr cols)))]
         [#t (gather-cols result (cdr cols))]))
 
-    
 
 (define (parse-column-metadata p)
   (let ((sym (lambda (colName type)
@@ -358,4 +373,4 @@
 
 
 
-(provide test-custom make-custom-table analyze-custom generate-models generate-data parse-column-metadata)
+(provide test-custom make-custom-table analyze-custom generate-models generate-data parse-column-metadata get-rows create-table)

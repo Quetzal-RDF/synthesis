@@ -18,8 +18,11 @@
             (if ("if") ("whether")("when")("unless")("case")("in case")("case" "when"))
             (then ("then") ("do") ("then" "do") ("subsquently"))
             (else ("else") ("or" "else") ("or") ("otherwise"))
-            (substring ("substring") ("extract" "characters") ("extract" "string") ("extract" "substring") ("left") ("right") ("mid"))
-            (index-of ("indexof")("index" "of")("find")("search"))
+            (substring ("substring")("left") ("right") ("mid"))
+            (substring-first ("extract" "characters") ("extract" "string") ("extract" "substring"))
+            (substring-start ("starting" "at") ("start" "at"))
+            (substring-end ("ending" "at") ("end" "at"))
+            (index-of ("indexof")("index" "of")("position" "of")("find")("search"))
             (length ("length")("string" "length")("len"))
             (+ ("+") ("plus"))
             (- ("-") ("minus") ("takeaway") ("subtract") ("deduct"))
@@ -40,8 +43,18 @@
             (>= (">=") ("greater" "than" "or" "equal" "to") ("is" "greater" "than" "or" "equal" "to") ("more" "than" "or" "equal" "to") ("is" "more" "than" "or" "equal" "to") ("larger" "than" "or" "equal" "to") ("is" "larger" "than" "or" "equal" "to") ("higher" "than" "or" "equal" "to") ("is" "higher" "than" "or" "equal" "to") ("bigger" "than" "or" "equal" "to") ("is" "higher" "than" "or" "equal" "to") ("older" "than" "or" "equal" "to") ("is" "older" "than" "or" "equal" "to"))
             (<= ("<=") ("less" "than" "or" "equal" "to") ("is" "less" "than" "or" "equal" "to") ("smaller" "than" "or" "equal" "to") ("is" "smaller" "than" "or" "equal" "to") ("lower" "than" "or" "equal" "to") ("is" "lower" "than" "or" "equal" "to") ("is" "younger" "than" "or" "equal" "to"))
             (!= ("!=") ("<>") ("not equal") ("is" "not" "equal" "to") ("is" "not" "same" "as"))
-            (= ("=") ("==") ("equals") ("is") ("is" "equal" "to") ("is" "same" "as"))))
-         (reserved (filter string? (flatten keywords))))
+            (= ("=") ("==") ("equals") ("is") ("is" "equal" "to") ("is" "same" "as"))
+            (average ("average") ("mean") ("average" "of") ("mean" "of") ("avg"))
+            (minimum ("minimum") ("minimum" "of") ("min"))
+            (maximum ("maximum") ("maximum" "of") ("max"))
+            (count ("count") ("count" "number" "of") ("count" "of"))
+            (group ("group") ("group" "by") ("grouped" "by") ("organize" "by") ("organized" "by") ("cluster" "by") ("clustered" "by") ("by") ("based" "on"))))
+         (reserved (filter string? (flatten keywords)))
+         (templates '((average ())
+                      (average "(" () ")")
+                      (index-of '() "in" '())
+                      (substring "(" () "," () "," () ")")
+                      (substring-first "from" () substring-start () substring-end ()))))
 
     ; val-f is applied to every element of the list
     ; pred-f is applied on that transformed value
@@ -197,13 +210,58 @@
 			  (cons (list 'if (car test)) (cdr test))))
                     (cons (list 'if (car test)) (cdr test))))
               (parse-andor-expr tokens)))))
+
+    (define (parse-templates xtokens)
+      (for/all ([tokens xtokens])
+        (letrec ((parse-template
+                  (lambda (ts)
+                    (if (null? ts) (cons #f tokens)
+                        (let ((template (car ts)))
+                          (letrec ((fail #f)
+                                   (rest '())
+                                   (parse-term
+                                    (lambda (toks terms)
+                                      (if (null? terms)
+                                          (begin (set! rest toks) '())
+                                          (cond [(string? (car terms))
+                                                 (if (equal? (car terms) (car toks))
+                                                     (cons (car terms) (parse-term (cdr toks) (cdr terms)))
+                                                     (set! fail #t))]
+                                                [(symbol? (car terms))
+                                                 (let ((x (parse-keyword (car terms) toks)))
+                                                   (if (eq? #f (car x))
+                                                       (set! fail #t)
+                                                       (cons (car x) (parse-term (cdr x) (cdr terms)))))]
+                                                [#t
+                                                 (let ((x (parse-if toks)))
+                                                   (if (eq? #f (car x))
+                                                       (set! fail #t)
+                                                       (cons (car x) (parse-term (cdr x) (cdr terms)))))])))))
+                            (let ((v (parse-term tokens template)))
+                              (if fail (parse-template (cdr ts)) (cons v rest)))))))))
+          (let ((v (parse-template templates)))
+            (if (eq? #f (car v))
+                (parse-if tokens)
+                v)))))
+    
+    (define (parse-group xtokens)
+      (for/all ([tokens xtokens])
+        (let* ((x (parse-templates tokens)) ; parse-if returns a pair - a symbol if it finds any (or #f if it doesnt) and the rest of the tokens
+                   ; to be processed
+               (y (parse-keyword 'group (cdr x))))
+          (if (eq? (car y) 'group)
+              (let ((e (parse-templates (cdr y))))
+                (if (not (eq? (car e) #f))
+                    (cons (list 'group (car x) (car e)) (cdr e))
+                    x))
+              x))))
+                    
     
     (define (parse-loop xtokens)
       (for/all ([tokens xtokens])
         (if (null? tokens)
             '()
-            (let* ([binary-expr (parse-if tokens)] ; parse-if returns a pair - a symbol if it finds any (or #f if it doesnt) and the rest of the tokens
-                   ; to be processed
+            (let* ([binary-expr (parse-group tokens)] 
                    [val (car binary-expr)]
                    [toks (cdr binary-expr)])
               (if val
@@ -315,6 +373,45 @@
 (define (test15)
        (letrec ((p (apply make-parser '("terms" "min_servers" "price_per_server")))
            (result (p '("if" "terms" "==" "Committed" "then" "min_servers" "*" "price_per_server" "or" "else" "0"))))
+    (println result)))
+
+(define (test16)
+       (letrec ((p (apply make-parser '("price_per_server" "server")))
+           (result (p '("price_per_server" "grouped" "by" "server"))))
+    (println result)))
+
+(define (test17)
+  (letrec ((p (apply make-parser '("price_per_server" "min_servers" "terms" "top99" "container_overage")))
+           (result (p '("if" "terms" "is" "Committed" "then" "price_per_server" "*" "min_servers"
+                          "otherwise" "if" "terms" "is" "Standard" "then" "top99" "*" "min_servers" "plus" "container_overage" "otherwise" "0"))))
+          (println result)))
+
+(define (test18)
+  (letrec ((p (apply make-parser '("price_per_server" "min_servers" "terms" "top99" "container_overage")))
+           (result (p  '("if" "terms" "is" "Committed" "then" "price_per_server" "times" "min_servers" "else" "0" "plus"
+                          "if" "terms" "is" "Standard" "then" "top99" "times" "price_per_server" "plus" "container_overage" "else" "0"))))
+     (println result)))
+
+(define (test19)
+  (letrec ((p (apply make-parser '("price_per_server" "min_servers" "terms" "top99" "container_overage")))
+           (result (p '("if" "terms" "is" "Committed" "then" "price_per_server" "times"
+                             "min_servers" "otherwise" "0" "otherwise" "if" "terms" "is" "Standard"
+                             "then" "top99" "times" "price_per_server" "plus" "container_overage" "otherwise" "0"))))
+    (println result)))
+
+(define (test20)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("average" "A" "+" "B"))))
+    (println result)))
+
+(define (test21)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("average" "A" "+" "B" "group" "by" "C"))))
+    (println result)))
+
+(define (test22)
+  (letrec ((p (apply make-parser '("A" "B" "C" "D")))
+           (result (p '("average" "A" "+" "B" "group" "by" "C" "+" "D"))))
     (println result)))
 
 (provide make-parser find-parse)
