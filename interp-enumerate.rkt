@@ -275,9 +275,10 @@
                  'group-concat
                  (let ((v1 (val (cons 1 pos) boolean?))
                        (v2 (val (cons 2 pos) boolean?)))
-                   (cond ((and v1 v2) 'sum)
+                   (cond ((and v1 v2) 'min)
                          ((and v1 (not v2)) 'max)
-                         (#t 'min))))))
+                         ((and (not v1) (not v2)) 'avg)
+                         (#t 'sum))))))
         (list 'agg op v)))))
 
 (define (basic-math-op r pos + - * / quotient remainder)
@@ -648,33 +649,36 @@
     (super-new)
 
     (inherit-field processors)
-    
+
     (define (aggregate pos type v)
+      (let* ((stuff
+              (if (eq? type 'string)
+                  (list string-append #f)
+                  (let ((v1 (val (cons 1 pos) boolean?))
+                        (v2 (val (cons 2 pos) boolean?)))
+                    (list
+                     (cond ((and v1 v2) min)
+                           ((and v1 (not v2)) max)
+                           (#t +))
+                     (and (not v1) (not v2))))))
+             (op (car stuff))
+             (is-average (cadr stuff)))
+        (send this aggregate-op pos type v op is-average)))
+    
+    (define/public (aggregate-op pos type v op is-average)
       (if (member 'invalid v)
           (for/list ([x v])
             'invalid)
-          (let* ((stuff
-                  (if (eq? type 'string)
-                      (list string-append #f)
-                      (let ((v1 (val (cons 1 pos) boolean?))
-                            (v2 (val (cons 2 pos) boolean?)))
-                        (list
-                         (cond ((and v1 v2) min)
-                               ((and v1 (not v2)) max)
-                               (#t +))
-                         (and (not v1) (not v2))))))
-                 (op (car stuff))
-                 (is-average (cadr stuff)))
-            (let ((val
-                   (for/fold ([f (cadr v)])
-                             ([e (cddr v)])
-                     (op f e))))
-              (cons
-               (let ((v1 (op (car v) val)))
-                 (if is-average (/ v1 (length v)) v1))
-               (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
-                 (for/list ([x (cdr v)])
-                   v1)))))))
+          (let ((val
+                 (for/fold ([f (cadr v)])
+                           ([e (cddr v)])
+                   (op f e))))
+            (cons
+             (let ((v1 (op (car v) val)))
+               (if is-average (/ v1 (length v)) v1))
+             (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
+               (for/list ([x (cdr v)])
+                 v1))))))
       
     (override aggregate)))
 
@@ -717,7 +721,7 @@
   
 (define (do-math-int size pos p f)
   (do-all 'number
-   (list do-in-int do-intv do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
+   (list do-in-int do-int-aggregate do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
    size pos p f))
 
 (define (do-all-date size pos p f)

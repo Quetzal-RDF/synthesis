@@ -2,8 +2,10 @@
 
 (require rosette/lib/angelic)
 
-(define (make-parser . column-names)
-  (let* ((keywords
+(define (make-parser . xcolumn-names)
+  (let* ((column-names
+          (map (lambda (s) (string-trim s #px"\\$.+")) xcolumn-names))
+         (keywords
           '((or ("or") ("either") ("any") ("instead"))
             (and ("and") ("both") ("also") ("including"))
             (not ("not") ("never") ("neither") ("no") ("don't") ("isn't"))
