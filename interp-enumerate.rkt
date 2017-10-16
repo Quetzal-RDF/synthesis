@@ -225,7 +225,16 @@
       (list 'date-subtract left right))
 
     (define/public (date-compare pos left right)
-      (list 'date-compare left right))
+      (let ((di1 (val (cons 'di1 pos) boolean?))
+            (di2 (val (cons 'di2 pos) boolean?))
+            (di3 (val (cons 'di3 pos) boolean?)))
+            (list
+             (if di1
+                 (if di2
+                     (if di3 'date-le 'date-ge)
+                     (if di3 'date-gt 'date-lt))
+                 (when di2 'date-equal))
+             left right)))
     
     (define/public (date-interval pos left right)
       (let ((di1 (val (cons 'di1 pos) boolean?))
