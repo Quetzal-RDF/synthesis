@@ -10,21 +10,29 @@
              (exp (car exp-types))
              (symbolics (parse-column-metadata (cadr exp-types)))
              (fs (test-custom (list exp) symbolics)))
-        (map (lambda (f)
-               (let ((doit
-                      (lambda (f p)
-                        (if (not (eq? (cadr f) 'invalid))
-                            (list (car f) (generate-models (cadr f) (caddr f) p))
-                            '()))))
-                 (if (not (union? (cadr f)))
-                     (doit f #t)
-                     (apply append
-                            (map
-                             (lambda (x)
-                               (let ((guard (car x))
-                                     (expr (cdr x)))
-                                 (doit (list (car f) expr (caddr f)) guard)))
-                             (union-contents (cadr f)))))))
-             fs)))))
-             
+      (get-rows fs))
+ )))
 
+
+(define (benchmark-synthesis)
+    (let ((lines (file->lines "expressions4.txt" #:mode 'text)))
+    (for/list ([line lines])
+      (println "parsing")
+      (println line)
+      (println "*****")
+      (let* ((exp-types (read (open-input-string line)))
+             (exp (car exp-types))
+             (columnMetadata (cadr exp-types))
+             (cols (map cadr columnMetadata))
+             (symbolics (parse-column-metadata (cadr exp-types)))
+             (fs (test-custom (list exp) symbolics))
+             (rows (get-rows fs))
+             (table (create-table rows cols columnMetadata))
+             (inputs
+              (for/list ([row table])
+                (println table)
+                (take row (- (length row) 2))))
+             (outputs
+              (for/list ([row table])
+                (list-ref row (- (length row) 2)))))        
+      (analyze-custom "" outputs symbolics inputs)))))
