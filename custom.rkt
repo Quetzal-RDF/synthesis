@@ -326,7 +326,9 @@
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
     ; is the expected output for that subexpression, and the second element is a list of column bindings
   (let ((used-cols (gather-cols (flatten result) cols)))
-    ;(println used-cols)
+    (println (flatten result))
+    (println cols)
+    (println used-cols)
     (cons (map ~v used-cols)
           (filter (lambda (l) (not (null? l)))
            (for/fold ([r '()]) ([e result])

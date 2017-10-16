@@ -27,12 +27,12 @@
              (symbolics (parse-column-metadata (cadr exp-types)))
              (fs (test-custom (list exp) symbolics))
              (rows (get-rows fs))
-             (table (create-table rows cols columnMetadata))
+             (table (create-table rows symbolics columnMetadata))
              (inputs
-              (for/list ([row table])
+              (for/list ([row (cdr table)])
                 (println table)
                 (take row (- (length row) 2))))
              (outputs
-              (for/list ([row table])
+              (for/list ([row (cdr table)])
                 (list-ref row (- (length row) 2)))))        
-      (analyze-custom "" outputs symbolics inputs)))))
+        (test-int analyze '() (hash) '() '() 5 8 outputs symbolics inputs)))))
