@@ -101,7 +101,8 @@
          (parse (apply make-parser (map ~a columns)))
          (stuff (parse '("if" "s1" "is" "foo" "then" "i1" "otherwise" 0)))
          (fs (test-custom stuff columns))
-         (models (generate-models (cdar fs) (caddar fs) #t)))
+         (models (generate-models (cadar fs) (caddar fs) #t)))
+    (println models)
     (assert (>= (length models) 1))))
 
 (define (test12)
@@ -109,7 +110,8 @@
          (parse (apply make-parser (map ~a columns)))
          (stuff (parse '("if" "s1" "is" "foo" "then" "i1" "otherwise" 0)))
          (fs (test-custom stuff columns))
-         (models (generate-models (cdar fs) (caddar fs) #t)))
+         (models (generate-models (cadar fs) (caddar fs) #t)))
+    (println models)
     (assert (>= (length models) 2))))
 
 (define-symbolic A string?)

@@ -13,7 +13,7 @@
 (define ns (namespace-anchor->namespace anc))
 
 (define (to-custom-int form nested-pos)
-  (println form)
+  ; (println form)
   (if (list? form)
       (case (car form)
         [(in)
@@ -165,7 +165,7 @@
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
-    (println x)
+    ; (println x)
     (values
      (map cadr (car x))
      (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)
@@ -188,7 +188,7 @@
 (define (make-custom-functions columns fragments do-all-int do-all-bool do-all-str do-all-any)
   (let* ((make-custom 
           (make-custom-function do-all-int do-all-bool do-all-str do-all-any)))
-    (println make-custom)
+    ; (println make-custom)
     (map make-custom (filter cons? fragments))))
 
 (define tracing-expr-processor%
@@ -219,7 +219,9 @@
                             trace)]))
                   (expr '())
                   (doc '()))
-             (f 5 '() p (lambda (x y) (println y) (set! expr (cadr y)) (set! doc (car y))))
+             (f 5 '() p (lambda (x y)
+                          ; (println y)
+                          (set! expr (cadr y)) (set! doc (car y))))
              (list doc expr (send trace controls))))
           (map car
                (make-custom-functions
@@ -280,30 +282,33 @@
          (stuff (parse text))
          (fs (test-custom stuff cols))
          (result (get-rows fs)))
+ 
     (create-table result cols columnMetadata)))
 
 (define (generate-models expr controls extra)
-  (println controls)
-  (letrec ((v (constant (string->symbol (string-append "answer_" (~v (type-of expr)))) (type-of expr)))
-            (solve (lambda (formula)
+  (letrec ((v
+            (if (solvable? (type-of expr))
+                (constant (string->symbol (string-append "answer_" (~v (type-of expr)))) (type-of expr))
+                '()))     
+           (solve (lambda (formula)
                     (let ((solver (z3)))
                       (solver-clear solver)
-                      (solver-assert solver (list (and (equal? v expr) formula)))
+                      (solver-assert solver (list (and (if (null? v) #t (equal? v expr)) formula)))
                       (let ((x (solver-check solver)))
                         (solver-shutdown solver)
-                        (println "formula")
-                        (println (and (equal? v expr) formula))
+                        ; (println "formula")
+                        ; (println (and (equal? v expr) formula))
                         x))))
            (models (lambda (guards ctrls)
                      (let ((result (solve (and guards extra))))
                        (if (sat? result)
                            (if (null? ctrls)                         
-                               (let* ((answer (evaluate v result))
+                               (let* ((answer (evaluate expr result))
                                       (row1 (list answer (hash->list (model result))))
                                       (result2
                                        (solve (and guards extra (not (equal? expr (car row1)))))))
-                                 (println row1)
-                                 (println result2)
+                                 ; (println row1)
+                                 ; (println result2)
                                  (if (sat? result2)
                                      (list row1 (list (evaluate expr result2) (hash->list (model result2))))
                                      (list row1)))
@@ -317,21 +322,30 @@
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
     ; is the expected output for that subexpression, and the second element is a list of column bindings
   (let ((used-cols (gather-cols (flatten result) cols)))
+    ;(println used-cols)
     (cons (map ~v used-cols)
           (filter (lambda (l) (not (null? l)))
            (for/fold ([r '()]) ([e result])
-            (append r
+             (append r
                     (for/fold ([rr '()]) ([m (cdr e)])
                       (append rr (for/list ([row m])
+                                   (println "e")
+                                   (println e)
+                                   (println "end e")
+                                   (println row)
                                    (let/ec return
                                      (let ((vec (make-vector (+ (length used-cols) 2))))
                                        (for ([cell (cadr row)])
                                          (let* ((col (car cell))
                                                 (val (cdr cell))
                                                 (pos (index-of used-cols col)))
+                                           ;(println col)
+                                           ; (println pos)
                                            (if pos
                                                (vector-set! vec pos val)
-                                               (return (list)))))
+                                               (if (string-prefix? (~a col) "answer_")
+                                                   '()
+                                                   (return (list))))))
                                        (vector-set! vec (length used-cols) (car row))
                                        (vector-set! vec (+ 1 (length used-cols)) (to-html (car e) columnMetadata))
                                        (vector->list vec))))))))))))
@@ -344,7 +358,7 @@
 
 (define (parse-column-metadata p)
   (let ((sym (lambda (colName type)
-               (val (string->symbol (string-append colName "_" (~v type)))
+               (val (string->symbol (string-append colName "$" (~v type)))
                     (cond [(= type 1) integer?]
                           [(= type 3) string?]
                           [(= type 4) boolean?]
