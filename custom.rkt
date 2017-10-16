@@ -260,22 +260,23 @@
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
 (define (get-rows fs)
-  (map (lambda (f)
-         (let ((doit
-                (lambda (f p)
-                  (if (not (eq? (cadr f) 'invalid))
-                      (list (car f) (generate-models (cadr f) (caddr f) p))
-                      '()))))
-           (if (not (union? (cadr f)))
-               (doit f #t)
-               (apply append
+  (remove '()
+    (apply append
+         (map (lambda (f)
+                (let ((doit
+                       (lambda (f p)
+                         (if (not (eq? (cadr f) 'invalid))
+                             (list (car f) (generate-models (cadr f) (caddr f) p))
+                             '()))))
+                  (if (not (union? (cadr f)))
+                      (list (doit f #t))
                       (map
                        (lambda (x)
                          (let ((guard (car x))
                                (expr (cdr x)))
                            (doit (list (car f) expr (caddr f)) guard)))
-                       (union-contents (cadr f)))))))
-       fs))
+                       (union-contents (cadr f))))))
+              fs))))
 
 (define (generate-data text cols columnMetadata)
   (let* ((parse (apply make-parser (map ~a cols)))
@@ -284,6 +285,8 @@
          (result (get-rows fs)))
  
     (create-table result cols columnMetadata)))
+
+(define want-two-rows #f)
 
 (define (generate-models expr controls extra)
   (letrec ((v
@@ -306,10 +309,11 @@
                                (let* ((answer (evaluate expr result))
                                       (row1 (list answer (hash->list (model result))))
                                       (result2
-                                       (solve (and guards extra (not (equal? expr (car row1)))))))
+                                       (and want-two-rows
+                                            (solve (and guards extra (not (equal? expr (car row1))))))))
                                  ; (println row1)
                                  ; (println result2)
-                                 (if (sat? result2)
+                                 (if (and want-two-rows (sat? result2))
                                      (list row1 (list (evaluate expr result2) (hash->list (model result2))))
                                      (list row1)))
                                (append
@@ -326,12 +330,12 @@
     (cons (map ~v used-cols)
           (filter (lambda (l) (not (null? l)))
            (for/fold ([r '()]) ([e result])
+             (println "e")
+             (println e)
+             (println "end e")
              (append r
                     (for/fold ([rr '()]) ([m (cdr e)])
                       (append rr (for/list ([row m])
-                                   (println "e")
-                                   (println e)
-                                   (println "end e")
                                    (println row)
                                    (let/ec return
                                      (let ((vec (make-vector (+ (length used-cols) 2))))
@@ -341,11 +345,13 @@
                                                 (pos (index-of used-cols col)))
                                            ;(println col)
                                            ; (println pos)
-                                           (if pos
-                                               (vector-set! vec pos val)
-                                               (if (string-prefix? (~a col) "answer_")
-                                                   '()
-                                                   (return (list))))))
+                                           ; (if pos
+                                           ;    (vector-set! vec pos val)
+                                           ;    (if (string-prefix? (~a col) "answer_")
+                                           ;        '()
+                                           ;        (return (list))))))
+                                           (when pos
+                                               (vector-set! vec pos val))))
                                        (vector-set! vec (length used-cols) (car row))
                                        (vector-set! vec (+ 1 (length used-cols)) (to-html (car e) columnMetadata))
                                        (vector->list vec))))))))))))
