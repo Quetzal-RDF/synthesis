@@ -260,7 +260,7 @@
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
 (define (get-rows fs)
-  (remove '()
+  (filter (lambda (l) (not (null? l)))
     (apply append
          (map (lambda (f)
                 (let ((doit
@@ -283,7 +283,7 @@
          (stuff (parse text))
          (fs (test-custom stuff cols))
          (result (get-rows fs)))
- 
+ (println result)
     (create-table result cols columnMetadata)))
 
 (define want-two-rows #f)
@@ -364,7 +364,7 @@
 
 (define (parse-column-metadata p)
   (let ((sym (lambda (colName type)
-               (val (string->symbol (string-append colName "$" (~v type)))
+               (val (string->symbol colName)
                     (cond [(= type 1) integer?]
                           [(= type 3) string?]
                           [(= type 4) boolean?]
