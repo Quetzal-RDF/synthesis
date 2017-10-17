@@ -332,16 +332,16 @@
                             (> yr 0))
                        v
                        'invalid)))))
-        (println "value")
-        (println r)
+        ;(println "value")
+        ;(println r)
         r))
     
     (define/public (basic-unary f v)
       (f v))
     
     (define/public (basic-binary f l r)
-      (println (type-of l))
-      (println (type-of r))
+      ;(println (type-of l))
+      ;(println (type-of r))
       (if (or (eq? l 'invalid) (eq? r 'invalid))
           'invalid
           (f l r)))
@@ -425,24 +425,24 @@
           'invalid))
 
     (define/public (substr str l r)
-      (println "types")
-      (println str)
-      (println (type-of str))
-      (println (type-of l))
-      (println (type-of r))
+      ;(println "types")
+      ;(println str)
+      ;(println (type-of str))
+      ;(println (type-of l))
+      ;(println (type-of r))
       (let ((v (if (and (string? str) (integer? l) (integer? r) (>= l 0) (<= l r) (<= r (string-length str)))
                   (substring str l r)
                   'invalid)))
-        (println "substr")
-        (println v)
+        ;(println "substr")
+        ;(println v)
         v))
 
     (define/public (concat pos left right)
       (let (( v (if (and (string? left) (string? right))
           (send this basic-binary string-append left right)
           'invalid)))
-        (println "concat")
-        (println v)
+        ;(println "concat")
+        ;(println v)
         v))
 
     (define/public (date-diff pos left right)
@@ -1079,7 +1079,7 @@
        (testListMembers l1 (cdr l2)))))
 
 (define (check-operation l op)
-  (println l)
+  ;(println l)
   (when (list? l)
     (testListMembers l op)))
 

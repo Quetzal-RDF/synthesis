@@ -21,6 +21,7 @@ public class GitHubGetExpressions {
 
 		Map<String, String> expressions = new HashMap<String, String>();
 		Map<String, Integer> functions = new HashMap<String, Integer>();
+		Map<String, Integer> opsToCounts = new HashMap<String, Integer>();
 		
 		for (String line : lines) {
 			line = line.trim();
@@ -45,7 +46,7 @@ public class GitHubGetExpressions {
 					i++;				
 					try {
 												
-						SExpressionWriter writer = new SExpressionWriter();
+						SExpressionWriter writer = new SExpressionWriter(i);
 						SqlParser parser = new SqlParser();
 						Statement st = parser.createStatement(sql);
 						writer.process(st, null);
@@ -66,6 +67,15 @@ public class GitHubGetExpressions {
 							} else {
 								int j = functions.get(f) + 1;
 								functions.put(f, j);
+							}
+						}
+						
+						for (Map.Entry<String, Integer> e : writer.getOpsToCounts().entrySet()) {
+							if (!opsToCounts.containsKey(e.getKey())) {
+								opsToCounts.put(e.getKey(), e.getValue());
+							} else {
+								int j = opsToCounts.get(e.getKey()) + e.getValue();
+								opsToCounts.put(e.getKey(), j);
 							}
 						}
 						numParses++;
@@ -95,6 +105,11 @@ public class GitHubGetExpressions {
 
 		System.out.println("Expressions");
 		expressions.forEach((k, v) -> System.out.println("(" + k + " " + v + ")")); 
+		
+		System.out.println("OpsToCounts");
+		opsToCounts.entrySet().stream()
+        .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()) 
+        .forEach(System.out::println); 
 	}
 
 }

@@ -30,9 +30,10 @@
              (table (create-table rows symbolics columnMetadata))
              (inputs
               (for/list ([row (cdr table)])
-                (println table)
                 (take row (- (length row) 2))))
              (outputs
               (for/list ([row (cdr table)])
-                (list-ref row (- (length row) 2)))))        
-        (test-int analyze '() (hash) '() '() 5 8 outputs symbolics inputs)))))
+                (list-ref row (- (length row) 2)))))
+        (println inputs)
+        (println outputs)
+        (println (test-int analyze '() (hash) '() '() 5 8 outputs symbolics inputs))))))
