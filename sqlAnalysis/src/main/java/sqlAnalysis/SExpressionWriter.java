@@ -73,8 +73,16 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 	protected SlowSparseNumberedGraph<TypedNode> graph = new SlowSparseNumberedGraph<TypedNode>(1);
 	private Map<String, List<Integer>> functionNamesToTypes = new HashMap<String, List<Integer>>();
 	private Map<String, String> functionNameMap = new HashMap<String, String>();
+	private Map<String, Integer> opsToCounts = new HashMap<String, Integer>();
+	
+	public Map<String, Integer> getOpsToCounts() {
+		return opsToCounts;
+	}
 
-	public SExpressionWriter() {
+	private int expressionNumber;
+
+	public SExpressionWriter(int i) {
+		expressionNumber = i;
 		
 		// what should we do with decode?
 		// And field
@@ -220,12 +228,43 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(2);
 		functionNamesToTypes.put("extractMonth", l);
 		functionNameMap.put("month", "extractMonth");
+		functionNameMap.put("extractMonth", "extractMonth");
+		
+		l = new LinkedList<Integer>();
+		l.add(1);
+		l.add(2);
+		functionNamesToTypes.put("extractSecond", l);
+		functionNameMap.put("second", "extractSecond");
+		functionNameMap.put("extractSecond", "extractSecond");
+
+		l = new LinkedList<Integer>();
+		l.add(1);
+		l.add(2);
+		functionNamesToTypes.put("extractMinute", l);
+		functionNameMap.put("minute", "extractMinute");
+		functionNameMap.put("extractMinute", "extractMinute");
+		
+		l = new LinkedList<Integer>();
+		l.add(1);
+		l.add(2);
+		functionNamesToTypes.put("extractHour", l);
+		functionNameMap.put("hour", "extractHour");
+		functionNameMap.put("extractHour", "extractHour");
+	
+		l = new LinkedList<Integer>();
+		l.add(1);
+		l.add(2);
+		functionNamesToTypes.put("extractDay", l);
+		functionNameMap.put("day", "extractDay");
+		functionNameMap.put("extractDay", "extractDay");
+	
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(2);
 		functionNamesToTypes.put("extractYear", l);
 		functionNameMap.put("year", "extractYear");
+		functionNameMap.put("extractYear", "extractYear");
 
 
 		l = new LinkedList<Integer>();
@@ -252,12 +291,15 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(2);
 		functionNamesToTypes.put("extractDayOfWeek", l);
 		functionNameMap.put("weekday", "extractDayOfWeek");
+		functionNameMap.put("extractDayOfWeek", "extractDayOfWeek");
+
 
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(2);
 		functionNamesToTypes.put("extractDayOfMonth", l);
 		functionNameMap.put("day", "extractDayOfMonth");
+		functionNameMap.put("extractDayOfMonth", "extractDayOfMonth");
 
 		
 		l = new LinkedList<Integer>();
@@ -279,9 +321,9 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(2);
 		l.add(1);
 		l.add(3);
-		functionNamesToTypes.put("dateadd", l);
-		functionNameMap.put("adddate", "dateadd");
-		functionNameMap.put("date_add", "dateadd");
+		functionNamesToTypes.put("date_add", l);
+		functionNameMap.put("adddate", "date_add");
+		functionNameMap.put("date_add", "date_add");
 
 		l = new LinkedList<Integer>();
 		l.add(2);
@@ -289,6 +331,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(1);
 		functionNamesToTypes.put("date_add_months", l);
 		functionNameMap.put("add_months", "date_add_months");
+		functionNameMap.put("date_add_months", "date_add_months");
 
 		l = new LinkedList<Integer>();
 		l.add(2);
@@ -297,6 +340,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("date_sub_interval", l);
 		functionNameMap.put("date_sub", "date_sub_interval");
+		functionNameMap.put("date_sub_interval", "date_sub_interval");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -466,6 +510,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("round", l);
 		functionNameMap.put("round", "round");
 	}
+	
 
 	@Override
 	protected String visitJoin(Join node, Void context) {
@@ -488,7 +533,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			columnNumber += 1;
 			colNamesToInt.put(node.getExpression().toString(), columnNumber);
 		}
-		return "(in" + colNamesToInt.get(node.getExpression().toString()) + ")";
+		return "(in " + colNamesToInt.get(node.getExpression().toString()) + ")";
 
 	}
 
@@ -497,6 +542,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		String result = process(node.getDefaultValue(), context);
 		StringBuffer buf = new StringBuffer();
 		List<WhenClause> whenclauses = node.getWhenClauses();
+		putInOps("if");
 		for (int i = whenclauses.size() - 1; i >= 0; i--) {
 			buf.append("(").append("if").append(" ").append(process(whenclauses.get(i).getOperand(), context))
 					.append(process(whenclauses.get(i).getResult(), context)).append(result);
@@ -573,11 +619,24 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			throw new UnsupportedOperationException("dont recognize:" + op);
 		}
 	}
+	
+	private void putInOps(String op) {
+		int c = 0;
+		if (op.equals("extractFromDate")) {
+			throw new RuntimeException("got here");
+		}
+		if (opsToCounts.containsKey(op)) {
+			c = opsToCounts.get(op);
+		}
+		c++;
+		opsToCounts.put(op, c);
+	}
 
 	@Override
 	protected String visitArithmeticExpression(ArithmeticExpression node, Void context) {
 		// arithmetic expressions will automatically be parsed as integers
 		record(node.getLeft(), getLiteralForType(1), context);
+		putInOps(processOp(node.getType().getValue()));
 		return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
 				+ process(node.getRight(), context) + ")";
 	}
@@ -688,8 +747,10 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			t.append(")");
 			
 			if (n.name.startsWith("(in ")) {
+				String str = n.name.substring(4, n.name.length() - 1);
+				str = "col" + expressionNumber + "_" + str;
 				types.append("(").append("columnName").append(" ").append("\"")
-				.append(n.name).append("\"").append(" ").append("primitiveTypes").append(" ")
+				.append(str).append("\"").append(" ").append("primitiveTypes").append(" ")
 				.append(t).append(")").append(" ");
 			}
 		}
@@ -838,6 +899,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitComparisonExpression(ComparisonExpression node, Void context) {
+		putInOps(processOp(node.getType().getValue()));
 		// assume strings are dates if we have an operator is something other than equals
 		if (node.getRight() instanceof StringLiteral && !(processOp(node.getType().getValue()).equals("=")) && !(processOp(node.getType().getValue()).equals("!="))) {
 			record(node.getLeft(), getLiteralForType(2), context);
@@ -858,7 +920,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			columnNumber += 1;
 			colNamesToInt.put(node.getName().toString(), columnNumber);
 		}
-		return "(in " + colNamesToInt.get(node.getName().toString()) + ")";
+		return  "(in " + colNamesToInt.get(node.getName().toString()) + ")";
 
 	}
 
@@ -866,7 +928,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 	protected String visitInPredicate(InPredicate node, Void context) {
 		InListExpression l = (InListExpression) node.getValueList();
 		record(node.getValue(), l.getValues().get(0), context);
-
+		putInOps("in-list");
 		String args = process(node.getValueList(), context);
 		return "(" + "in-list" + " " + process(node.getValue(), context) + " " + args + ")";
 	}
@@ -889,13 +951,98 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			return new LongLiteral("0");
 		}
 	}
+	
+	protected String visitCoalesce(FunctionCall node, Void context) {
+		List<Expression> l = node.getArguments();
+		assert(l.size() == 3);
+		Expression lhs = l.get(0);
+		Expression rhs = l.get(1);
+		putInOps("if");
+		putInOps("is-not-null");
+		String str = "(if (is-not-null " + lhs + ") " + rhs + ")";
+		return str;
+	}
 
+	protected String visitDateAddSubtract(String type, FunctionCall node, Void context) {
+		List<Expression> l = node.getArguments();
+		assert(l.size() == 2);
+		Expression d = l.get(0);
+		IntervalLiteral interval = (IntervalLiteral) ((BetweenPredicate) l.get(1)).getValue();
+		String t = interval.getValue();
+		String str = null;
+		if (interval.getStartField() == interval.getStartField().DAY) {
+			str = "(" + type + "-days " + process(d, context) + " " + t + ")";
+			putInOps(type + "-days");
+		} else if (interval.getStartField() == interval.getStartField().HOUR) {
+			str = "(" + type + "-hours " + process(d, context) + " " + t + ")";
+			putInOps(type + "-hours");
+		} else if (interval.getStartField() == interval.getStartField().MINUTE) {
+			str = "(" + type + "-minutes " + process(d, context) + " " + t + ")";
+			putInOps(type + "-minutes");
+		} else if (interval.getStartField() == interval.getStartField().SECOND) {
+			str = "(" + type + "-seconds " + process(d, context) + " " + t + ")";
+			putInOps(type + "-seconds");
+		} else if (interval.getStartField() == interval.getStartField().YEAR) {
+			str = "(" + type +"-years " + process(d, context) + " " + t + ")";
+			putInOps(type + "-years");
+		}
+		if (d instanceof QualifiedNameReference) {
+			record(d, getLiteralForType(2), context);
+		}
+		return str;
+		
+	}
+	
 	@Override
 	protected String visitFunctionCall(FunctionCall node, Void context) {
 		if (!functionNameMap.containsKey(node.getName().toString())) {
 			throw new UnsupportedOperationException();
 		}
-		functions.add(node.getName().toString());
+		String n = functionNameMap.get(node.getName().toString());
+
+		if (n.equals("in")) {
+			n = "in-list";
+		} else if (n.equals("coalesce")) {
+			return visitCoalesce(node, context);	
+		} else if (n.equals("datediff")) {
+			n = "date-subtract";
+		} else if (n.equals("char-length")) {
+			n = "length";
+		} else if (n.equals("group_concat")) {
+			n = "group-concat";
+		} else if (n.equals("extractYear")) {
+			n = "extract-years";
+		} else if (n.equals("extractDay")) {
+				n = "extract-days";
+		} else if (n.equals("extractMonth")) {
+			n = "extract-months";
+		} else if (n.equals("extractHour")) {
+			n = "extract-hours";
+		} else if (n.equals("extractMinute")) {
+			n = "extract-minutes";
+		} else if (n.equals("extractSecond")) {
+			n = "extract-seconds";
+		}  else if (n.equals("unix_timestamp")) {
+			n = "date-to-epoch";
+		} else if (n.equals("from_unixtime")) {
+			n = "date-from-epoch";
+		} else if (n.equals("extractDayOfMonth")) {
+			n = "extract-days";
+		} else if (n.equals("strcmp")) {
+			n = "=";
+		} else if (n.equals("date_add")) {
+			return visitDateAddSubtract("add", node, context);
+		} else if (n.equals("date_add_months")) {
+			n = "add-seconds";
+		} else if (n.equals("date_sub_interval")) {
+			return visitDateAddSubtract("subtract", node, context);
+		} else if (n.equals("extractDayOfWeek")) {
+			n = "extract-day-of-year";
+		}
+		
+		functions.add(n);
+		putInOps(n);
+		
 		List<Expression> l = node.getArguments();
 
 		int pos = -1;
@@ -908,6 +1055,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		}
 		if (functionNameMap.containsKey(node.getName().toString())) {
 			String key = functionNameMap.get(node.getName().toString());
+			
 			if (pos > -1 && col != null && functionNamesToTypes.containsKey(key)) {
 				int type = functionNamesToTypes.get(key).get(pos);
 				record(col, getLiteralForType(type), context);
@@ -916,10 +1064,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 		String args = createArgs(context, l);
 
-		String n = node.getName().toString();
-		if (node.getName().toString().equals("in")) {
-			n = "in-list";
-		}
+
 		return "(" + n + " " + args + ")";
 	}
 
@@ -952,6 +1097,9 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 	protected String visitNullIfExpression(NullIfExpression node, Void context) {
 		String lhs = process(node.getFirst(), context);
 		String rhs = process(node.getSecond(), context);
+		putInOps("if");
+		putInOps("not");
+		putInOps("=");
 		return "(" + "if" + " (not (= " + lhs + " " + rhs + ")) " + "lhs" + " " + "'())";
 	}
 
@@ -965,6 +1113,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		} else {
 			rhsExpr = "NULL";
 		}
+		putInOps("if");
 		return "(" + "if" + " " + process(node.getCondition(), context) + " " + process(node.getTrueValue(), context)
 				+ " " + rhsExpr + ")";
 	}
@@ -976,6 +1125,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitNotExpression(NotExpression node, Void context) {
+		putInOps("not");
 		return "(" + "not" + " " + process(node.getValue(), context) + ")";
 	}
 
@@ -988,29 +1138,36 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			args.add(node.getEscape());
 		}
 		FunctionCall fc = new FunctionCall(new QualifiedName("like"), args);
+		putInOps("like");
+
 		return visitFunctionCall(fc, context);
 	}
 
 	@Override
 	protected String visitIsNotNullPredicate(IsNotNullPredicate node, Void context) {
-		return "(" + "isNotNull" + " " + process(node.getValue(), context) + ")";
+		record(node.getValue(), getLiteralForType(6), context);
+		putInOps("is-not-null");
+		return "(" + "is-not-null" + " " + process(node.getValue(), context) + ")";
 
 	}
 
 	@Override
 	protected String visitIsNullPredicate(IsNullPredicate node, Void context) {
 		record(node.getValue(), getLiteralForType(6), context);
-		return "(" + "isNull" + " " + process(node.getValue(), context) + ")";
+		putInOps("is-null");
+		return "(" + "is-null" + " " + process(node.getValue(), context) + ")";
 	}
 
 	@Override
 	protected String visitExtract(Extract node, Void context) {
-
+		
 		String date = process(node.getExpression(), context);
 		String field = node.getField().toString();
 		record(node.getExpression(), getLiteralForType(2), context);
-		
-		return "(" + "extractFromDate" + " " + date + " " + field + ")";
+		String function = "extract-" + field.toLowerCase() + "s";
+		putInOps(function);
+
+		return "(" + function + " " + date + ")";
 	}
 
 	@Override
@@ -1021,6 +1178,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitCoalesceExpression(CoalesceExpression node, Void context) {
+		putInOps("coalesce");
+
 		FunctionCall fc = new FunctionCall(new QualifiedName("coalesce"), node.getOperands());
 		return visitFunctionCall(fc, context);
 
@@ -1028,6 +1187,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitSearchedCaseExpression(SearchedCaseExpression node, Void context) {
+		putInOps("if");
+
 		String result = process(node.getDefaultValue(), context);
 		List<WhenClause> whenclauses = node.getWhenClauses();
 		for (int i = whenclauses.size() - 1; i >= 0; i--) {
@@ -1106,6 +1267,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		} else {
 			op = "or";
 		}
+		putInOps(op);
+
 		return "(" + op + " " + process(node.getLeft(), context) + " " + process(node.getRight(), context) + ")";
 	}
 

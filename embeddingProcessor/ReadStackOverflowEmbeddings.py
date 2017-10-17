@@ -37,6 +37,12 @@ def doVector(model):
              'less', \
              'greater', \
              'equal', \
+             'average', \
+             'group', \
+             'count', \
+             'minimum', \
+             'maximum', \
+             'sum', \
              '<', \
              '>', \
              '=', \
