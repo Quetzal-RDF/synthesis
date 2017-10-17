@@ -724,6 +724,16 @@
     (solve (assert (= 952732800 (extract-epoch d))))
      (println d)))
 
+(define (test-symbolic-doy)
+  (let* ((d (create-date 59 59 i1 3 4 2017))
+        (m1 (solve (assert (= 93 (extract-day-of-year d))))))
+  (assert (= 23 (evaluate i1 m1)))))
+
+(define (test-symbolic-dow)
+  (let* ((d (create-date 59 59 23 i1 4 2017))
+         (m1 (solve (assert (= 1 (extract-day-of-week d))))))
+  (assert (= 3 (evaluate i1 m1)))))
+    
 (define (test-all-symbolic-ops)
   (test-symbolic-subtract-seconds)
   (test-symbolic-subtract-minutes)
