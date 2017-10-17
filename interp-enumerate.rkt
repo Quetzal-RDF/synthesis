@@ -189,7 +189,9 @@
       (let ((m1 (val (cons 'm1 pos) boolean?))
             (m2 (val (cons 'm2 pos) boolean?))
             (m3 (val (cons 'm3 pos) boolean?)))
-            (list (if m1 (if m2 (if m3 'abs 'truncate) (if m3 'sign 'ceiling)) 'floor) v)))
+            (list
+             (if m1 (if m2 (if m3 'abs 'truncate) (if m3 'sign 'ceiling)) (if m2 'floor 'round))
+             v)))
     
     (define/public (index-of pos l r)
       (list 'index-of l r))
