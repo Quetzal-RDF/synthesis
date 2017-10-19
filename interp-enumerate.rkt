@@ -128,6 +128,8 @@
     (define/public (date-from-epoch pos v)
       (merge (list do-date-from-epoch) v))
 
+    (define/public (like pos lhs rhs)
+      (merge (list do-like) lhs rhs))
     
     (define/public (aggregate pos type v)
       (let* ((op
@@ -252,10 +254,9 @@
                      (if di3
                          (if di4 'add-months 'add-years)
                          (if di4 'subtract-seconds 'subtract-minutes)))
-                 (when di2
-                   (if di3
-                       (if di4 'subtract-hours 'subtract-days)
-                       (if di4 'subtract-months 'subtract-years))))
+                 (if di2
+                     (if di3 subtract-hours subtract-days)
+                     (if di3 subtract-months subtract-years)))
              left right)))
 
     (define/public (date-extract pos v)
@@ -279,6 +280,14 @@
 
     (define/public (get-digits pos str)
       (list 'get-digits str))
+
+    (define/public (like pos lhs rhs)
+      (let ((m1 (val (cons 'li1 pos) boolean?))
+                (m2 (val (cons 'li2 pos) boolean?)))
+        (list 'like lhs
+        (if m1
+            (if m2 (string-append rhs "%") (string-append "%" rhs))
+            (if m2 (string-append "%" rhs "%") rhs)))))
 
     (define/public (aggregate pos type v)
       (let ((op
@@ -305,6 +314,40 @@
 
 (define (lifted-round v)
   (truncate (+ v .5)))
+
+
+(define (create-like-list indexes pat)
+  (let ((result (for/list ([x indexes]
+                          [y (in-range (length indexes))])
+                 (let ((z (if (equal? (string-ref pat x) #\%) (val (cons 'p y) string?) (val (cons 'u y) string?))))
+                   (cond
+                     [(and (> x 0) (= y 0)) (list (substring pat 0 x) z)]
+                     [(and (> x 0) (> y 0)) (if (> (- x (list-ref indexes (- y 1))) 1)
+                                                (list (substring pat (+ (list-ref indexes (- y 1)) 1) x) z)
+                                                (list z))]
+                     [#t (list z)])))))
+    (if (< (last indexes) (- (string-length pat) 1))
+      (flatten (append result (list (substring pat (+ (last indexes) 1) (string-length pat)))))
+      (flatten result))))
+
+(define (create-like-constraints lhs like-list)
+   (for/fold ([formula (equal? lhs (apply string-append like-list))])
+             ([x like-list])
+     (and formula
+          (if (and (term? x) (equal? (string-ref (~v x) 1) #\u))
+              (= (string-length x) 1)
+              #t))))
+
+(define (like-constant pos lhs rhs)
+  (if (and (string? lhs) (string? rhs))
+      (let* ((indexes
+              (filter (lambda (x) (not (equal? x -1)))
+                      (for/list ([i rhs]
+                                 [k (in-range (string-length rhs))])
+                        (if (or (equal? i #\%) (equal? i #\_)) k -1))))
+             (ll (create-like-list indexes rhs)))
+        (create-like-constraints lhs ll))
+      'invalid))
 
 (define expr-processor%
   (class object%
@@ -455,14 +498,19 @@
           (let ((di1 (val (cons 'di1 pos) boolean?))
                 (di2 (val (cons 'di2 pos) boolean?))
                 (di3 (val (cons 'di3 pos) boolean?)))
-            (send this basic-binary
-                  (if di1
-                      (if di2
-                          (if di3 date-le date-ge)
-                          (if di3 date-gt date-lt))
-                      (if di2 date-equal 'invalid))))
+            (if (and (not di1) (not di2) (not di3))
+                'invalid
+                (send this basic-binary
+                      (if di1
+                          (if di2
+                              (if di3
+                                  date-le
+                                  date-ge)
+                              (if di3
+                                  date-gt date-lt))
+                          date-equal))))
           'invalid))
-    
+
     (define/public (date-interval pos left right)
       (if (and (vector? left) (integer? right))
           (let ((d (copy-date left))
@@ -470,24 +518,24 @@
                 (di2 (val (cons 'di2 pos) boolean?))
                 (di3 (val (cons 'di3 pos) boolean?))
                 (di4 (val (cons 'di4 pos) boolean?)))
-            (send this basic-binary
-                  (if di1
-                      (if di2
-                          (if di3
-                              (if di4 add-seconds add-minutes)
-                              (if di4 add-hours add-days))
-                          (if di3
-                              (if di4 add-months add-years)
-                              (if di4 subtract-seconds subtract-minutes)))
-                      (if di2
-                          (if di3
-                              (if di4 subtract-hours subtract-days)
-                              (if di4 subtract-months subtract-years))
-                          'invalid))
-                  d right)
+            (if (and (not di1) (not di2)(not di3))
+                'invalid
+                (send this basic-binary
+                      (if di1
+                          (if di2
+                              (if di3
+                                  (if di4 add-seconds add-minutes)
+                                  (if di4 add-hours add-days))
+                              (if di3
+                                  (if di4 add-months add-years)
+                                  (if di4 subtract-seconds subtract-minutes)))
+                          (if di2
+                              (if di3 subtract-hours subtract-days)
+                              (if di3 subtract-months subtract-years)))
+                      d right))
             d)
           'invalid))
-
+ 
     (define/public (date-extract-bin pos v f)
       (if (vector? v)
           (f v)
@@ -517,6 +565,22 @@
       (if (integer? v)
           (send this basic-unary extract-date-from-epoch v)
           'invalid))
+
+    (define/public (like pos lhs rhs)
+      (if (and (string? lhs) (string? rhs))
+          (let ((m1 (val (cons 'li1 pos) boolean?))
+                (m2 (val (cons 'li2 pos) boolean?)))
+            (if (and (not m1) (not m2))
+                (if (not (symbolic? rhs))
+                    (like-constant lhs rhs)
+                    'invalid)
+                (send this basic-binary
+                  (if m1
+                      (if m2 string-suffix? string-prefix?)
+                      string-contains?)
+                  lhs rhs)))       
+          'invalid))
+      
 
     (define/public (get-digits pos str)
       (let ((s1 (val (cons 'b str) string?))
@@ -637,6 +701,10 @@
       (for/list ([p processors] [l left] [r right])
         (send p date-interval pos l r)))
 
+    (define/public (like pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p like pos l r)))
+
     (define/public (date-extract pos v)
      (for/list ([p processors] [vs v])
         (send p date-extract pos vs)))
@@ -710,7 +778,7 @@
 
 (define (do-all-str size pos p f)
   (do-all 'string
-   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-get-digits)
+   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-like)
    size pos p f))
 
 (define (do-all-int-no-date size pos p f)
@@ -846,6 +914,9 @@
 
 (define (do-substring size pos p f)
   (do-ternary-op do-all-str do-all-int do-all-int 'substr size pos p f))
+
+(define (do-like size pos p f)
+  (do-binary-op do-all-str do-all-str 'like size pos p f))
 
 (define (do-aggregate do-all-op type size pos p f)
   (when (> size 0)
