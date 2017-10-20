@@ -280,6 +280,9 @@
     (define/public (get-digits pos str)
       (list 'get-digits str))
 
+    (define/public (aggregate-op pos type v op is-average)
+      (list 'agg op v))
+    
     (define/public (aggregate pos type v)
       (let ((op
              (if (eq? type 'string)
@@ -649,6 +652,10 @@
       (for/list ([p processors] [vs v])
         (send p date-from-epoch pos vs)))
 
+    (define/public (aggregate-op pos type vs op is-average)
+      (for/list ([p processors] [v vs])
+        (send p aggregate-op pos type v op is-average)))
+
     (define/public (aggregate pos type vs)
       (for/list ([p processors] [v vs])
         (send p aggregate pos type v)))))
@@ -676,7 +683,7 @@
              (is-average (cadr stuff)))
         (send this aggregate-op pos type v op is-average)))
     
-    (define/public (aggregate-op pos type v op is-average)
+    (define (aggregate-op pos type v op is-average)
       (if (member 'invalid v)
           (for/list ([x v])
             'invalid)
@@ -690,7 +697,8 @@
              (let ((v1 (if is-average (/ val (length (cdr v))) val))) 
                (for/list ([x (cdr v)])
                  v1))))))
-      
+
+    (override aggregate-op)
     (override aggregate)))
 
 (define (do-all type ops size pos p f)

@@ -133,7 +133,7 @@
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)
-  (test analyze '(/) '() '() 3 '(.008 .016) (list i1 i2) '((4)(8)))) 
+  (test analyze '() '() '() 5 '(.008 .016) (list i1 i2) '((4)(8)))) 
 
 ; test string equal
 (define (simple-compare2)
