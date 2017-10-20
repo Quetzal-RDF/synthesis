@@ -339,15 +339,34 @@
               #t))))
 
 (define (like-constant pos lhs rhs)
+  (println "in like-constant")
   (if (and (string? lhs) (string? rhs))
       (let* ((indexes
               (filter (lambda (x) (not (equal? x -1)))
                       (for/list ([i rhs]
                                  [k (in-range (string-length rhs))])
-                        (if (or (equal? i #\%) (equal? i #\_)) k -1))))
+                         (if (or (equal? i #\%) (equal? i #\_)) k -1))))
              (ll (create-like-list indexes rhs)))
         (create-like-constraints lhs ll))
       'invalid))
+
+(define/match (ite? e)
+    [((expression op child ...)) (or (string=? "ite" (~v op)) (string=? "ite*" (~v op)))]
+    [(_) #f])
+
+(define-syntax for/all/*
+  (syntax-rules ()
+    ((_ ([val expr]) body ...)
+     (for/all ([val expr])
+       (letrec ((push
+                 (lambda (v)
+                   (if (or (union? v) (ite? v))
+                       (for/all ([e v])
+                         (push e))
+                       (begin
+                         body
+                         ...)))))
+         (push val))))))
 
 (define expr-processor%
   (class object%
@@ -570,10 +589,12 @@
       (if (and (string? lhs) (string? rhs))
           (let ((m1 (val (cons 'li1 pos) boolean?))
                 (m2 (val (cons 'li2 pos) boolean?)))
+           ; (when (and (not m1) (not m2)) (begin (println rhs) (println "about to call like-constant")))
             (if (and (not m1) (not m2))
-                (if (not (symbolic? rhs))
-                    (like-constant lhs rhs)
-                    'invalid)
+                (for/all/* ([r rhs])
+                  (if (not (symbolic? r))   
+                      (like-constant lhs r)
+                      'invalid))
                 (send this basic-binary
                   (if m1
                       (if m2 string-suffix? string-prefix?)
