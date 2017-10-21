@@ -338,8 +338,7 @@
               (= (string-length x) 1)
               #t))))
 
-(define (like-constant pos lhs rhs)
-  (println "in like-constant")
+(define (like-constant lhs rhs)
   (if (and (string? lhs) (string? rhs))
       (let* ((indexes
               (filter (lambda (x) (not (equal? x -1)))
@@ -355,18 +354,17 @@
     [(_) #f])
 
 (define-syntax for/all/*
-  (syntax-rules ()
-    ((_ ([val expr]) body ...)
-     (for/all ([val expr])
-       (letrec ((push
-                 (lambda (v)
-                   (if (or (union? v) (ite? v))
-                       (for/all ([e v])
-                         (push e))
-                       (begin
-                         body
-                         ...)))))
-         (push val))))))
+ (syntax-rules ()
+   ((_ ([val expr]) body ...)
+    (letrec ((push
+              (lambda (val)
+                (if (or (union? val) (ite? val))
+                    (for/all ([e val])
+                      (push e))
+                    (begin
+                      body
+                      ...)))))
+      (push expr)))))
 
 (define expr-processor%
   (class object%
@@ -592,6 +590,7 @@
            ; (when (and (not m1) (not m2)) (begin (println rhs) (println "about to call like-constant")))
             (if (and (not m1) (not m2))
                 (for/all/* ([r rhs])
+                  ; (println r)
                   (if (not (symbolic? r))   
                       (like-constant lhs r)
                       'invalid))
