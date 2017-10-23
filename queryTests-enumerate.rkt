@@ -105,7 +105,7 @@
 
 ; test a simple multiply - need to handle reals properly because of precision issues
 (define (simple-multiply1)
-  (test analyze '(*) '() '() 3 '(2.4 2.469) (list r1 r2) '((4 .6)(8.23 .3))))
+  (test analyze '() '() '() 3 '(2.4 2.469) (list r1 r2) '((4 .6)(8.23 .3))))
 
 ; test simple boolean expression - Return expression Col2 < Col3
 (define (simple-boolean1)
@@ -117,7 +117,7 @@
 
 ; define (col1 + col2) / col3
 (define (simple-math1)
-  (test analyze '(+) '() '() 6 '(2 4 5) (list i1 i2 i3) '((1 1 1)(9 7 4)(4 6 2))))
+  (test analyze '() '() '() 6 '(2 4 5) (list i1 i2 i3) '((1 1 1)(9 7 4)(4 6 2))))
 
 ; if col1="A" then take col2 else 0
 (define (simple-eq1)
@@ -129,7 +129,7 @@
 
 ; test if col1 > .33
 (define (simple-test5)
-  (test analyze '(<=) '() '() 7 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
+  (test analyze '() '() '() 7 '(#t #t #f) (list r1) '((.44)(.34)(.33))))
 
 ; test a simple multiply - by a constant
 (define (simple-multiply2)
@@ -145,7 +145,7 @@
 
 ; define (col1 + col2) / col3
 (define (simple-test3)
-  (test analyze '(/) '() '() 6 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
+  (test analyze '() '() '() 6 '(3.55 3.85) (list r1 r2 i1) '((4.3 2.8 2)(3.5 4.2 2))))
 
 ; and (col1 > col2, col3 = "A")
 (define (simple-test4)
@@ -155,7 +155,7 @@
 
 ; test if (col1 > col2) and (col2 < col3) and (col4 = "C" or col4 = "D")
 (define (simple-test6)
-  (test analyze '(>) '() '(index-of) 5 '(#t #f #f #t #f) (list i1 i2 i3 s1) '((5 2 4 "C")(5 2 1 "C")(1 2 4 "C")(8 1 5 "D")(5 2 4 "M"))))
+  (test analyze '() '() '(index-of) 9 '(#t #f #f #t #f) (list i1 i2 i3 s1) '((5 2 4 "C")(5 2 1 "C")(1 2 4 "C")(8 1 5 "D")(5 2 4 "M"))))
 
 ; test if Col1 is "Committed" AND Col2 is not blank, then max(0, Col3 - (Col4 * Col5))
 (define (simple-selection4)
@@ -164,7 +164,7 @@
 
 ; something wrong with strings...
 (define (simple-selection1c)
-  (test analyze '(if) '() '(index-of) 3 '("5" "0") (list s1 s2) '(("A" "5")("B" "5"))))
+  (test analyze '() '() '(index-of) 5 '("5" "0") (list s1 s2) '(("A" "5")("B" "5"))))
 
 ; test combination of ANDs, NOTs, and arithmetic operations
 (define (simple-test1)
@@ -268,4 +268,10 @@
 (define (simple-date-add7)
   (test analyze '() '() '() 10 (list #(0 0 0 31 1 2016)  #(23 22 23 25 2 2015)  #(0 0 0 1 1 2015)) (list v) (list (list #(59 59 23 30 1 2001)) (list #(22 22 23 25 2 2000)) (list #(59 59 23 31 12 1999)))))
 
+; do a like test, assuming the like pattern is in a column (so pattern is a constant)
+(define (simple-like)
+  (test analyze '() '() '(concat) 10 (list #t #t #f) (list s1 s2) '(("A%" "Apple")("B%" "Brtist")("A%" "Junk"))))
 
+; do a like test where we 'find' the pattern
+(define (simple-like2)
+   (test analyze '() '() '() 10 (list #t #t #f) (list s1) '(("Apple")("Boy")("Dot"))))
