@@ -281,11 +281,9 @@
     (define/public (get-digits pos str)
       (list 'get-digits str))
 
-<<<<<<< HEAD
     (define/public (aggregate-op pos type v op is-average)
       (list 'agg op v))
     
-=======
     (define/public (like pos lhs rhs)
       (let ((m1 (val (cons 'li1 pos) boolean?))
                 (m2 (val (cons 'li2 pos) boolean?)))
@@ -294,7 +292,6 @@
             (if m2 (string-append rhs "%") (string-append "%" rhs))
             (if m2 (string-append "%" rhs "%") rhs)))))
 
->>>>>>> bd222cb48a44fc36b0dfe09110915c08dffd677d
     (define/public (aggregate pos type v)
       (let ((op
              (if (eq? type 'string)
