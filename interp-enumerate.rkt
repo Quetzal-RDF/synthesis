@@ -342,14 +342,17 @@
               #t))))
 
 (define (like-constant lhs rhs)
+  (println "called like constant")
   (if (and (string? lhs) (string? rhs))
       (let* ((indexes
               (filter (lambda (x) (not (equal? x -1)))
                       (for/list ([i rhs]
                                  [k (in-range (string-length rhs))])
                          (if (or (equal? i #\%) (equal? i #\_)) k -1))))
-             (ll (create-like-list indexes rhs)))
-        (create-like-constraints lhs ll))
+             (ll (create-like-list indexes rhs))
+             (lc (create-like-constraints lhs ll)))
+        (println lc)
+        lc)
       'invalid))
 
 (define/match (ite? e)
@@ -368,6 +371,7 @@
                       body
                       ...)))))
       (push expr)))))
+
 
 (define expr-processor%
   (class object%
