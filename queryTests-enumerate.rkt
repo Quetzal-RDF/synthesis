@@ -270,7 +270,15 @@
 
 ; do a like test, assuming the like pattern is in a column (so pattern is a constant)
 (define (simple-like)
-  (test analyze '() '() '(concat) 10 (list #t #t #f) (list s1 s2) '(("A%" "Apple")("B%" "Brtist")("A%" "Junk"))))
+  (test analyze '() '() '() 3 (list #t #t #f) (list s1 s2) '(("A%" "Apple")("B%" "Brtist")("A%" "Junk"))))
+
+; do a like test, assuming the like pattern is in a column (so pattern is a constant)
+(define (simple-like1)
+  (test analyze '() '() '() 3 (list #t #t #f) (list s1 s2) '(("Apple" "A%")("Brtist" "B%")("Junk" "A%"))))
+
+; do a like test, assuming the like pattern is in a column (so pattern is a constant)
+(define (simple-like1a)
+  (test analyze '() '() '() 6 (list #t #t #f #f) (list s1 s2) '(("Apple" "XA%")("Brtist" "XB%")("Junk" "XA%")("Garbage" "XB%"))))
 
 ; do a like test where we 'find' the pattern
 (define (simple-like2)

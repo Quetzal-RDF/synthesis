@@ -322,7 +322,9 @@
 (define (create-like-list indexes pat)
   (let ((result (for/list ([x indexes]
                           [y (in-range (length indexes))])
-                 (let ((z (if (equal? (string-ref pat x) #\%) (val (cons 'p y) string?) (val (cons 'u y) string?))))
+                 (let ((z (if (equal? (string-ref pat x) #\%)
+                              (begin (define-symbolic* p string?) p)
+                              (begin (define-symbolic* u string?) u))))
                    (cond
                      [(and (> x 0) (= y 0)) (list (substring pat 0 x) z)]
                      [(and (> x 0) (> y 0)) (if (> (- x (list-ref indexes (- y 1))) 1)
@@ -337,12 +339,13 @@
    (for/fold ([formula (equal? lhs (apply string-append like-list))])
              ([x like-list])
      (and formula
-          (if (and (term? x) (equal? (string-ref (~v x) 1) #\u))
+          (if (and (term? x) (equal? (string-ref (~v x) 0) #\u))
               (= (string-length x) 1)
               #t))))
 
 (define (like-constant lhs rhs)
   (println "called like constant")
+  (println rhs)
   (if (and (string? lhs) (string? rhs))
       (let* ((indexes
               (filter (lambda (x) (not (equal? x -1)))
@@ -351,27 +354,10 @@
                          (if (or (equal? i #\%) (equal? i #\_)) k -1))))
              (ll (create-like-list indexes rhs))
              (lc (create-like-constraints lhs ll)))
+        (println "constraint")
         (println lc)
         lc)
       'invalid))
-
-(define/match (ite? e)
-    [((expression op child ...)) (or (string=? "ite" (~v op)) (string=? "ite*" (~v op)))]
-    [(_) #f])
-
-(define-syntax for/all/*
- (syntax-rules ()
-   ((_ ([val expr]) body ...)
-    (letrec ((push
-              (lambda (val)
-                (if (or (union? val) (ite? val))
-                    (for/all ([e val])
-                      (push e))
-                    (begin
-                      body
-                      ...)))))
-      (push expr)))))
-
 
 (define expr-processor%
   (class object%
@@ -591,24 +577,32 @@
           'invalid))
 
     (define/public (like pos lhs rhs)
+      (println "like")
+      (println "rhs")
+      (println rhs)
       (if (and (string? lhs) (string? rhs))
-          (let ((m1 (val (cons 'li1 pos) boolean?))
-                (m2 (val (cons 'li2 pos) boolean?)))
-           ; (when (and (not m1) (not m2)) (begin (println rhs) (println "about to call like-constant")))
-            (if (and (not m1) (not m2))
-                (for/all/* ([r rhs])
-                  ; (println r)
-                  (if (not (symbolic? r))   
-                      (like-constant lhs r)
-                      'invalid))
-                (send this basic-binary
-                  (if m1
-                      (if m2 string-suffix? string-prefix?)
-                      string-contains?)
-                  lhs rhs)))       
+          (and
+           (not (string-contains? lhs "%"))
+           (not (string-contains? lhs "_"))
+           (let ((m1 (val (cons 'li1 pos) boolean?))
+                 (m2 (val (cons 'li2 pos) boolean?)))
+             ; (when (and (not m1) (not m2)) (begin (println rhs) (println "about to call like-constant")))
+             (if (and (not m1) (not m2))
+                 (for/all ([r rhs #:exhaustive])
+                   ; (println r)
+                   (if (not (symbolic? r))   
+                       (like-constant lhs r)
+                       'invalid))
+                 (if m1
+                     (send this basic-binary
+                           (if m2 string-suffix? string-prefix?)
+                           lhs rhs)
+                     (let ((i1 (val (cons 'off pos) integer?)))
+                       (and (>= i1 0)
+                            (<= (string-length lhs) i1)
+                            (= (string-index-of lhs rhs) i1)))))))
           'invalid))
       
-
     (define/public (get-digits pos str)
       (let ((s1 (val (cons 'b str) string?))
             (s2 (val (cons 'd str) string?))
@@ -729,6 +723,7 @@
         (send p date-interval pos l r)))
 
     (define/public (like pos left right)
+      (println "c like")
       (for/list ([p processors] [l left] [r right])
         (send p like pos l r)))
 
@@ -810,7 +805,7 @@
 
 (define (do-all-str size pos p f)
   (do-all 'string
-   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-like)
+   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring)
    size pos p f))
 
 (define (do-all-int-no-date size pos p f)
@@ -844,7 +839,7 @@
 
 (define (do-all-bool size pos p f)
   (do-all 'boolean
-   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null? do-date-compare)
+   (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null? do-like do-date-compare)
    size pos p f))
 
 (define (do-in-int size pos p f) (f size (send p in pos number?)))
@@ -948,6 +943,8 @@
   (do-ternary-op do-all-str do-all-int do-all-int 'substr size pos p f))
 
 (define (do-like size pos p f)
+  (println "do-like")
+  (println size)
   (do-binary-op do-all-str do-all-str 'like size pos p f))
 
 (define (do-aggregate do-all-op type size pos p f)
