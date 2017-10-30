@@ -280,6 +280,10 @@
 (define (simple-like1a)
   (test analyze '() '() '() 6 (list #t #t #f #f) (list s1 s2) '(("Apple" "XA%")("Brtist" "XB%")("Junk" "XA%")("Garbage" "XB%"))))
 
+; do a like test, assuming the like pattern is in a column (so pattern is a constant)
+(define (simple-like1b)
+  (test analyze '() '() '() 6 (list #t #t #f #f) (list s1 s2) '(("XA%" "Apple") ("XB%" "Brtist")("XA%" "Junk")("XB%" "Garbage"))))
+
 ; do a like test where we 'find' the pattern
 (define (simple-like2)
    (test analyze '() '() '() 10 (list #t #t #f) (list s1) '(("Apple")("Boy")("Dot"))))
