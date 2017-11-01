@@ -287,3 +287,16 @@
 ; do a like test where we 'find' the pattern
 (define (simple-like2)
    (test analyze '() '() '() 10 (list #t #t #f) (list s1) '(("Apple")("Boy")("Dot"))))
+
+; do a simple trim test
+(define (simple-trim1)
+   (test analyze '() '() '() 5 (list "Apple" "Boy: and dog." "Dot") (list s1) '((" Apple")("Boy: and dog. ")("Dot"))))
+
+(define (simple-trim2)
+   (test analyze '() '() '() 5 (list "Apple's Tim Cook?" "Boy walking home" "Dot234") (list s1) '(("Apple's Tim Cook? ")(" Boy walking home ")(" Dot234"))))
+
+
+; do a simple digits test
+(define (simple-digits)
+   (test analyze '() '() '() 5 (list "123" "325" "425") (list s1) '(("Apple123Boy")("Boy325Apple")("Dot425"))))
+
