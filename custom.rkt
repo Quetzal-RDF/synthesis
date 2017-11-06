@@ -26,6 +26,7 @@
             (let ((cond (to-custom-int (cadr form) (cons 1 nested-pos)))
                   (then (gensym 'p))
                   (else (gensym 'p)))
+              ; car cond refers to the parameters for the cond expression if if x
               (list (append (car cond) (list (list then 'any) (list else 'any)))
                     (list 'send 'p 'if-then-else (cadr cond) then else)
                     'any))]
@@ -58,6 +59,31 @@
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
                  (list 'send 'p 'basic-binary op (cadr l) (cadr r))
+                 'number))]
+        [(index-of)
+         (let ((op (car form))
+               (l (to-custom-int (second form) (cons 1 nested-pos)))
+               (r (to-custom-int (third form) (cons 2 nested-pos))))
+           (list (append (car l) (car r))
+                 (list 'send 'p 'index-of (list 'append (list 'quote nested-pos)) (cadr l) (cadr r))
+                 'number))]
+        [(trim)
+         (let ((op (car form))
+               (v (to-custom-int (second form) (cons 1 nested-pos))))
+           (list (car v)
+                 (list 'send 'p 'trim  (list 'append (list 'quote nested-pos)) (cadr v))
+                 'string))]
+        [(strlength)
+         (let ((op (car form))
+               (v (to-custom-int (second form) (cons 1 nested-pos))))
+           (list (car v)
+                 (list 'send 'p 'basic-unary 'strlength (cadr v))
+                 'number))]
+        [(abs truncate sign ceiling floor lifted-round)
+         (let ((op (car form))
+               (v (to-custom-int (second form) (cons 1 nested-pos))))
+           (list (car v)
+                 (list 'send 'p 'basic-unary op (cadr v))
                  'number))]
         [(add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours
                       subtract-days subtract-months subtract-years)
@@ -107,6 +133,12 @@
                  (list 'send 'p 'date-diff (cadr date1) (cadr date2))
                  'number))
         ]
+        [(is-null is-not-null)
+         (let ((op (car form))
+               (s1 (to-custom-int (cadr form) (cons 1 nested-pos))))
+           (list (car s1) 
+                 (list 'send 'p 'is-null-v? (eq? op 'is-null) (cadr s1) (list 'append (list 'quote nested-pos) 'pos))
+                 'boolean))]
         [(concat)
          (let ((s1 (to-custom-int (cadr form) (cons 1 nested-pos)))
                (s2 (to-custom-int (third form) (cons 2 nested-pos))))
