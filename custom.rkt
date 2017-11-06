@@ -59,6 +59,22 @@
            (list (append (car l) (car r))
                  (list 'send 'p 'basic-binary op (cadr l) (cadr r))
                  'number))]
+        [(sum average min max)
+         (let ((op (car form))
+               (e (to-custom-int (second form) (cons 1 nested-pos))))
+           (list (car e)
+                 (list 'send
+                       'p
+                       'aggregate-op
+                       (list 'append (list 'quote nested-pos) 'pos)
+                       (list 'quote 'integer)
+                       (cadr e)
+                       (case op
+                         ((sum average) +)
+                         ((min) min)
+                         ((max) max))
+                       (eq? op 'average))
+                 (caddr e)))]
         [(add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours
                       subtract-days subtract-months subtract-years)
          (case (length form)
@@ -205,13 +221,44 @@
       (super if-then-else case l r))    
     (override if-then-else)))
 
+(define tracing-aggregating-processor%
+  (class aggregating-processor%
+    (super-new)
+
+    (inherit-field processors)
+
+    (define/public (controls)
+      (map (lambda (p) (send p controls)) processors))))
+
+(define row-count 5)
+
 (define (test-custom fragments columns)
-  (let* ((pair (lambda (x) (list x x)))
+  (let* ((pair (lambda (x) (list x (for/list ([i (range 0 (+ row-count 1))]) x))))
          (int (lambda (size pos p f) (f 5 (pair (val pos integer?)))))
          (bool (lambda (size pos p f) (f 5 (pair (val pos boolean?)))))
          (str (lambda (size pos p f) (f 5 (pair (val pos string?))))))
     (map (lambda (f)
-           (let* ((trace (new tracing-expr-processor% [inputs columns]))
+           (let* ((cols
+                   (for/list ([i (range 0 row-count)])
+                     (for/list ([v columns])
+                       (if (vector? v)
+                           (apply
+                            vector
+                            (map (lambda (v)
+                                   (define-symbolic* d (type-of v))
+                                   d)
+                                 (vector->list v)))
+                           (begin
+                             (define-symbolic* val (type-of v))
+                             val)))))
+                  (trace
+                   (new tracing-aggregating-processor%
+                        [children
+                         (cons
+                          (new tracing-expr-processor% [inputs columns])
+                          (for/list ([cs cols])
+                            (new tracing-expr-processor%
+                                 [inputs cs])))]))
                   (p (new compound-processor%
                           [children
                            (list
@@ -222,7 +269,7 @@
              (f 5 '() p (lambda (x y)
                           ; (println y)
                           (set! expr (cadr y)) (set! doc (car y))))
-             (list doc expr (send trace controls))))
+             (list doc expr (send trace controls) (cons columns cols))))
           (map car
                (make-custom-functions
                 (map ~a columns)
@@ -281,88 +328,71 @@
 (define (generate-data text cols columnMetadata)
   (let* ((parse (apply make-parser (map ~a cols)))
          (stuff (parse text))
-         (fs (test-custom stuff cols))
-         (result (get-rows fs)))
- (println result)
-    (create-table result cols columnMetadata)))
+         (used-cols (gather-cols stuff cols))
+         (fs (test-custom stuff used-cols)))
+    (cons (gather-cols (map car fs) used-cols)
+          (map (lambda (f) (to-table f #t)) fs))))
 
-(define want-two-rows #f)
-
-(define (generate-models expr controls extra)
-  (letrec ((v
-            (if (solvable? (type-of expr))
-                (constant (string->symbol (string-append "answer_" (~v (type-of expr)))) (type-of expr))
-                '()))     
-           (solve (lambda (formula)
+(define (generate-models exprs controlss extra)
+  (letrec ((solve (lambda (formula)
                     (let ((solver (z3)))
                       (solver-clear solver)
-                      (solver-assert solver (list (and (if (null? v) #t (equal? v expr)) formula)))
+                      (solver-assert
+                       solver
+                       (cons
+                        formula
+                        (for/list ([expr exprs]
+                                   [i (in-range 0 (length exprs))])
+                          (if (solvable? (type-of expr))
+                              (equal?
+                               expr
+                               (constant (string->symbol (string-append "answer_" (~v i) "_" (~v (type-of expr)))) (type-of expr)))
+                              #t))))
                       (let ((x (solver-check solver)))
                         (solver-shutdown solver)
-                        ; (println "formula")
-                        ; (println (and (equal? v expr) formula))
                         x))))
-           (models (lambda (guards ctrls)
+           (rotate (lambda (l) (append (cdr l) (list (car l)))))
+           (models (lambda (guards ctrlss)
                      (let ((result (solve (and guards extra))))
                        (if (sat? result)
-                           (if (null? ctrls)                         
-                               (let* ((answer (evaluate expr result))
-                                      (row1 (list answer (hash->list (model result))))
-                                      (result2
-                                       (and want-two-rows
-                                            (solve (and guards extra (not (equal? expr (car row1))))))))
-                                 ; (println row1)
-                                 ; (println result2)
-                                 (if (and want-two-rows (sat? result2))
-                                     (list row1 (list (evaluate expr result2) (hash->list (model result2))))
-                                     (list row1)))
-                               (append
-                                (models (and (car ctrls) guards) (cdr ctrls))
-                                (models (and (not (car ctrls)) guards) (cdr ctrls))))
-                           '())))))
-    (models #t controls)))
+                           (if (or (null? ctrlss) (null? (car ctrlss)))                   
+                               (let ((answers (map (lambda (expr) (evaluate expr result)) exprs)))
+                                 (list answers result))
+                               (let ((first-guard (caar ctrlss)))
+                                 (or (if (not (null? (cdr ctrlss)))
+                                         (let ((second-guard (not (caadr ctrlss))))
+                                           (models (and first-guard second-guard guards) (map rotate (cddr ctrlss))))
+                                         #f)
+                                     (models (and first-guard guards) (map rotate (cdr ctrlss)))
+                                     (models (and (not first-guard) guards) (map rotate (cdr ctrlss)))
+                                     (models guards (map rotate (cdr ctrlss))))))    
+                           #f)))))
+    (models #t controlss)))
+
+(define (to-table f extra)
+  (let ((models (generate-models (cdr (cadr f)) (cdr (caddr f)) extra)))
+    (assert (>= (length models) 1))
+    (map (lambda (x y)
+           (append x (list y) (list (car f))))
+         (evaluate (cdr (cadr (cddr f))) (cadr models))
+         (car models))))
 
 (define (create-table result cols columnMetadata)
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
     ; is the expected output for that subexpression, and the second element is a list of column bindings
-  (let ((used-cols (gather-cols (flatten result) cols)))
-    (println (flatten result))
-    (println cols)
+  (let ((used-cols (gather-cols result cols)))
     (println used-cols)
     (cons (map ~v used-cols)
-          (filter (lambda (l) (not (null? l)))
-           (for/fold ([r '()]) ([e result])
-             (println "e")
-             (println e)
-             (println "end e")
-             (append r
-                    (for/fold ([rr '()]) ([m (cdr e)])
-                      (append rr (for/list ([row m])
-                                   (println row)
-                                   (let/ec return
-                                     (let ((vec (make-vector (+ (length used-cols) 2))))
-                                       (for ([cell (cadr row)])
-                                         (let* ((col (car cell))
-                                                (val (cdr cell))
-                                                (pos (index-of used-cols col)))
-                                           ;(println col)
-                                           ; (println pos)
-                                           ; (if pos
-                                           ;    (vector-set! vec pos val)
-                                           ;    (if (string-prefix? (~a col) "answer_")
-                                           ;        '()
-                                           ;        (return (list))))))
-                                           (when pos
-                                               (vector-set! vec pos val))))
-                                       (vector-set! vec (length used-cols) (car row))
-                                       (vector-set! vec (+ 1 (length used-cols)) (to-html (car e) columnMetadata))
-                                       (vector->list vec))))))))))))
+          (to-table result cols))))
 
 (define (gather-cols result cols)
-  (cond [(null? cols) '()]
-        [(index-of result (car cols)) (cons (car cols) (gather-cols result (cdr cols)))]
-        [#t (gather-cols result (cdr cols))]))
-
+  (println result)
+  (letrec ((gather-int
+            (lambda (result)
+              (cond [(and (cons? result) (eq? (car result) 'in)) (list (- (cadr result) 1))]
+                    [(list? result) (remove-duplicates (apply append (map (lambda (e) (gather-int e)) result)))]
+                    [#t '()]))))
+    (map (lambda (i) (list-ref cols i)) (gather-int result))))
 
 (define (parse-column-metadata p)
   (let ((sym (lambda (colName type)
@@ -395,4 +425,4 @@
 
 
 
-(provide test-custom make-custom-table analyze-custom generate-models generate-data parse-column-metadata get-rows create-table)
+(provide to-table test-custom make-custom-table analyze-custom generate-models generate-data parse-column-metadata get-rows create-table)

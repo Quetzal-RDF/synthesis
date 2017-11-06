@@ -416,4 +416,9 @@
            (result (p '("average" "A" "+" "B" "group" "by" "C" "+" "D"))))
     (println result)))
 
+(define (test23)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("average" "if" "C" "==" "bad" "then" "A" "+" "B"))))
+    (println result)))
+
 (provide make-parser find-parse)

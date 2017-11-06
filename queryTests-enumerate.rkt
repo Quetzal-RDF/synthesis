@@ -286,4 +286,4 @@
 
 ; do a like test where we 'find' the pattern
 (define (simple-like2)
-   (test analyze '() '() '() 10 (list #t #t #f) (list s1) '(("Apple")("Boy")("Dot"))))
+   (test analyze '() '() '() 7 (list #t #f #t #f) (list s1) '(("abcBronx")("abBadly")("aBrown")("Apple"))))
