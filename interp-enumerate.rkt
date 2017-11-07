@@ -110,6 +110,9 @@
     (define/public (get-digits pos str)
       (merge (list do-get-digits) str))
 
+    (define/public (trim pos str)
+      (merge (list do-trim) str))
+
     (define/public (date-diff pos left right)
       (merge (list do-date-diff) left right))
 
@@ -280,6 +283,9 @@
 
     (define/public (get-digits pos str)
       (list 'get-digits str))
+
+    (define/public (trim pos str)
+      (list 'trim str))
 
     (define/public (aggregate-op pos type v op is-average)
       (list 'agg op v))
@@ -606,6 +612,17 @@
                     (println "expr")
                     expr))))
           'invalid))
+
+    (define/public (trim pos str)
+     (let ((s1 (val (cons 'b str) string?))
+            (s2 (val (cons 'd str) string?))
+            (s3 (val (cons 'a str) string?)))
+        (if (and (equal? str (string-append s1 s2 s3))
+                 (regexp-match-exact? #rx"[ ]*" s1)
+                 (regexp-match-exact? #rx"[ ]*" s3)
+                 (regexp-match-exact? #rx"[A-Za-z0-9_:.,?']+[A-Za-z0-9_:.,?' ]*[A-Za-z0-9_:.,?']+" s2))
+              s2
+            'invalid)))
       
     (define/public (get-digits pos str)
       (let ((s1 (val (cons 'b str) string?))
@@ -718,6 +735,10 @@
       (for/list ([p processors] [s strs])
         (send p get-digits pos s)))
 
+    (define/public (trim pos strs)
+      (for/list ([p processors] [s strs])
+        (send p trim pos s)))
+
     (define/public (date-diff pos left right)
       (for/list ([p processors] [l left] [r right])
         (send p date-diff pos l r)))
@@ -809,7 +830,7 @@
 
 (define (do-all-str size pos p f)
   (do-all 'string
-   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring)
+   (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-get-digits do-trim)
    size pos p f))
 
 (define (do-all-int-no-date size pos p f)
@@ -891,6 +912,9 @@
 
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
+
+(define (do-trim size pos p f)
+  (do-unary-op do-all-str 'trim size pos p f))
 
 (define (do-concat size pos p f)
   (do-binary-op do-all-str do-all-str 'concat size pos p f))
@@ -1247,4 +1271,4 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-(provide aggregating-processor% doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-length do-compare-to clear-vals!)
+(provide aggregating-processor% doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-trim do-length do-compare-to clear-vals!)

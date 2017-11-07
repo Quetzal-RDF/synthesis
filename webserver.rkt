@@ -147,36 +147,6 @@
                    [(= type 5) real?]
                    [#t string?])))))
 
-(define (test16)
-  (let* ((col '((columnName "terms" primitiveTypes (3)) (columnName "min_servers" primitiveTypes (1)) (columnName "price_per_server" primitiveTypes (1))))
-         (symbolics (parse-column-metadata2 col))
-         (query '("if" "terms" "=" "Committed" "then" "price_per_server" "else" "0" "+" "if" "terms" "=" "Standard" "then" "price_per_server" "*" "min_servers" "else" "0"))
-         (output '(0 1 0 0 -1 0)))
-    (apply analyze-custom query output symbolics '(("Committed" 0 0)("Committed" 0 1)("!0!" 0 0)("Standard" 0 0)("Standard" 1 -1)("!0!" 0 0)))))
-
-(define (test15)
-  (let* ((col '((columnName "parent_name" primitiveTypes (3)) (columnName "country" primitiveTypes (3))
-               (columnName "coterminating_billing" primitiveTypes (4))
-               (columnName "city" primitiveTypes (3))
-               (columnName "billing_contact" primitiveTypes (3))
-               (columnName "flat_rate" primitiveTypes (1)) (columnName "valid_from" primitiveTypes (2))
-               (columnName "sub accounts org id" primitiveTypes (1)) (columnName "billing_address" primitiveTypes (3))
-               (columnName "account_owner" primitiveTypes (3)) (columnName "pay_cycle" primitiveTypes (3))
-               (columnName "hourly_overage" primitiveTypes (1)) (columnName "expired_status" primitiveTypes (4))
-               (columnName "terms" primitiveTypes (3)) (columnName "street" primitiveTypes (3))
-               (columnName "valid_to" primitiveTypes (2)) (columnName "is_parent_or_child_account" primitiveTypes (4))
-               (columnName "billing_email" primitiveTypes (3)) (columnName "min_servers" primitiveTypes (1))
-               (columnName "conversion_date" primitiveTypes (2)) (columnName "customer_tier" primitiveTypes (1))
-               (columnName "monthly_overage" primitiveTypes (1)) (columnName "state" primitiveTypes (3))
-               (columnName "org_name" primitiveTypes (3)) (columnName "zip" primitiveTypes (1)) (columnName "po_num" primitiveTypes (3))
-               (columnName "Unnamed 33" primitiveTypes (-1)) (columnName "pay_method" primitiveTypes (3))
-               (columnName "price_per_server" primitiveTypes (1)) (columnName "custom_metrics" primitiveTypes (3))
-               (columnName "auto_renew" primitiveTypes (4)) (columnName "org_id" primitiveTypes (1))
-               (columnName "parent_account_id" primitiveTypes (1)) (columnName "is_valid" primitiveTypes (4))))
-         (symbolics (parse-column-metadata2 col)))
-          (generate-data (lex (open-input-string "if terms = Committed then price_per_server else 0 + if terms = Standard then price_per_server * min_servers else 0"))
-                       symbolics)))
-
 (define (log req)
   (println req)
   (println "log"))
@@ -185,6 +155,8 @@
     (dispatch-rules
      [("synthesis" "synthesize") #:method (or "get" "post") synthesize]
      [("synthesis" "parse") #:method (or "get" "post") parse]
+     [("synthesize") #:method (or "get" "post") synthesize]
+     [("parse") #:method (or "get" "post") parse]
      [else log]))
 
 (serve/servlet req-dispatch
