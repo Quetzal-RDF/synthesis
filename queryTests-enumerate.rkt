@@ -286,6 +286,9 @@
 
 ; do a like test where we 'find' the pattern
 (define (simple-like2)
+<<<<<<< HEAD
+   (test analyze '() '() '() 7 (list #t #f #t #f) (list s1) '(("abcBronx")("abBadly")("aBrown")("Apple"))))
+=======
    (test analyze '() '() '() 10 (list #t #t #f) (list s1) '(("Apple")("Boy")("Dot"))))
 
 ; do a simple trim test
@@ -300,3 +303,4 @@
 (define (simple-digits)
    (test analyze '() '() '() 5 (list "123" "325" "425") (list s1) '(("Apple123Boy")("Boy325Apple")("Dot425"))))
 
+>>>>>>> 8abbfa8eca146915447166f8af30c1146ae7c30b

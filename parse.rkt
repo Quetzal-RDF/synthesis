@@ -114,6 +114,7 @@
                       (trim ())
                       (trim "in" ())
                       (trim "from" ())
+                      (average ())
                       (average "(" () ")")
                       (average "of" ())
                       (minimum "(" () ")")
@@ -514,6 +515,11 @@
            (result (p '("average" "A" "+" "B" "group" "by" "C" "+" "D"))))
     (println result)))
 
+(define (test23a)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("average" "if" "C" "==" "bad" "then" "A" "+" "B"))))
+    (println result)))
+
 (define (test24)
   (letrec ((p (apply make-parser '("A" "B")))
            (result (p '("string" "length" "of" "A"))))
@@ -732,8 +738,10 @@
            (result (p '("subtract" "years" "from" "A"))))
     (println result)))
 
+
 (define (test68)
   (letrec ((p (apply make-parser '("A" "B")))
            (result (p '("A" "divided" "by" "B"))))
     (println result)))
+
 (provide make-parser find-parse)

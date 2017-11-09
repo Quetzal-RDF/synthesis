@@ -1,6 +1,6 @@
 #lang rosette
 
-;(error-print-width 10000000000)
+(error-print-width 1000)
 
 (current-bitwidth #f)
 (require math/base)
@@ -324,34 +324,35 @@
 (define (lifted-round v)
   (truncate (+ v .5)))
 
+(define percent-regex (regexp (string-append "[" (~a (integer->char 33)) "-" (~a (integer->char 126)) "]*")))
+
+(define underscore-regex (regexp (string-append "[" (~a (integer->char 33)) "-" (~a (integer->char 126)) "]")))
 
 (define (create-like-list indexes pat)
   (let ((result (for/list ([x indexes]
                           [y (in-range (length indexes))])
                  (let ((z (if (equal? (string-ref pat x) #\%)
-                              (begin (define-symbolic* p string?) p)
-                              (begin (define-symbolic* u string?) u))))
+                              percent-regex
+                              underscore-regex)))
                    (cond
-                     [(and (> x 0) (= y 0)) (list (substring pat 0 x) z)]
+                     [(and (> x 0) (= y 0)) (list (regexp-quote (substring pat 0 x)) z)]
                      [(and (> x 0) (> y 0)) (if (> (- x (list-ref indexes (- y 1))) 1)
-                                                (list (substring pat (+ (list-ref indexes (- y 1)) 1) x) z)
+                                                (list (regexp-quote (substring pat (+ (list-ref indexes (- y 1)) 1) x)) z)
                                                 (list z))]
                      [#t (list z)])))))
     (if (< (last indexes) (- (string-length pat) 1))
-      (flatten (append result (list (substring pat (+ (last indexes) 1) (string-length pat)))))
+      (flatten (append result (list (regexp-quote (substring pat (+ (last indexes) 1) (string-length pat))))))
       (flatten result))))
 
 (define (create-like-constraints lhs like-list)
-   (for/fold ([formula (equal? lhs (apply string-append like-list))])
-             ([x like-list])
-     (and formula
-          (if (and (term? x) (equal? (string-ref (~v x) 0) #\u))
-              (= (string-length x) 1)
-              #t))))
+   (regexp-match-exact? (apply regexp-concat like-list) lhs))
 
 (define (like-constant lhs rhs)
   (println "called like constant")
+  (println lhs)
   (println rhs)
+  (println (string? lhs))
+  (println (string? rhs))
   (if (and (string? lhs) (string? rhs))
       (let* ((indexes
               (filter (lambda (x) (not (equal? x -1)))
@@ -360,6 +361,8 @@
                          (if (or (equal? i #\%) (equal? i #\_)) k -1))))
              (ll (create-like-list indexes rhs))
              (lc (create-like-constraints lhs ll)))
+        (println "like list")
+        (println ll)
         (println "constraint")
         (println lc)
         lc)
@@ -586,27 +589,28 @@
       (println "like")
       (println "rhs")
       (println rhs)
+      (println "lhs")
+      (println lhs)
       (if (and (string? lhs) (string? rhs))
-          (and
-           (not (string-contains? lhs "%"))
-           (not (string-contains? lhs "_"))
-           (let ((m1 (val (cons 'li1 pos) boolean?))
-                 (m2 (val (cons 'li2 pos) boolean?)))
-             ; (when (and (not m1) (not m2)) (begin (println rhs) (println "about to call like-constant")))
-             (if (and (not m1) (not m2))
-                 (for/all ([r rhs #:exhaustive])
-                   ; (println r)
-                   (if (not (symbolic? r))   
-                       (like-constant lhs r)
-                       'invalid))
-                 (if m1
-                     (send this basic-binary
-                           (if m2 string-suffix? string-prefix?)
-                           lhs rhs)
-                     (let ((i1 (val (cons 'off pos) integer?)))
-                       (and (>= i1 0)
-                            (<= (string-length lhs) i1)
-                            (= (string-index-of lhs rhs) i1)))))))
+          (let ((m1 (val (cons 'li1 pos) boolean?))
+                (m2 (val (cons 'li2 pos) boolean?)))
+            ; (when (and (not m1) (not m2)) (begin (println rhs) (println "about to call like-constant")))
+            (for/all ([r rhs #:exhaustive])
+              (if (and (not m1) (not m2))
+                  ; (println r)
+                  (if (not (symbolic? r))   
+                      (like-constant lhs r)
+                      'invalid)
+                  (let ((expr
+                         (if m1
+                             (if m2
+                                 (string-suffix? lhs rhs)
+                                 (string-prefix? lhs rhs))
+                             (string-contains? lhs rhs))))
+                    (println "expr")
+                    (println expr)
+                    (println "expr")
+                    expr))))
           'invalid))
 
     (define/public (trim pos str)
