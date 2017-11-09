@@ -114,6 +114,7 @@
                       (trim ())
                       (trim "in" ())
                       (trim "from" ())
+                      (average ())
                       (average "(" () ")")
                       (average "of" ())
                       (minimum "(" () ")")

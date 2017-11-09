@@ -405,9 +405,36 @@
                            #f)))))
     (models #t controlss)))
 
+(define (non-default-answer answers)
+  (println answers)
+  (for/fold ([x #f])
+            ([answer answers])
+    (or x
+        (cond ((string? answer) (not (equal? answer "")))
+              ((number? answer) (not (= answer 0)))
+              ((boolean? answer) answer)
+              (#t #f)))))
+
+(define (diversify rows)
+  (and
+   (if (not (null? (cdr rows)))
+       (for/fold ([x #t])
+                 ([c1 (car rows)]
+                  [c2 (cadr rows)])
+         (and x (not (equal? c1 c2))))
+       #t)
+   (if (not (null? (cddr rows)))
+       (diversify (cdr rows))
+       #t)))
+  
 (define (to-table f extra)
-  (let ((models (generate-models (cdr (cadr f)) (cdr (caddr f)) extra)))
+  (let* ((diff (diversify (cdar (cdr (cddr f)))))
+         (answers (non-default-answer (cdr (cadr f))))
+         (m (generate-models (cdr (cadr f)) (cdr (caddr f)) (and extra diff answers)))
+         (models (if (and m (>= (length m) 1)) m (generate-models (cdr (cadr f)) (cdr (caddr f)) extra))))
     (assert (>= (length models) 1))
+    (println diff)
+    (println m)
     (map (lambda (x y)
            (append x (list y) (list (car f))))
          (evaluate (cdr (cadr (cddr f))) (cadr models))
