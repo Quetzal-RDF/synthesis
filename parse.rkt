@@ -30,8 +30,8 @@
             (length ("length")("string" "length")("len")("length" "of")("string" "length" "of")("character" "length" "of")("number" "of" "characters" "in"))
             (+ ("+") ("plus"))
             (- ("-") ("minus") ("takeaway") ("subtract") ("deduct"))
-            (/ ("/") ("divide") ("divided by"))
-            (* ("*") ("multiply" "by") ("multiply") ("times"))
+            (/ ("/") ("divide") ("divided" "by"))
+            (* ("*") ("multiply" "by") ("multiplied" "by") ("multiply") ("times"))
             (exponent ("exponent") ("exp") ("power"))
             (logarithm ("logarithm") ("log") ("ln") ("natural logarithm"))
             (sqrt ("sqrt") ("square" "root") ("square" "root" "of"))
@@ -561,7 +561,7 @@
 
 (define (test33)
   (letrec ((p (apply make-parser '("A" "B")))
-           (result (p '("fetch" "day" "of" "year" "A"))))
+           (result (p '("fetch" "day" "of" "year" "from" "A"))))
     (println result)))
 
 ; substring
@@ -730,5 +730,10 @@
 (define (test67)
   (letrec ((p (apply make-parser '("A" "B")))
            (result (p '("subtract" "years" "from" "A"))))
+    (println result)))
+
+(define (test68)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("A" "divided" "by" "B"))))
     (println result)))
 (provide make-parser find-parse)
