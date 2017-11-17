@@ -2,6 +2,26 @@
 
 (require rosette/lib/angelic)
 
+(define-syntax nullary-function-forms
+  (syntax-rules ()
+    ((_ symbol ...)
+     (append
+      (list
+       (list '(symbol) (lambda (x) x))
+       (list '(symbol "(" ")") (lambda (x) (list (quote symbol)))))
+      ...))))
+
+(define-syntax unary-function-forms
+  (syntax-rules ()
+    ((_ symbol ...)
+     (append
+      (list
+       (list '(symbol "of" ()) (lambda (x) (list (quote symbol) (list-ref x 2))))
+       (list '(symbol "value" ()) (lambda (x) (list (quote symbol) (list-ref x 2))))
+       (list '(symbol "value" "of" ()) (lambda (x) (list (quote symbol) (list-ref x 3))))
+       (list '(symbol "(" () ")") (lambda (x) (list (quote symbol) (list-ref x 2)))))
+      ...))))
+
 (define (make-parser . xcolumn-names)
   (let* ((column-names
           (map (lambda (s) (string-trim s #px"\\$.+")) xcolumn-names))
