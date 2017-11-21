@@ -169,7 +169,8 @@
                       (list '(extract "date" "from" ()) (lambda (x) (list 'date-from-epoch (list-ref x 3))))
                       (list '(extract "day" "of" "year" "from" ()) (lambda (x) (list 'extract-day-of-year (list-ref x 5))))
                       (list '(extract "day" "of" "week" "from" ()) (lambda (x) (list 'extract-day-of-week (list-ref x 5))))
-   ;                   (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
+                      (list '(() "is" not null) (lambda (x) (list 'is-not-null (list-ref x 0))))
+                      (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
                                 
                       ))))
 
@@ -341,7 +342,9 @@
                                     (lambda (toks terms)
                                       (if (null? terms)
                                           (begin (set! rest toks) '())
-                                          (cond [(string? (car terms))
+                                          (cond [(null? toks)
+                                                 (set! fail #t)]
+                                                [(string? (car terms))
                                                  (if (equal? (car terms) (car toks))
                                                      (cons (car terms) (parse-term (cdr toks) (cdr terms)))
                                                      (set! fail #t))]
