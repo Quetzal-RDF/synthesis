@@ -448,4 +448,20 @@
     (println result)
     (println (to-html (car result) columnMetadata))
     (println (jsonify (car result) columnMetadata))))
+
+(define (test79)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("A" "is" "null")))
+           (columnMetadata '((columnName "A" primitiveTypes (2)) (columnName "B" primitiveTypes (1)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test80)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("A" "is" "not" "blank")))
+           (columnMetadata '((columnName "A" primitiveTypes (2)) (columnName "B" primitiveTypes (1)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
     
