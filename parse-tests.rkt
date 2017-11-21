@@ -464,4 +464,11 @@
     (println result)
     (println (to-html (car result) columnMetadata))
     (println (jsonify (car result) columnMetadata))))
-    
+
+(define (test81)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("concat" "A" "and" "B")))
+           (columnMetadata '((columnName "A" primitiveTypes (2)) (columnName "B" primitiveTypes (1)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))

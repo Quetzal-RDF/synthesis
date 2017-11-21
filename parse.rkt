@@ -132,10 +132,13 @@
             (subtract ("subtract"))
             (group ("group") ("group" "by") ("grouped" "by") ("organize" "by") ("organized" "by") ("cluster" "by") ("clustered" "by") ("by") ("based" "on"))))
          (reserved (filter string? (flatten keywords)))
+         (templates-tighter-than-and
+          (append
+           (binary-function-forms concat)))
          (templates (append
                      (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
                      (ternary-function-forms between replace substring)
-                     (binary-function-forms index-of concat exponent quotient remainder add-seconds add-minutes add-hours add-days add-months
+                     (binary-function-forms index-of exponent quotient remainder add-seconds add-minutes add-hours add-days add-months
                                            add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list)
                      (unary-function-forms group-concat is-null is-not-null abs round ceiling floor truncate sign logarithm natural-logarithm
                                            sqrt upper lower length trim avg min max count sum not) 
@@ -302,11 +305,51 @@
 
     (define parse-comparison-expr
       (parse-binary-stuff parse-binary-expr parse-comparison-op))
-      
+
+        (define (template-parser templates parse-next)
+      (lambda (xtokens)
+        (for/all ([tokens xtokens])
+          (letrec ((parse-template
+                    (lambda (ts)
+                      (if (null? ts) (cons #f tokens)
+                          (let ((template (caar ts))
+                                (func (cadr (car ts))))
+                            (letrec ((fail #f)
+                                     (rest '())
+                                     (parse-term
+                                      (lambda (toks terms)
+                                        (if (null? terms)
+                                            (begin (set! rest toks) '())
+                                            (cond [(null? toks)
+                                                   (set! fail #t)]
+                                                  [(string? (car terms))
+                                                   (if (equal? (car terms) (car toks))
+                                                       (cons (car terms) (parse-term (cdr toks) (cdr terms)))
+                                                       (set! fail #t))]
+                                                  [(symbol? (car terms))
+                                                   (let ((x (parse-keyword (car terms) toks)))
+                                                     (if (eq? #f (car x))
+                                                         (set! fail #t)
+                                                         (cons (car x) (parse-term (cdr x) (cdr terms)))))]
+                                                  [#t
+                                                   (let ((x (parse-next toks)))
+                                                     (if (eq? #f (car x))
+                                                         (set! fail #t)
+                                                         (cons (car x) (parse-term (cdr x) (cdr terms)))))])))))
+                              (let ((v (parse-term tokens template)))
+                                (if fail (parse-template (cdr ts)) (cons (func v) rest)))))))))
+            (let ((v (parse-template templates)))
+              (if (eq? #f (car v))
+                  (parse-next tokens)
+                  v))))))
+
+    (define parse-tighter-templates
+      (template-parser templates-tighter-than-and parse-comparison-expr))
+    
     (define parse-andor-op (parse-op '(and or)))
 
     (define parse-andor-expr
-      (parse-binary-stuff parse-comparison-expr parse-andor-op))
+      (parse-binary-stuff parse-tighter-templates parse-andor-op))
 
     (define (parse-if xtokens)
       (for/all ([tokens xtokens])
@@ -329,43 +372,8 @@
 			  (cons (list 'if (car test)) (cdr test))))
                     (cons (list 'if (car test)) (cdr test))))
               (parse-andor-expr tokens)))))
-
-    (define (parse-templates xtokens)
-      (for/all ([tokens xtokens])
-        (letrec ((parse-template
-                  (lambda (ts)
-                    (if (null? ts) (cons #f tokens)
-                        (let ((template (caar ts))
-                              (func (cadr (car ts))))
-                          (letrec ((fail #f)
-                                   (rest '())
-                                   (parse-term
-                                    (lambda (toks terms)
-                                      (if (null? terms)
-                                          (begin (set! rest toks) '())
-                                          (cond [(null? toks)
-                                                 (set! fail #t)]
-                                                [(string? (car terms))
-                                                 (if (equal? (car terms) (car toks))
-                                                     (cons (car terms) (parse-term (cdr toks) (cdr terms)))
-                                                     (set! fail #t))]
-                                                [(symbol? (car terms))
-                                                 (let ((x (parse-keyword (car terms) toks)))
-                                                   (if (eq? #f (car x))
-                                                       (set! fail #t)
-                                                       (cons (car x) (parse-term (cdr x) (cdr terms)))))]
-                                                [#t
-                                                 (let ((x (parse-if toks)))
-                                                   (if (eq? #f (car x))
-                                                       (set! fail #t)
-                                                       (cons (car x) (parse-term (cdr x) (cdr terms)))))])))))
-                            (let ((v (parse-term tokens template)))
-                              (if fail (parse-template (cdr ts)) (cons (func v) rest)))))))))
-          (let ((v (parse-template templates)))
-            (if (eq? #f (car v))
-                (parse-if tokens)
-                v)))))
     
+    (define parse-templates (template-parser templates parse-if))
     
     (define (parse-loop xtokens)
       (for/all ([tokens xtokens])
