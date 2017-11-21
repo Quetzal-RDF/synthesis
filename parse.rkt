@@ -31,6 +31,16 @@
     ((_ symbol ...)
      (append
       (list
+       (list '(symbol "of" () "in" ()) (lambda (x) (list (quote symbol) (list-ref x 2) (list-ref x 4))))
+       (list '(symbol () ()) (lambda (x) (list (quote symbol) (list-ref x 1) (list-ref x 2))))
+       (list '(symbol "(" () "," () ")") (lambda (x) (list (quote symbol) (list-ref x 2) (list-ref x 4)))))
+      ...))))
+
+(define-syntax binary-function-forms-with-and
+  (syntax-rules ()
+    ((_ symbol ...)
+     (append
+      (list
        (list '(symbol () "and" ()) (lambda (x) (list (quote symbol) (list-ref x 1) (list-ref x 3))))
        (list '(symbol "of" () "in" ()) (lambda (x) (list (quote symbol) (list-ref x 2) (list-ref x 4))))
        (list '(symbol () ()) (lambda (x) (list (quote symbol) (list-ref x 1) (list-ref x 2))))
@@ -134,11 +144,13 @@
          (reserved (filter string? (flatten keywords)))
          (templates-tighter-than-and
           (append
-           (binary-function-forms concat)))
+           (binary-function-forms-with-and concat quotient remainder)
+           (list
+            (list '(() "is" between () "and" ()) (lambda (x) (list 'between (list-ref x 0)(list-ref x 3)(list-ref x 5)))))))
          (templates (append
                      (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
                      (ternary-function-forms between replace substring)
-                     (binary-function-forms index-of exponent quotient remainder add-seconds add-minutes add-hours add-days add-months
+                     (binary-function-forms index-of exponent add-seconds add-minutes add-hours add-days add-months
                                            add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list)
                      (unary-function-forms group-concat is-null is-not-null abs round ceiling floor truncate sign logarithm natural-logarithm
                                            sqrt upper lower length trim avg min max count sum not) 
@@ -174,7 +186,7 @@
                       (list '(() "is" not null) (lambda (x) (list 'is-not-null (list-ref x 0))))
                       (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
                       (list '(() like ()) (lambda (x) (list 'like (list-ref x 0)(list-ref x 2))))
-                   
+                  
                                 
                       ))))
 
@@ -306,7 +318,7 @@
     (define parse-comparison-expr
       (parse-binary-stuff parse-binary-expr parse-comparison-op))
 
-        (define (template-parser templates parse-next)
+    (define (template-parser templates parse-next)
       (lambda (xtokens)
         (for/all ([tokens xtokens])
           (letrec ((parse-template
