@@ -1,9 +1,12 @@
 package sqlAnalysis;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -11,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.util.Util;
 import com.ibm.wala.cfg.cdg.ControlDependenceGraph;
@@ -34,14 +36,15 @@ import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 
 public class SQLToGraph {
 	static SlowSparseNumberedGraph<String> dataflowGraph = new SlowSparseNumberedGraph<String>(1);
-	static HashMap<String, Integer> dataflowEdgeCount = new HashMap<String, Integer>();
+	static HashMap<Pair<String, String>, Integer> dataflowEdgeCount = new HashMap<Pair<String, String>, Integer>();
 	static SlowSparseNumberedGraph<String> controlflowGraph = new SlowSparseNumberedGraph<String>(1);
-	static HashMap<String, Integer> controlflowEdgeCount = new HashMap<String, Integer>();
+	static HashMap<Pair<String, String>, Integer> controlflowEdgeCount = new HashMap<Pair<String, String>, Integer>();
 	static Map<String, String> srcToTargetFunction  = new HashMap<String, String>();
 
 	static {
@@ -149,21 +152,36 @@ public class SQLToGraph {
 		
 	}
 	
-	public static void printEdgeCounts(Map<String, Integer> edgeCounts) {
+	public static void printEdgeCounts(Map<Pair<String, String>, Integer> edgeCounts) {
 		int count = 0;
 		edgeCounts = edgeCounts.entrySet().stream()
-				.sorted(Map.Entry.comparingByKey())
+				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
 				(oldValue, newValue) -> oldValue, LinkedHashMap::new));
-		for (Map.Entry<String, Integer> entry : edgeCounts.entrySet()) {
+		for (Map.Entry<Pair<String, String>, Integer> entry : edgeCounts.entrySet()) {
 			count += entry.getValue();
 			System.out.print(entry.getKey() + " " + entry.getValue() + "\n");
 		}
 		
 		System.out.println("Total edges:" + count);
 	}
+	
+	public static void printEdges(Map<Pair<String, String>, Integer> edgeCounts, String fileName) throws Exception {
+	  edgeCounts = edgeCounts.entrySet().stream()
+             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+             (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 
-	private static void record(Graph<String> dataflowGraph, Map<String,Integer> dataflowEdgeCount, String src, String target) {
+	  BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+	  writer.write("(");
+	  for (Map.Entry<Pair<String, String>, Integer> e: edgeCounts.entrySet()) {
+	    writer.write("(" + e.getKey().fst + " " + e.getKey().snd + " " + e.getValue() + ")");
+	  }
+	  writer.write(")");
+	  writer.close();
+	}
+
+	private static void record(Graph<String> dataflowGraph, Map<Pair<String, String>, Integer> dataflowEdgeCount, String src, String target) {
 		if (src != null && target != null) {
 			if (!dataflowGraph.containsNode(src)) {	
 				dataflowGraph.addNode(src);	
@@ -172,7 +190,7 @@ public class SQLToGraph {
 				dataflowGraph.addNode(target);
 			}
 			dataflowGraph.addEdge(src, target);
-			String key = src + " --> " + target;
+			Pair<String, String> key = Pair.make(src, target);
 			if (!dataflowEdgeCount.containsKey(key)) {
 				dataflowEdgeCount.put(key, 0);
 			}

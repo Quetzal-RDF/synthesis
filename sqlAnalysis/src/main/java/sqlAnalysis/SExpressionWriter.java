@@ -72,8 +72,10 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 	HashMap<String, Integer> colNamesToInt = new HashMap<String, Integer>();
 	protected SlowSparseNumberedGraph<TypedNode> graph = new SlowSparseNumberedGraph<TypedNode>(1);
 	private Map<String, List<Integer>> functionNamesToTypes = new HashMap<String, List<Integer>>();
-	private Map<String, String> functionNameMap = new HashMap<String, String>();
+	public Map<String, String> functionNameMap = new HashMap<String, String>();
+	public Map<String, String> functionNameNormalizedMap = new HashMap<String, String>();
 	private Map<String, Integer> opsToCounts = new HashMap<String, Integer>();
+	public static String NI = "notImplemented";
 	
 	public Map<String, Integer> getOpsToCounts() {
 		return opsToCounts;
@@ -93,6 +95,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		l.add(3);
 		functionNamesToTypes.put("trim", l);
+		functionNameNormalizedMap.put("trim", "trim");
 		functionNameMap.put("trim", "trim");
 		functionNameMap.put("ltrim", "trim");
 		
@@ -100,12 +103,14 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(4);
 		l.add(3);
 		functionNamesToTypes.put("strcmp", l);
+		functionNameNormalizedMap.put("strcmp", NI);
 		functionNameMap.put("strcmp", "strcmp");	
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(6);
 		functionNamesToTypes.put("count", l);
+		functionNameNormalizedMap.put("count", "count");
 		functionNameMap.put("count", "count");
 
 	
@@ -113,12 +118,13 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(1);
 		l.add(3);
 		functionNamesToTypes.put("length", l);
+	    functionNameNormalizedMap.put("length", "length");
 		functionNameMap.put("char_length", "length");
 		functionNameMap.put("length", "length");
 		functionNameMap.put("len", "length");
 		
-		
 		functionNameMap.put("row_number", "row_number");
+        functionNameNormalizedMap.put("row_number", NI);
 
 		l = new LinkedList<Integer>();
 		l.add(3);
@@ -126,6 +132,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("concat", l);
 		functionNameMap.put("concat", "concat");
+        functionNameNormalizedMap.put("concat", "concat");
+
 	
 		l = new LinkedList<Integer>();
 		l.add(3);
@@ -134,6 +142,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("replace", l);
 		functionNameMap.put("replace", "replace");
+        functionNameNormalizedMap.put("replace", "replace");
 		
 		
 		l = new LinkedList<Integer>();
@@ -143,6 +152,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("regexp_replace", l);
 		functionNameMap.put("regexp_replace", "regexp_replace");
+        functionNameNormalizedMap.put("replace", NI);
 
 
 		
@@ -152,6 +162,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("lower", l);
 		functionNameMap.put("lower", "lower");
 		functionNameMap.put("lcase", "lower");
+	    functionNameNormalizedMap.put("lower", "lower");
+
 
 		l = new LinkedList<Integer>();
 		l.add(3);
@@ -159,26 +171,24 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("upper", l);
 		functionNameMap.put("upper", "upper");
 		functionNameMap.put("ucase", "upper");
+        functionNameNormalizedMap.put("upper", "upper");
 
-
-		l = new LinkedList<Integer>();
-		l.add(3);
-		l.add(3);
-		functionNamesToTypes.put("upper", l);
-		functionNameMap.put("upper", "upper");
 		
 		l = new LinkedList<Integer>();
 		l.add(3);
 		l.add(3);
 		functionNamesToTypes.put("reverse", l);
 		functionNameMap.put("reverse", "reverse");
-		
+        functionNameNormalizedMap.put("reverse", NI);
+
+	      
 		l = new LinkedList<Integer>();
 		l.add(3);
 		l.add(3);
 		functionNamesToTypes.put("group_concat", l);
 		functionNameMap.put("group_concat", "group_concat");
 		functionNameMap.put("string_agg", "group_concat");
+        functionNameNormalizedMap.put("group_concat", "group_concat");
 
 		l = new LinkedList<Integer>();
 		l.add(3);
@@ -189,18 +199,23 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNameMap.put("mid", "substring");
 		functionNameMap.put("substring", "substring");
 		functionNameMap.put("substr", "substring");
+		functionNameNormalizedMap.put("substring", "substring");
+
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(1);
 		functionNamesToTypes.put("sum", l);
 		functionNameMap.put("sum", "sum");
+        functionNameNormalizedMap.put("sum", "sum");
 
+        
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(1);
 		functionNamesToTypes.put("min", l);
-		functionNameMap.put("min", "min");
+        functionNameMap.put("min", "min");
+        functionNameNormalizedMap.put("min", "min");
 		
 		
 		l = new LinkedList<Integer>();
@@ -208,19 +223,22 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(1);
 		functionNamesToTypes.put("sign", l);
 		functionNameMap.put("sign", "sign");
+        functionNameNormalizedMap.put("sign", "sign");
 
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(1);
 		functionNamesToTypes.put("abs", l);
-		functionNameMap.put("abs", "abs");
+        functionNameMap.put("abs", "abs");
+        functionNameNormalizedMap.put("abs", "abs");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(2);
 		functionNamesToTypes.put("from_unixtime", l);
 		functionNameMap.put("from_unixtime", "from_unixtime");
+        functionNameNormalizedMap.put("from_unixtime", "date-from-epoch");
 		
 
 		l = new LinkedList<Integer>();
@@ -228,7 +246,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(2);
 		functionNamesToTypes.put("extractMonth", l);
 		functionNameMap.put("month", "extractMonth");
-		functionNameMap.put("extractMonth", "extractMonth");
+        functionNameMap.put("extractMonth", "extractMonth");
+        functionNameNormalizedMap.put("extractMonth", "extract-months");
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -236,6 +255,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("extractSecond", l);
 		functionNameMap.put("second", "extractSecond");
 		functionNameMap.put("extractSecond", "extractSecond");
+		functionNameNormalizedMap.put("extractSecond", "extract-seconds");
+
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -243,6 +264,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("extractMinute", l);
 		functionNameMap.put("minute", "extractMinute");
 		functionNameMap.put("extractMinute", "extractMinute");
+		functionNameNormalizedMap.put("extractMinute", "extract-minutes");
+
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -250,13 +273,15 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("extractHour", l);
 		functionNameMap.put("hour", "extractHour");
 		functionNameMap.put("extractHour", "extractHour");
+        functionNameNormalizedMap.put("extractHour", "extract-hours");
 	
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(2);
 		functionNamesToTypes.put("extractDay", l);
 		functionNameMap.put("day", "extractDay");
-		functionNameMap.put("extractDay", "extractDay");
+        functionNameMap.put("extractDay", "extractDay");
+        functionNameNormalizedMap.put("extractDay", "extract-days");
 	
 		
 		l = new LinkedList<Integer>();
@@ -265,6 +290,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("extractYear", l);
 		functionNameMap.put("year", "extractYear");
 		functionNameMap.put("extractYear", "extractYear");
+        functionNameMap.put("extractYear", "extract-years");
 
 
 		l = new LinkedList<Integer>();
@@ -273,7 +299,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("curdate", l);
 		functionNameMap.put("curdate", "curdate");
 		functionNameMap.put("getdate", "curdate");
-		functionNameMap.put("now", "curdate");
+        functionNameMap.put("now", "curdate");
+        functionNameNormalizedMap.put("now", "now");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -284,7 +311,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNameMap.put("datepart", "extractFromDate");
 		functionNameMap.put("extractFromDate", "extractFromDate");
 		functionNameMap.put("datetrunc", "extractFromDate");
-		
+        functionNameNormalizedMap.put("extractFromDate", NI);
+
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -292,7 +320,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("extractDayOfWeek", l);
 		functionNameMap.put("weekday", "extractDayOfWeek");
 		functionNameMap.put("extractDayOfWeek", "extractDayOfWeek");
-
+        functionNameMap.put("extractDayOfWeek", "extractDayOfWeek");
+        functionNameNormalizedMap.put("extractDayOfWeek", "extract-day-of-year");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -300,6 +329,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("extractDayOfMonth", l);
 		functionNameMap.put("day", "extractDayOfMonth");
 		functionNameMap.put("extractDayOfMonth", "extractDayOfMonth");
+	    functionNameNormalizedMap.put("extractDayOfMonth", NI);
 
 		
 		l = new LinkedList<Integer>();
@@ -308,6 +338,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(1);
 		functionNamesToTypes.put("date_sub", l);
 		functionNameMap.put("date_sub", "date_sub");
+        functionNameNormalizedMap.put("date_sub", "date-subtract");
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -315,6 +346,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(2);
 		functionNamesToTypes.put("datediff", l);
 		functionNameMap.put("datediff", "datediff");
+        functionNameNormalizedMap.put("date_diff", NI);
+
 
 		l = new LinkedList<Integer>();
 		l.add(2);
@@ -324,6 +357,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("date_add", l);
 		functionNameMap.put("adddate", "date_add");
 		functionNameMap.put("date_add", "date_add");
+	    functionNameNormalizedMap.put("date_add", NI);
+
 
 		l = new LinkedList<Integer>();
 		l.add(2);
@@ -332,6 +367,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("date_add_months", l);
 		functionNameMap.put("add_months", "date_add_months");
 		functionNameMap.put("date_add_months", "date_add_months");
+        functionNameNormalizedMap.put("date_add_months", "add-months");
 
 		l = new LinkedList<Integer>();
 		l.add(2);
@@ -341,24 +377,29 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("date_sub_interval", l);
 		functionNameMap.put("date_sub", "date_sub_interval");
 		functionNameMap.put("date_sub_interval", "date_sub_interval");
+        functionNameNormalizedMap.put("date_sub_interval", NI);
 
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(2);
 		functionNamesToTypes.put("unix_timestamp", l);
 		functionNameMap.put("unix_timestamp", "unix_timestamp");
-		
+		functionNameNormalizedMap.put("unix_timestamp", "date-to-epoch");
+	
 
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(1);
 		functionNamesToTypes.put("avg", l);
 		functionNameMap.put("avg", "avg");
+		functionNameNormalizedMap.put("avg", "avg");
+
 		
 		functionNameMap.put("ifnull", "coalesce");
 		functionNameMap.put("coalesce", "coalesce");
 		functionNameMap.put("isnull", "coalesce");
 		functionNameMap.put("nvl", "coalesce");
+        functionNameNormalizedMap.put("coalesce", NI);
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -366,10 +407,12 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		l.add(1);
 		functionNamesToTypes.put("index-of", l);
+		functionNameMap.put("index-of", "index-of");
 		functionNameMap.put("instr", "index-of");
 		functionNameMap.put("locate", "index-of");
 		functionNameMap.put("charindex", "index-of");
 		functionNameMap.put("position", "index-of");
+        functionNameNormalizedMap.put("index-of", "index-of");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -377,6 +420,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("ceiling", l);
 		functionNameMap.put("ceil", "ceiling");
 		functionNameMap.put("ceiling", "ceiling");
+        functionNameNormalizedMap.put("ceiling", "ceiling");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -384,18 +428,22 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(1);
 		functionNamesToTypes.put("truncate", l);
 		functionNameMap.put("trunc", "truncate");
+		functionNameMap.put("truncate", "truncate");
+        functionNameNormalizedMap.put("truncate", "truncate");
 
 		l = new LinkedList<Integer>();
 		l.add(5);
 		l.add(5);
 		functionNamesToTypes.put("atan", l);
 		functionNameMap.put("atan", "atan");
-		
+		functionNameNormalizedMap.put("atan", NI);
+
 		l = new LinkedList<Integer>();
 		l.add(5);
 		l.add(5);
 		functionNamesToTypes.put("sin", l);
 		functionNameMap.put("sin", "sin");
+        functionNameNormalizedMap.put("sin", NI);
 
 
 		l = new LinkedList<Integer>();
@@ -403,6 +451,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("cos", l);
 		functionNameMap.put("cos", "cos");
+        functionNameNormalizedMap.put("cos", NI);
 		
 
 		l = new LinkedList<Integer>();
@@ -410,13 +459,15 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("acos", l);
 		functionNameMap.put("acos", "acos");
+        functionNameNormalizedMap.put("acos", NI);
 
 
 		l = new LinkedList<Integer>();
 		l.add(5);
 		l.add(5);
 		functionNamesToTypes.put("log10", l);
-		functionNameMap.put("log10", "log10");
+        functionNameMap.put("log10", "log10");
+        functionNameNormalizedMap.put("log10", NI);
 		
 
 		l = new LinkedList<Integer>();
@@ -424,6 +475,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("log", l);
 		functionNameMap.put("log", "log");
+        functionNameNormalizedMap.put("log", NI);
 
 
 		l = new LinkedList<Integer>();
@@ -431,12 +483,14 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("cot", l);
 		functionNameMap.put("cot", "cot");
+        functionNameNormalizedMap.put("cot", NI);
 
 		l = new LinkedList<Integer>();
 		l.add(5);
 		l.add(5);
 		functionNamesToTypes.put("tan", l);
 		functionNameMap.put("tan", "tan");
+        functionNameNormalizedMap.put("tan", NI);
 
 		l = new LinkedList<Integer>();
 		l.add(5);
@@ -445,6 +499,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNamesToTypes.put("pow", l);
 		functionNameMap.put("pow", "pow");
 		functionNameMap.put("power", "pow");
+        functionNameNormalizedMap.put("pow", NI);
 
 
 		l = new LinkedList<Integer>();
@@ -452,6 +507,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("exp", l);
 		functionNameMap.put("exp", "exp");
+        functionNameNormalizedMap.put("exp", NI);
 
 		
 		l = new LinkedList<Integer>();
@@ -459,6 +515,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("degrees", l);
 		functionNameMap.put("degrees", "degrees");
+        functionNameNormalizedMap.put("degrees", NI);
 
 	
 		l = new LinkedList<Integer>();
@@ -466,6 +523,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(5);
 		functionNamesToTypes.put("radians", l);
 		functionNameMap.put("radians", "radians");
+		functionNameNormalizedMap.put("radians", NI);
 
 		l = new LinkedList<Integer>();
 		l.add(3);
@@ -474,6 +532,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("concat_ws", l);
 		functionNameMap.put("concat_ws", "concat_ws");
+        functionNameNormalizedMap.put("concat_ws", NI);
 
 
 		l = new LinkedList<Integer>();
@@ -481,6 +540,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(1);
 		functionNamesToTypes.put("max", l);
 		functionNameMap.put("max", "max");
+		functionNameNormalizedMap.put("max", "max");
 
 
 		l = new LinkedList<Integer>();
@@ -489,6 +549,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("like", l);
 		functionNameMap.put("like", "like");
+        functionNameNormalizedMap.put("like", NI);
 		
 		l = new LinkedList<Integer>();
 		l.add(4);
@@ -496,19 +557,23 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		l.add(3);
 		functionNamesToTypes.put("regexp_like", l);
 		functionNameMap.put("regexp_like", "regexp_like");
-	
+        functionNameNormalizedMap.put("regexp_like", NI);
+
 		
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(5);
 		functionNamesToTypes.put("floor", l);
 		functionNameMap.put("floor", "floor");
+		functionNameNormalizedMap.put("floor", "floor");
+
 
 		l = new LinkedList<Integer>();
 		l.add(1);
 		l.add(5);
 		functionNamesToTypes.put("round", l);
 		functionNameMap.put("round", "round");
+	    functionNameNormalizedMap.put("round", "round");
 	}
 	
 
@@ -622,9 +687,6 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 	
 	private void putInOps(String op) {
 		int c = 0;
-		if (op.equals("extractFromDate")) {
-			throw new RuntimeException("got here");
-		}
 		if (opsToCounts.containsKey(op)) {
 			c = opsToCounts.get(op);
 		}
@@ -880,14 +942,16 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 				src = record(getType(l).snd);
 			} else if (rhs instanceof FunctionCall || lhs instanceof FunctionCall) {
 				FunctionCall f = null;
+                if (rhs instanceof FunctionCall) {
+                  f = (FunctionCall) rhs;
+                } else if (lhs instanceof FunctionCall) {
+                  f = (FunctionCall) lhs;
+                }
+
 				if (!functionNameMap.containsKey(f.getName().toString())) {
 					return;
 				}
-				if (rhs instanceof FunctionCall) {
-					f = (FunctionCall) rhs;
-				} else if (lhs instanceof FunctionCall) {
-					f = (FunctionCall) lhs;
-				}
+				
 				type = getReturnType(f).fst;
 				src = record(getReturnType(f).snd);
 			}
@@ -998,47 +1062,10 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		if (!functionNameMap.containsKey(node.getName().toString())) {
 			throw new UnsupportedOperationException();
 		}
+		
 		String n = functionNameMap.get(node.getName().toString());
-
-		if (n.equals("in")) {
-			n = "in-list";
-		} else if (n.equals("coalesce")) {
-			return visitCoalesce(node, context);	
-		} else if (n.equals("datediff")) {
-			n = "date-subtract";
-		} else if (n.equals("char-length")) {
-			n = "length";
-		} else if (n.equals("group_concat")) {
-			n = "group-concat";
-		} else if (n.equals("extractYear")) {
-			n = "extract-years";
-		} else if (n.equals("extractDay")) {
-				n = "extract-days";
-		} else if (n.equals("extractMonth")) {
-			n = "extract-months";
-		} else if (n.equals("extractHour")) {
-			n = "extract-hours";
-		} else if (n.equals("extractMinute")) {
-			n = "extract-minutes";
-		} else if (n.equals("extractSecond")) {
-			n = "extract-seconds";
-		}  else if (n.equals("unix_timestamp")) {
-			n = "date-to-epoch";
-		} else if (n.equals("from_unixtime")) {
-			n = "date-from-epoch";
-		} else if (n.equals("extractDayOfMonth")) {
-			n = "extract-days";
-		} else if (n.equals("strcmp")) {
-			n = "=";
-		} else if (n.equals("date_add")) {
-			return visitDateAddSubtract("add", node, context);
-		} else if (n.equals("date_add_months")) {
-			n = "add-seconds";
-		} else if (n.equals("date_sub_interval")) {
-			return visitDateAddSubtract("subtract", node, context);
-		} else if (n.equals("extractDayOfWeek")) {
-			n = "extract-day-of-year";
-		}
+		assert functionNameNormalizedMap.containsKey(n);
+		n = functionNameNormalizedMap.get(n);
 		
 		functions.add(n);
 		putInOps(n);
@@ -1070,7 +1097,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitCurrentTime(CurrentTime node, Void context) {
-		return "(" + "currentTime" + ")";
+		return "(" + "now" + ")";
 	}
 
 	@Override

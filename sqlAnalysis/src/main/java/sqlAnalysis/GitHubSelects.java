@@ -62,9 +62,9 @@ public class GitHubSelects {
 		System.out.println("control dependence graph" + SQLToGraph.controlflowGraph);
 		System.out.println("control dependence edgecount" + SQLToGraph.controlflowEdgeCount);
 		System.out.println("DataFlow:");
-		SQLToGraph.printEdgeCounts(SQLToGraph.dataflowEdgeCount);
+		SQLToGraph.printEdges(SQLToGraph.dataflowEdgeCount, "/tmp/dataFlowEdges");
 		System.out.println("ControlFlow:");
-		SQLToGraph.printEdgeCounts(SQLToGraph.controlflowEdgeCount);
+		SQLToGraph.printEdges(SQLToGraph.controlflowEdgeCount, "/tmp/controlFlowEdges");
 
 	}
 

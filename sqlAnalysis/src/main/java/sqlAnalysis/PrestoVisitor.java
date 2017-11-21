@@ -474,6 +474,10 @@ public class PrestoVisitor {
 
 		private final CAstControlFlowRecorder rec = new CAstControlFlowRecorder(pos);
 		
+		// KAVITHA: This is a hack to synchronize function names between synthesis and SQL
+		private SExpressionWriter writer = new SExpressionWriter(0);
+
+		
 		public ExpressionGatherer() {
 		}
 
@@ -633,7 +637,7 @@ public class PrestoVisitor {
 			CAstNode args = process(node.getValueList(), c);
 			CAstNode[] arr = new CAstNode[ 3 + args.getChildCount() ];
 			arr[0] = factory.makeNode(CAstNode.VOID);
-			arr[1] = factory.makeConstant("in");
+			arr[1] = factory.makeConstant("in-list");
 			arr[2] = process(node.getValue(), c);
 			for(int i = 0; i < args.getChildCount(); i++) {
 				arr[i+3] = args.getChild(i);
@@ -650,7 +654,15 @@ public class PrestoVisitor {
 			
 			CAstNode[] allArgs = new CAstNode[ arr.length + 2 ];
 			allArgs[0] = factory.makeConstant(CAstNode.VOID);
-			allArgs[1] = factory.makeConstant(node.getName().toString());
+			
+			String n = node.getName().toString();
+			if (writer.functionNameMap.containsKey(n)) {
+			  n = writer.functionNameMap.get(n);
+			  assert (writer.functionNameNormalizedMap.containsKey(n));
+			  n = writer.functionNameNormalizedMap.get(n);
+			  
+			}
+			allArgs[1] = factory.makeConstant(n);
 			System.arraycopy(arr, 0, allArgs, 2, arr.length);
 
 			return factory.makeNode(CAstNode.CALL, allArgs);
