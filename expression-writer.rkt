@@ -84,6 +84,7 @@
 (hash-set! mappings 'extract-day-of-year '("extract-day-of-year" "UnaryExpression"))
 (hash-set! mappings 'date-to-epoch '("date-to-epoch" "UnaryExpression"))
 (hash-set! mappings 'date-from-epoch '("date-from-epoch" "UnaryExpression"))
+(hash-set! mappings 'group-concat '("group-concat" "UnaryExpression"))
 (hash-set! mappings 'not '("not" "UnaryExpression"))
 
 
@@ -171,6 +172,7 @@
 (hash-set! pretty 'sum-group "sum lhs grouped by rhs")
 (hash-set! pretty 'count-group "count lhs grouped by rhs")
 (hash-set! pretty 'not "not expression")
+(hash-set! pretty 'group-concat "concatenate all strings in expression")
 (hash-set! pretty 'trim "trim white spaces from expression")
 
 

@@ -79,7 +79,6 @@
             (sign ("positive" "or" "negative" "sign")("positive" "or" "negative")("sign"))
             (if ("if") ("whether")("when")("unless")("case")("in case")("case" "when"))
             (then ("then") ("do" "subsequently") ("do") ("then" "do") ("subsquently"))
-            (coalesce ("coalesce")("if" "null")("is" "null")("nvl"))
             (else ("else") ("or" "else") ("or") ("otherwise"))
             (substring ("substring")("left") ("right") ("mid"))
             (substring-first ("extract" "characters") ("extract" "string") ("extract" "substring")("find")("find" "characters")("find" "substring"))
@@ -136,8 +135,8 @@
          (templates (append
                      (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
                      (ternary-function-forms between replace substring)
-                     (binary-function-forms index-of concat like exponent quotient remainder add-seconds add-minutes add-hours add-days add-months
-                                           add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list coalesce)
+                     (binary-function-forms index-of concat exponent quotient remainder add-seconds add-minutes add-hours add-days add-months
+                                           add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list)
                      (unary-function-forms group-concat is-null is-not-null abs round ceiling floor truncate sign logarithm natural-logarithm
                                            sqrt upper lower length trim avg min max count sum not) 
                      (nullary-function-forms now)
@@ -171,6 +170,8 @@
                       (list '(extract "day" "of" "week" "from" ()) (lambda (x) (list 'extract-day-of-week (list-ref x 5))))
                       (list '(() "is" not null) (lambda (x) (list 'is-not-null (list-ref x 0))))
                       (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
+                      (list '(() like ()) (lambda (x) (list 'like (list-ref x 0)(list-ref x 2))))
+                   
                                 
                       ))))
 

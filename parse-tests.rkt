@@ -443,7 +443,7 @@
 
 (define (test78)
   (letrec ((p (apply make-parser '("A" "B")))
-           (result (p '("like" "A" "and" "B")))
+           (result (p '("A" "like" "B")))
            (columnMetadata '((columnName "A" primitiveTypes (2)) (columnName "B" primitiveTypes (1)))))
     (println result)
     (println (to-html (car result) columnMetadata))
