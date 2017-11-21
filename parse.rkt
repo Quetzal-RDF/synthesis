@@ -63,6 +63,7 @@
           (map (lambda (s) (string-trim s #px"\\$.+")) xcolumn-names))
          (keywords
           '((or ("or") ("either") ("any") ("instead"))
+            (null ("null") ("empty")("blank"))
             (is-null ("is" "null") ("is" "empty"))
             (is-not-null ("is" "not" "null") ("is" "not" "empty"))
             (and ("and") ("both") ("also") ("including"))
@@ -133,7 +134,7 @@
             (group ("group") ("group" "by") ("grouped" "by") ("organize" "by") ("organized" "by") ("cluster" "by") ("clustered" "by") ("by") ("based" "on"))))
          (reserved (filter string? (flatten keywords)))
          (templates (append
-                     (grouping-function-forms (average group average-group) (sum group sum-group) (count group count-group) (maximum group maximum-group) (minimum group minimum-group))
+                     (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
                      (ternary-function-forms between replace substring)
                      (binary-function-forms index-of concat like exponent quotient remainder add-seconds add-minutes add-hours add-days add-months
                                            add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list coalesce)
@@ -168,6 +169,8 @@
                       (list '(extract "date" "from" ()) (lambda (x) (list 'date-from-epoch (list-ref x 3))))
                       (list '(extract "day" "of" "year" "from" ()) (lambda (x) (list 'extract-day-of-year (list-ref x 5))))
                       (list '(extract "day" "of" "week" "from" ()) (lambda (x) (list 'extract-day-of-week (list-ref x 5))))
+   ;                   (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
+                                
                       ))))
 
     ; val-f is applied to every element of the list
