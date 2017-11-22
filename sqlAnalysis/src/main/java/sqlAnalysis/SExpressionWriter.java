@@ -400,7 +400,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNameMap.put("coalesce", "coalesce");
 		functionNameMap.put("isnull", "coalesce");
 		functionNameMap.put("nvl", "coalesce");
-        functionNameNormalizedMap.put("coalesce", NI + "_coalesce");
+        functionNameNormalizedMap.put("coalesce", "if");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
