@@ -37,15 +37,8 @@
                  (outputs
                   (for/list ([row table])
                     (list-ref row (- (length row) 2)))))
-            (println inputs)
-            (println outputs)
-            (println (car (cadr f)))
             (let ((synthesized (apply analyze (hash) '() '() 5 outputs symbolics inputs)))
               (for/list ([s synthesized])
-                (println "+++")
-                (println s)
-                (println (render s))
-                (println (second f))
                 (let* ((check
                         (and
                          (letrec ((g (lambda (ss)
@@ -61,5 +54,5 @@
                   (if (sat? m)
                       (let ((a1 (evaluate (car (cadr f)) m))
                             (a2 (evaluate (third s) m)))
-                        (list 'x (render s) a1 a2 m))
+                        (list 'x (render s) a1 a2 (evaluate symbolics m)))
                       (render s)))))))))))
