@@ -22,6 +22,11 @@
     [(negative? b) -1]
 ))
 
+(define/match (var? e)
+  [((expression op child ...)) #f]
+  [((? constant?)) #t]
+  [(_) #f])
+
 (define (id pos)
   (string->symbol (format "~S" pos)))
 
@@ -1012,23 +1017,14 @@
 (define (analyze extra white black limit outputs symbolic . inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
-  (letrec ((z3-engines (engines 5))
+  (letrec ((z3-engines (new engines% [n 5]))
            (time-limit 30000)
            (start-time (current-inexact-milliseconds))
            (results-channel (make-async-channel 10000))
            (goal 1)
            (models (list))
            (outstanding 0)
-           (universals (filter term? (flatten inputs)))
-           (drain (lambda (async?)
-                    (let ((x ((if async? async-channel-try-get async-channel-get) results-channel)))
-                      (when x
-                        (set! outstanding (- outstanding 1))
-                        (when (cons? x)
-                          (set! goal (- goal 1))
-                          (set! models (cons x models)))
-                        (when (and (> goal 0) (> outstanding 0))
-                          (drain async?)))))))
+           (universals (filter term? (flatten inputs))))
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
     ; the function where the result is raised as a list
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
@@ -1082,52 +1078,45 @@
            ;(println formula)
            ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
            ; raise models, which will then be trapped by the handler code
-           (engines-solve z3-engines formula
+           (send z3-engines solve formula x
              (lambda (formula result)
                ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
                ; has bugs so check.
-               (if (and (not (exn? result)) (sat? result) (eq? #t (evaluate formula result)))
-                   (if (null? universals)
-                       (async-channel-put
-                        results-channel
-                        (list (car y) (remove-duplicates (cadr y)) (car (third y)) result null))
-                       (let* ((symbolic (hash->list (model result)))
-                              (constraints (filter (lambda (p) (not (member (car p) universals))) symbolic))
-                              (guard
-                               (letrec ((g (lambda (ss)
-                                             (if (null? ss)
-                                                 #t
-                                                 (and
-                                                  (equal? (caar ss) (cdar ss))
-                                                  (g (cdr ss)))))))
-                                 (g symbolic)))
-                              (negated-formula
-                               (and 
-                                guard
-                                (not formula)))
-                              (solver (z3)))
-                         (print universals)
-                         (println guard)
-                         (solver-clear solver)
-                         (solver-assert solver (list negated-formula))
-                         (let ((negated-result (solver-check solver)))
-                           (solver-shutdown solver)
-                           (async-channel-put
-                            results-channel
-                            (if (sat? negated-result)
-                                #t
-                                (list (car y) (remove-duplicates (cadr y)) (caddr y) result null))))))
-                   (async-channel-put results-channel #t))))
-           (drain #t)
-           (when (<= goal 0)
+               (when (and (not (exn? result)) (sat? result) (eq? #t (evaluate formula result)))
+                 (if (null? universals)
+                     (set! models
+                           (append
+                            models
+                            (list (list (car y) (remove-duplicates (cadr y)) (car (third y)) result null))))
+                     (let* ((symbolic (hash->list (model result)))
+                            (constraints (filter (lambda (p) (not (member (car p) universals))) symbolic))
+                            (guard
+                             (letrec ((g (lambda (ss)
+                                           (if (null? ss)
+                                               #t
+                                               (and
+                                                (equal? (caar ss) (cdar ss))
+                                                (g (cdr ss)))))))
+                               (g symbolic)))
+                            (negated-formula
+                             (and 
+                              guard
+                              (not formula)))
+                            (solver (z3)))
+                       (print universals)
+                       (println guard)
+                       (solver-clear solver)
+                       (solver-assert solver (list negated-formula))
+                       (let ((negated-result (solver-check solver)))
+                         (solver-shutdown solver)
+                         (when (not (sat? negated-result))
+                           (set! models
+                                 (append
+                                  models
+                                  (list (list (car y) (remove-duplicates (cadr y)) (caddr y) result null)))))))))))
+           (when (> (length models) goal)
              (raise models)))))))
-    (letrec ((finish
-              (lambda ()
-                (when (and (> goal 0) (> outstanding 0))
-                  (drain #f)
-                  (finish)))))
-      (finish))
-    (engines-stop z3-engines)
+    (send z3-engines drain)
     models))
 
 (define (aggregate white black limit results symbolic . inputs)
