@@ -14,6 +14,9 @@
           (println (car (cadr f)))
           (to-table f #t))))))
 
+;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
+;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
+;; get generated, they are correct (if overly complex) and so no counterexample exists
 (define (benchmark-synthesis)
     (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
     (for/list ([line lines])
