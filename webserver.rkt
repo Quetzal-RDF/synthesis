@@ -103,6 +103,20 @@
         (send/back
          (json-response-maker 202 '() h))))))
 
+(define (prep-table-for-json table colMetadata symbolics)
+  (let ((header (car table))
+        (rows (cadr table))
+        (replace-exp (lambda (lst)
+                       (println (last lst))
+                       (append (take lst (- (length lst) 1))
+                               (list (to-html (last lst) colMetadata)))))
+        (replace-constant (lambda (x)
+                          (let ((i (index-of symbolics x)))
+                            (cadr (list-ref colMetadata i))))))
+    (println (constant? (car header)))
+    (cons (map replace-constant header)
+          (map replace-exp rows))))
+
 (define (columns columnMetadata)
   (map cadr columnMetadata))
 
@@ -124,14 +138,12 @@
      (let ((h (if (= 1 (length result))
                   (hasheq 'html (to-html (car result) columnMetadata)
                           'json (jsonify (car result) columnMetadata))
-                  (let ((sample (generate-data query symbolics columnMetadata)))
+                  (let ((sample (prep-table-for-json (generate-data query symbolics columnMetadata) columnMetadata symbolics)))
                     (hasheq 'html (string-join (map (lambda (x) (to-html x columnMetadata)) result))
                             'table sample)))))
        (println h)
        (send/back
         (json-response-maker 202 '() h)))))
-
-(define sampleTable '(("col1" "col2" "col3") (0 2 3) (4 5 6)))
 
 
 (define (parse-column-metadata2 p)
@@ -165,3 +177,4 @@
                #:launch-browser? #f)
 
 (provide parse-column-metadata)
+
