@@ -1,6 +1,7 @@
 #lang rosette
 
 (require rosette/lib/angelic)
+(require "parse-util.rkt")
 
 (define-syntax nullary-function-forms
   (syntax-rules ()
@@ -261,7 +262,7 @@
                 ((not (eq? #f (member next column-names)))
                  (cons (list 'in (+ 1 (- (length column-names) (length (member next column-names))))) (cdr tokens)))
                 ((and (string? next) (not (member next reserved)))
-                 (cons (or (string->number next) next) (cdr tokens)))
+                 (cons (or (call-racket-string-number next) next) (cdr tokens)))
                 ((number? next)
                  (cons next (cdr tokens)))            
                 (#t
@@ -410,7 +411,6 @@
   (let-values (([parse toks] (parser tokens)))
     (let ((result (solve (assert (f parse)))))
       (values (evaluate parse result) (evaluate toks result)))))
-
 
 
 (provide make-parser find-parse)
