@@ -566,3 +566,23 @@
                                                                      (columnName "monthly_overage" primitiveTypes (1)))))
     (println result)
     (println (length result))))
+
+(define (test91)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "monthly_overage"
+                             "is" "not" "null" "and" "terms" "is" "A" "then" "monthly_overage" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
+
+(define (test92)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "length" "(" "monthly_overage" ")"
+                             ">" "0" "and" "terms" "is" "A" "then" "monthly_overage" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
