@@ -159,9 +159,13 @@
     ["("  "("]
     [")"  ")"]
     ["," ","]
+    [#\' "'"]
+    [#\" "\""]
     [(seq (:or (char-range #\a #\z) (char-range #\A #\Z)) (:* (:or (char-range #\a #\z) (char-range #\A #\Z) (char-range #\0 #\9) #\_))) lexeme]
+    [(seq (:or #\' #\") (:* (:or (char-range #\a #\z) (char-range #\A #\Z) (char-range #\0 #\9) #\_ #\ )) (:or #\' #\")) (string-replace lexeme "'" "" #:all? #t)]
     [(seq (char-range #\0 #\9) (char-range #\0 #\9) (:or #\/ #\-) (char-range #\0 #\9) (char-range #\0 #\9)  (:or #\/ #\-) (char-range #\0 #\9) (char-range #\0 #\9)(char-range #\0 #\9) (char-range #\0 #\9) ) lexeme]
     [(seq (:? (:or #\- #\+)) (:+ (char-range #\0 #\9)) (:? (seq #\. (:+ (char-range #\0 #\9))))) lexeme]
+    [(seq (:? (:or #\- #\+)) (:+ (seq #\. (:+ (char-range #\0 #\9))))) lexeme]
    ))
 
 (define (lex in)
@@ -178,5 +182,14 @@
 
 (define (test3)
   (lex (open-input-string "funny same as foo")))
+
+(define (test4)
+  (lex (open-input-string "funny 'same as' foo")))
+
+(define (test6)
+  (lex (open-input-string "funny \"same as\" foo")))
+
+(define (test5)
+  (lex (open-input-string "foo*.03")))
 
 (provide lex)
