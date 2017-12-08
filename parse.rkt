@@ -100,7 +100,7 @@
             (in-list ("values" "in")("is" "one" "of")("member"))
             (+ ("+") ("plus"))
             (- ("-") ("minus") ("takeaway") ("subtract") ("deduct"))
-            (/ ("/") ("divide") ("divided" "by"))
+            (/ ("/") ("divide") ("divided" "by")("over"))
             (* ("*") ("multiply" "by") ("multiplied" "by") ("multiply") ("times"))
             (exponent ("exponent") ("exp") ("power"))
             (logarithm ("logarithm") ("logarithm" "base" "10"))
