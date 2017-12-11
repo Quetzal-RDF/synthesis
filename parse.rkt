@@ -1,6 +1,7 @@
 #lang rosette
 
 (require rosette/lib/angelic)
+(require "parse-util.rkt")
 
 (define-syntax nullary-function-forms
   (syntax-rules ()
@@ -99,7 +100,7 @@
             (in-list ("values" "in")("is" "one" "of")("member"))
             (+ ("+") ("plus"))
             (- ("-") ("minus") ("takeaway") ("subtract") ("deduct"))
-            (/ ("/") ("divide") ("divided" "by"))
+            (/ ("/") ("divide") ("divided" "by")("over"))
             (* ("*") ("multiply" "by") ("multiplied" "by") ("multiply") ("times"))
             (exponent ("exponent") ("exp") ("power"))
             (logarithm ("logarithm") ("logarithm" "base" "10"))
@@ -146,7 +147,12 @@
           (append
            (binary-function-forms-with-and concat quotient remainder)
            (list
-            (list '(() "is" between () "and" ()) (lambda (x) (list 'between (list-ref x 0)(list-ref x 3)(list-ref x 5)))))))
+           (list '(() "is" not null) (lambda (x) (list 'is-not-null (list-ref x 0))))
+           (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
+           (list '(() like ()) (lambda (x) (list 'like (list-ref x 0)(list-ref x 2)))))
+           (list
+            (list '(() "is" between () "and" ()) (lambda (x) (list 'between (list-ref x 0)(list-ref x 3)(list-ref x 5))))
+            )))
          (templates (append
                      (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
                      (ternary-function-forms between replace substring)
@@ -182,11 +188,7 @@
                       (list '(extract "epoch" "from" ()) (lambda (x) (list 'date-to-epoch (list-ref x 3))))
                       (list '(extract "date" "from" ()) (lambda (x) (list 'date-from-epoch (list-ref x 3))))
                       (list '(extract "day" "of" "year" "from" ()) (lambda (x) (list 'extract-day-of-year (list-ref x 5))))
-                      (list '(extract "day" "of" "week" "from" ()) (lambda (x) (list 'extract-day-of-week (list-ref x 5))))
-                      (list '(() "is" not null) (lambda (x) (list 'is-not-null (list-ref x 0))))
-                      (list '(() "is" null) (lambda (x) (list 'is-null (list-ref x 0))))
-                      (list '(() like ()) (lambda (x) (list 'like (list-ref x 0)(list-ref x 2))))
-                  
+                      (list '(extract "day" "of" "week" "from" ()) (lambda (x) (list 'extract-day-of-week (list-ref x 5))))        
                                 
                       ))))
 
@@ -261,7 +263,7 @@
                 ((not (eq? #f (member next column-names)))
                  (cons (list 'in (+ 1 (- (length column-names) (length (member next column-names))))) (cdr tokens)))
                 ((and (string? next) (not (member next reserved)))
-                 (cons (or (string->number next) next) (cdr tokens)))
+                 (cons (or (call-racket-string-number next) next) (cdr tokens)))
                 ((number? next)
                  (cons next (cdr tokens)))            
                 (#t
@@ -410,7 +412,6 @@
   (let-values (([parse toks] (parser tokens)))
     (let ((result (solve (assert (f parse)))))
       (values (evaluate parse result) (evaluate toks result)))))
-
 
 
 (provide make-parser find-parse)

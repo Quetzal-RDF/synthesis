@@ -472,3 +472,135 @@
     (println result)
     (println (to-html (car result) columnMetadata))
     (println (jsonify (car result) columnMetadata))))
+
+(define (test82)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("not" "(" "A" ")")))
+           (columnMetadata '((columnName "A" primitiveTypes (4)) (columnName "B" primitiveTypes (1)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test83)
+  (letrec ((p (apply make-parser '("A" "B")))
+           (result (p '("A" "-" "B")))
+           (columnMetadata '((columnName "A" primitiveTypes (2)) (columnName "B" primitiveTypes (2)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test84)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "terms" "is" "Committed" "then"
+                             "price_per_unit" "times" "min_units"
+                             "otherwise" "0" "otherwise" "if" "terms" "is" "Standard"
+                             "then top99p" "times" "price_per_unit" "plus" "monthly_overage" "otherwise" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test85)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "terms" "is" "Committed" "then"
+                             "price_per_unit" "times" "min_units"
+                             "otherwise" "0" "otherwise" "if" "terms" "is" "Standard"
+                             "then top99p" "times" "price_per_unit" "plus" "monthly_overage" "otherwise" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test86)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "terms" "is" "Committed" "then"
+                             "price_per_unit" "times" "min_units"
+                             "otherwise" "if" "terms" "is" "Standard"
+                             "then" "top99p" "times" "price_per_unit" "plus" "monthly_overage" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test87)
+  (letrec ((p (apply make-parser '("last_hour")))
+           (result (p '("if" "last_hour" "is" "before" "12/21/2015" "then" "False" "otherwise" "True")))
+           (columnMetadata '((columnName "last_hour" primitiveTypes (1)))))
+    (println result)
+    (println (length result))
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test88)
+  (letrec ((p (apply make-parser '("std_plan_billable_hours")))
+           (result (p '("std_plan_billable_hours" "times" "0.002")))
+           (columnMetadata '((columnName "last_hour" primitiveTypes (1)))))
+    (println result)
+    (println (length result))
+    (println (to-html (car result) columnMetadata))
+    (println (jsonify (car result) columnMetadata))))
+
+(define (test89)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "terms" "is" "Committed" "then" "if" "monthly_overage"
+                             "is" "not" "null" "then" "monthly_overage" "else" "0" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
+
+(define (test90)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "monthly_overage"
+                             "is" "not" "null" "then" "monthly_overage" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
+
+(define (test91)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "monthly_overage"
+                             "is" "not" "null" "and" "terms" "is" "A" "then" "monthly_overage" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
+
+(define (test92)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("if" "length" "(" "monthly_overage" ")"
+                             ">" "0" "and" "terms" "is" "A" "then" "monthly_overage" "else" "0")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
+
+(define (test93)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("price_per_unit" "over" "monthly_overage")))
+           (columnMetadata '((columnName "terms" primitiveTypes (1)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
+
+(define (test94)
+  (letrec ((p (apply make-parser '("terms" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("terms" "is" "'battle tested'" "'")))
+           (columnMetadata '((columnName "terms" primitiveTypes (3)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))
