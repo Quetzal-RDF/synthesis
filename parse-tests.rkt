@@ -641,3 +641,17 @@
   (letrec ((p (apply make-parser '("A" "B" "C")))
            (result (p '("if" "A" "==" "B" "then" "null" "else" 4))))
     (println result)))
+
+(define (test99)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("if" "A" "is" "not" "null" "then" "B" "else" 4))))
+    (println result)))
+
+(define (test100)
+  (letrec ((p (apply make-parser '("total time" "price_per_unit" "min_units" "top99p" "monthly_overage")))
+           (result (p '("sum" "of" "total time" "by" "min_units" "and" "monthly_overage")))
+           (columnMetadata '((columnName "terms" primitiveTypes (3)) (columnName "price_per_unit" primitiveTypes (1))
+                                                                     (columnName "min_units" primitiveTypes (1))(columnName "top99p" primitiveTypes (1))
+                                                                     (columnName "monthly_overage" primitiveTypes (1)))))
+    (println result)
+    (println (length result))))

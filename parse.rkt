@@ -319,11 +319,6 @@
     (define parse-binary-expr 
       (parse-binary-stuff parse-unary-expr parse-binary-op))
 
-    (define parse-comparison-op (parse-op '(<= >= < > != =)))
-
-    (define parse-comparison-expr
-      (parse-binary-stuff parse-binary-expr parse-comparison-op))
-
     (define (template-parser templates parse-next)
       (lambda (xtokens)
         (for/all ([tokens xtokens])
@@ -362,12 +357,17 @@
                   v))))))
 
     (define parse-tighter-templates
-      (template-parser templates-tighter-than-and parse-comparison-expr))
-    
+      (template-parser templates-tighter-than-and parse-binary-expr))
+
+    (define parse-comparison-op (parse-op '(<= >= < > != =)))
+
+    (define parse-comparison-expr
+      (parse-binary-stuff parse-tighter-templates parse-comparison-op))
+
     (define parse-andor-op (parse-op '(and or)))
 
     (define parse-andor-expr
-      (parse-binary-stuff parse-tighter-templates parse-andor-op))
+      (parse-binary-stuff parse-comparison-expr parse-andor-op))
 
     (define (parse-if xtokens)
       (for/all ([tokens xtokens])
