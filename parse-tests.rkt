@@ -647,6 +647,7 @@
            (result (p '("if" "A" "is" "not" "null" "then" "B" "else" 4))))
     (println result)))
 
+
 (define (test100)
   (letrec ((p (apply make-parser '("total time" "price_per_unit" "min_units" "top99p" "monthly_overage")))
            (result (p '("sum" "of" "total time" "by" "min_units" "and" "monthly_overage")))
@@ -655,3 +656,23 @@
                                                                      (columnName "monthly_overage" primitiveTypes (1)))))
     (println result)
     (println (length result))))
+
+(define (test101)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("date" 20 "days" 2 "months" 1969 "years"))))
+    (println result)))
+
+(define (test102)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("date" "(" "2" "11" "1969" ")"))))
+    (println result)))
+
+(define (test103)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("date" "(" "2" "," "11" "," "1969" ")"))))
+    (println result)))
+
+(define (test104)
+  (letrec ((p (apply make-parser '("A" "B" "C")))
+           (result (p '("time" "(" "2" "," "11" "," "1969" ")"))))
+    (println result)))

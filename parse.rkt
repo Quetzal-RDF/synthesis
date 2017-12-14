@@ -138,6 +138,8 @@
             (subtract-months ("subtract" "months")("subtract" "months" "from"))
             (subtract-years ("subtract" "years")("subtract" "years" "from"))
             (round ("round")("round" "up")("round" "off"))
+            (create-date ("date")("make" "date"))
+            (create-time ("time")("make" "time"))
             (between ("between"))
             (add ("add"))
             (subtract ("subtract"))
@@ -155,7 +157,7 @@
             )))
          (templates (append
                      (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
-                     (ternary-function-forms between replace substring)
+                     (ternary-function-forms between replace substring create-date create-time)
                      (binary-function-forms index-of exponent add-seconds add-minutes add-hours add-days add-months
                                            add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list)
                      (unary-function-forms group-concat is-null is-not-null abs round ceiling floor truncate sign logarithm natural-logarithm
@@ -164,6 +166,9 @@
                      (list
                       (list '(index-of () "in" ()) (lambda (x) (list 'index-of (list-ref x 1) (list-ref x 3))))
                       (list '(substring-first "from" () substring-start () substring-end ()) (lambda (x) (list 'substring (list-ref x 2) (list-ref x 4) (list-ref x 6))))
+                      (list '(create-date () "days" () "months" () "years") (lambda (x) (list 'create-date (list-ref x 1) (list-ref x 3) (list-ref x 5))))
+                      (list '(create-time () "hours" () "minutes" () "seconds") (lambda (x) (list 'create-time (list-ref x 1) (list-ref x 3) (list-ref x 5))))
+ 
                       (list '(concat () concatenate-with ()) (lambda (x) (list 'concat (list-ref x 1) (list-ref x 3))))
                       (list '(add () "seconds" "to" ()) (lambda (x) (list 'add-seconds (list-ref x 1)(list-ref x 4))))
                       (list '(add () "minutes" "to" ()) (lambda (x) (list 'add-minutes (list-ref x 1)(list-ref x 4))))

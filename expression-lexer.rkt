@@ -166,7 +166,7 @@
     [(seq (:or #\' #\") (:* (:or (char-range #\a #\z) (char-range #\A #\Z) (char-range #\0 #\9) #\_ #\ )) (:or #\' #\")) (trim-first-last-chars lexeme)]
     [(seq (char-range #\0 #\9) (char-range #\0 #\9) (:or #\/ #\-) (char-range #\0 #\9) (char-range #\0 #\9)  (:or #\/ #\-) (char-range #\0 #\9) (char-range #\0 #\9)(char-range #\0 #\9) (char-range #\0 #\9) ) lexeme]
     [(seq (:? (:or #\- #\+)) (:+ (char-range #\0 #\9)) (:? (seq #\. (:+ (char-range #\0 #\9))))) lexeme]
-    [(seq (:? (:or #\- #\+)) (:+ (seq #\. (:+ (char-range #\0 #\9))))) lexeme]
+    [(seq (:? (:or #\- #\+)) (seq #\. (:+ (char-range #\0 #\9)))) lexeme]
    ))
 
 (define (lex in)
