@@ -676,3 +676,19 @@
   (letrec ((p (apply make-parser '("A" "B" "C")))
            (result (p '("time" "(" "2" "," "11" "," "1969" ")"))))
     (println result)))
+
+(define (test105)
+  (letrec ((p (apply make-parser '("Start Date")))
+           (result (p '("if" "(" "day" "Start Date" ">" "15" ")" "then" "date" "1" "day" "(" "month" "Start Date" "+" "1" ")" "year" "Start Date" "else"
+                             "date" "1" "days" "month" "Start Date" "year" "Start Date"))))
+    (println result)))
+
+(define (test106)
+  (letrec ((p (apply make-parser '("Start Date")))
+           (result (p '("if" "(" "epoch" "Start Date" ">" "15" ")" "then" "Start Date" "else" "Start Date"))))
+    (println result)))
+
+(define (test107)
+  (letrec ((p (apply make-parser '("Start Date")))
+           (result (p '("if" "(" "index" "of" "Start Date" "foo" ")" ">" "15" "then" "Start Date" "else" "Start Date"))))
+    (println result)))
