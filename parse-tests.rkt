@@ -679,9 +679,11 @@
 
 (define (test105)
   (letrec ((p (apply make-parser '("Start Date")))
-           (result (p '("if" "(" "day" "Start Date" ">" "15" ")" "then" "date" "1" "day" "(" "month" "Start Date" "+" "1" ")" "year" "Start Date" "else"
-                             "date" "1" "days" "month" "Start Date" "year" "Start Date"))))
-    (println result)))
+           (result (p '("if" "(" "day" "Start Date" ")" ">" "15" "then" "(" "date" "1" "days" "(" "month" "Start Date" ")" "+" "1" "months"
+                             "(" "year" "Start Date" ")" "years" ")" "else"
+                             "(" "date" "1" "days" "(" "month" "Start Date" ")" "months" "(" "year" "Start Date" ")" "years" ")"))))
+    (println result)
+    (println (length result))))
 
 (define (test106)
   (letrec ((p (apply make-parser '("Start Date")))
@@ -692,3 +694,31 @@
   (letrec ((p (apply make-parser '("Start Date")))
            (result (p '("if" "(" "index" "of" "Start Date" "foo" ")" ">" "15" "then" "Start Date" "else" "Start Date"))))
     (println result)))
+
+(define (test108)
+    (letrec ((p (apply make-parser '("Start Date" "Term Date")))
+           (result (p '("date" "1" "days" "(" "month" "Start Date" ")" "+" "(" "round" "Term Date" "-" "Start Date" "/" "30" ")" "+" "1"
+                               "months" "(" "year" "Start Date" ")" "years"))))
+    (println result)))
+
+(define (test109)
+    (letrec ((p (apply make-parser '("Start Date" "Term Date")))
+           (result (p '( "date" "1" "days" "(" "month" "Start Date" ")" "+" "1" "months" "(" "year" "Start Date" ")" "years"))))
+    (println result)
+    (println (length result))))
+
+(define (test110)
+    (letrec ((p (apply make-parser '("Start Date" "Term Date")))
+           (result (p '( "date" "1" "days" "(" "month" "Start Date" ")" "months" "(" "year" "Start Date" ")" "years"))))
+    (println result)))
+
+(define (test111)
+    (letrec ((p (apply make-parser '("Start Date" "Term Date")))
+           (result (p '( "Start Date" - "Term Date"))))
+    (println result)))
+
+(define (test112)
+    (letrec ((p (apply make-parser '("Start Date" "Organization")))
+           (result (p '( "sum" "(" "if" "Start Date" ">" "12-3-2015" "then" "Start Date" "else" "0" ")" "by" "Organization"))))
+    (println result)))
+

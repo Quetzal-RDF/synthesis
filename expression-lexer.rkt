@@ -193,4 +193,13 @@
 (define (test5)
   (lex (open-input-string "foo*.03")))
 
+(define (test7)
+  (lex (open-input-string "customer_tier = 'Tier 0' or customer_tier = 'Tier 1' and MRR is greater than 2000")))
+
+(define (test8)
+  (lex (open-input-string "sum (if 'Start Date' > 12-3-2015 then 'Start Date' else 0) by organization")))
+
+(define (test9)
+  (lex (open-input-string "sum if Start_Date 2.3 >12/03/2015 then 'Start Date' else 0 by organization")))
+
 (provide lex)
