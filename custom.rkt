@@ -447,7 +447,7 @@
          (models (if (and m (>= (length m) 1)) m (generate-models (cdr (cadr f)) (cdr (caddr f)) extra))))
     (assert (>= (length models) 1))
     (map (lambda (x y)
-           (append x (list y) (list (car f))))
+           (append x (list y) (list (evaluate (car f) (cadr models)))))
          (evaluate (cdr (cadr (cddr f))) (cadr models))
          (car models))))
 

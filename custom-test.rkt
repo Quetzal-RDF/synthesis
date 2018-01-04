@@ -353,4 +353,16 @@
          (symbolics (parse-column-metadata col)))
             (generate-data (lex (open-input-string "average if terms = Committed then price_per_server * min_servers else flat_rate"))
                    symbolics col)))
+
+(define (test21)
+  (let* ((col '((columnName "col1" primitiveTypes (1)) (columnName "col2" primitiveTypes (1)) (columnName "col3" primitiveTypes (1))))
+         (symbolics (parse-column-metadata col)))
+            (generate-data (lex (open-input-string "if col1=4 if col2=2 then 4 else col3"))
+                   symbolics col)))
+
+(define (test22)
+  (let* ((col '((columnName "col1" primitiveTypes (1)) (columnName "col2" primitiveTypes (1)) (columnName "col3" primitiveTypes (1))))
+         (symbolics (parse-column-metadata col)))
+            (generate-data (lex (open-input-string "if col1=4 then if col2=2 then 4 else col3"))
+                   symbolics col)))
  

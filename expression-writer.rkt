@@ -208,7 +208,9 @@
                           [(equal? "BinaryExpression" (list-ref exp 1))
                            (apply hasheq (append base (list 'lhs (print-tree (list-ref node 1)) 'rhs (print-tree (list-ref node 2)))))]
                           [(equal? "TernaryExpression" (list-ref exp 1))
-                           (apply hasheq (append base (list 'one (print-tree (list-ref node 1)) 'two (print-tree (list-ref node 2)) 'three (print-tree (list-ref node 3)))))]))
+                           (if (= (length node) 4)
+                               (apply hasheq (append base (list 'one (print-tree (list-ref node 1)) 'two (print-tree (list-ref node 2)) 'three (print-tree (list-ref node 3)))))
+                               (apply hasheq (append base (list 'one (print-tree (list-ref node 1)) 'two (print-tree (list-ref node 2))))))]))
                   (apply hasheq (create-value-exp node))))))
     (print-tree tree)))
 

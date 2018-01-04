@@ -60,20 +60,19 @@
 (define (parse-post response)
   (bytes->jsexpr response))
 
-(define (parse-column-metadata p)
-  (letrec ((m (read (open-input-string (hash-ref p 'columnMetadata)))))
-    (for/list ([i m])
-      (let ((type (car (list-ref i 3)))
-            (colName (cadr i)))
-	(if (= type 2)
-	    (for/vector ([elt '("s" "m" "h" "dy" "mn" "yr")])
-	       (val (make-col-name-for-date colName elt) integer?))
-	  (val (make-col-name colName)
-	       (cond [(= type 1) integer?]
-		     [(= type 3) string?]
-		     [(= type 4) boolean?]
-		     [(= type 5) real?]
-		     [#t string?])))))))
+(define (parse-column-metadata m)
+  (for/list ([i m])
+    (let ((type (car (list-ref i 3)))
+          (colName (cadr i)))
+      (if (= type 2)
+          (for/vector ([elt '("s" "m" "h" "dy" "mn" "yr")])
+            (val (make-col-name-for-date colName elt) integer?))
+          (val (make-col-name colName)
+               (cond [(= type 1) integer?]
+                     [(= type 3) string?]
+                     [(= type 4) boolean?]
+                     [(= type 5) real?]
+                     [#t string?]))))))
 
 (define (json-response-maker status headers body)
   (println (jsexpr->string body))
@@ -91,7 +90,7 @@
            (output (read (open-input-string (hash-ref parsed 'outputStr))))
            (query (lex (open-input-string (hash-ref parsed 'query))))
            (columnMetadata (read (open-input-string (hash-ref parsed 'columnMetadata))))
-           (symbolics (parse-column-metadata parsed)))
+           (symbolics (parse-column-metadata columnMetadata)))
     (println input)
     (println output)
     (println query)
@@ -121,11 +120,10 @@
   (map cadr columnMetadata))
 
 (define (parse request)
-   (let* ((parsed request)
-          (parsed (parse-post (request-post-data/raw request)))
+   (let* ((parsed (parse-post (request-post-data/raw request)))
             (query (lex (open-input-string (hash-ref parsed 'queryDef))))
             (columnMetadata (read (open-input-string (hash-ref parsed 'columnMetadata))))
-            (symbolics (parse-column-metadata parsed))
+            (symbolics (parse-column-metadata columnMetadata))
             (cols (columns columnMetadata))
             (parser (apply make-parser cols))
             (result (parser query)))
@@ -145,19 +143,6 @@
        (send/back
         (json-response-maker 202 '() h)))))
 
-
-(define (parse-column-metadata2 p)
- (for/list ([i p])
-      (let ((type (car (list-ref i 3)))
-            (colName (cadr i)))
-        (val (string->symbol colName)
-             (cond [(= type 1) integer?]
-                   ; type 2 is a date and needs to be changed because a symblic date type wont be accepted by Rosette
-                   [(= type 2) integer?]
-                   [(= type 3) string?]
-                   [(= type 4) boolean?]
-                   [(= type 5) real?]
-                   [#t string?])))))
 
 (define (log req)
   (println req)
