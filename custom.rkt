@@ -361,13 +361,15 @@
   (let* ((parse (apply make-parser (map ~a cols)))
          (stuff (parse text))
          (used-cols (gather-cols stuff cols))
-
          (parse-2 (apply make-parser (map ~a used-cols)))
-         (stuff-2 (parse-2 text))
-         
-         (fs (test-custom stuff-2 used-cols)))
-    (cons (gather-cols (map car fs) used-cols)
-          (map (lambda (f) (to-table f #t)) fs))))
+         (stuff-2 (parse-2 text)))
+    
+         (with-handlers ([exn:fail?
+                           (lambda (e) (cons used-cols '()))])
+           (let* ((fs (test-custom stuff-2 used-cols))
+                  (actual-cols (gather-cols (map car fs) used-cols)))
+             (cons actual-cols
+                   (map (lambda (f) (to-table f #t)) fs))))))
 
 (define (generate-models exprs controlss extra)
   (letrec ((solve (lambda (formula)
