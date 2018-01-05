@@ -10,10 +10,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.util.Util;
 import com.ibm.wala.cfg.cdg.ControlDependenceGraph;
@@ -171,13 +175,19 @@ public class SQLToGraph {
              .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
              (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-
+	  JSONObject json = new JSONObject();
 	  BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-	  writer.write("(");
 	  for (Map.Entry<Pair<String, String>, Integer> e: edgeCounts.entrySet()) {
-	    writer.write("(" + e.getKey().fst + " " + e.getKey().snd + " " + e.getValue() + ")");
+	    if (!json.has(e.getKey().fst)) {
+	      json.put(e.getKey().fst, new JSONArray());
+	    }
+	    JSONArray l = (JSONArray) json.get(e.getKey().fst);
+	    JSONObject obj = new JSONObject();
+	    obj.put("target", e.getKey().snd);
+	    obj.put("count",  e.getValue());
+	    l.put(obj);
 	  }
-	  writer.write(")");
+	  json.write(writer);
 	  writer.close();
 	}
 
