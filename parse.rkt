@@ -143,6 +143,15 @@
             (between ("between"))
             (add ("add"))
             (subtract ("subtract"))
+            (set-to-first-day-of-month ("set" "date" "to" "first" "day")("set" "date" "to" "first" "day" "of" "month")("set" "to" "first" "day")("set" "to" "first" "day" "of" "month"))
+            (set-to-last-day-of-month ("set" "date" "to" "last" "day")("set" "date" "to" "last" "day" "of" "month")("set" "to" "last" "day")("set" "to" "last" "day" "of" "month"))
+            (set-to-first-month ("set" "date" "to" "first" "month")("set" "to" "first" "month"))
+            (set-to-last-month ("set" "date" "to" "last" "month")("set" "to" "last" "month"))
+            (set-to-next-day ("set" "date" "to" "next" "day")("set" "to" "next" "day"))
+            (set-to-next-month ("set" "date" "to" "next" "month")("set" "to" "next" "month"))
+            (set-to-previous-day ("set" "date" "to" "previous" "day")("set" "to" "previous" "day"))
+            (set-to-previous-month ("set" "date" "to" "previous" "month")("set" "to" "previous" "month"))
+            (of ("of")("in"))
             (group ("group") ("group" "by") ("grouped" "by") ("organize" "by") ("organized" "by") ("cluster" "by") ("clustered" "by") ("by") ("based" "on"))))
          (reserved (filter string? (flatten keywords)))
          (templates-tighter-than-and
@@ -161,7 +170,8 @@
                      (binary-function-forms index-of exponent add-seconds add-minutes add-hours add-days add-months
                                            add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list)
                      (unary-function-forms group-concat is-null is-not-null abs round ceiling floor truncate sign logarithm natural-logarithm
-                                           sqrt upper lower length trim avg min max count sum not) 
+                                           sqrt upper lower length trim avg min max count sum not set-to-first-day-of-month set-to-last-day-of-month
+                                           set-to-first-month set-to-last-month set-to-next-day set-to-next-month set-to-previous-day set-to-previous-month) 
                      (nullary-function-forms now)
                      (list
                       (list '(index-of () "in" ()) (lambda (x) (list 'index-of (list-ref x 1) (list-ref x 3))))
@@ -202,7 +212,12 @@
                       (list '("date" "from" ()) (lambda (x) (list 'date-from-epoch (list-ref x 2))))
                       (list '(extract "day" "of" "year" "from" ()) (lambda (x) (list 'extract-day-of-year (list-ref x 5))))
                       (list '(extract "day" "of" "week" "from" ()) (lambda (x) (list 'extract-day-of-week (list-ref x 5))))        
-                                
+                      (list '("set" "seconds" of () "to" ()) (lambda (x) (list 'set-seconds-to (list-ref x 3)(list-ref x 5))))        
+                      (list '("set" "minutes" of () "to" ()) (lambda (x) (list 'set-minutes-to (list-ref x 3)(list-ref x 5))))        
+                      (list '("set" "hours" of () "to" ()) (lambda (x) (list 'set-hours-to (list-ref x 3)(list-ref x 5))))        
+                      (list '("set" "days" of () "to" ()) (lambda (x) (list 'set-days-to (list-ref x 3)(list-ref x 5))))        
+                      (list '("set" "months" of () "to" ()) (lambda (x) (list 'set-months-to (list-ref x 3)(list-ref x 5))))        
+                      (list '("set" "years" of () "to" ()) (lambda (x) (list 'set-years-to (list-ref x 3)(list-ref x 5))))        
                       ))))
 
     ; val-f is applied to every element of the list

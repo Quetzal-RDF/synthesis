@@ -305,6 +305,78 @@
                    7)))
       (vector-ref days-of-week dow))))
 
+; simple functions for setting various subfields in dates
+(define (set-to-first-day-of-month date)
+  (let ((d (copy-date date)))
+    (set-field d "days" 1)
+    d))
+
+(define (set-to-last-day-of-month date)
+  (let ((d (copy-date date)))
+    (set-field d "days" (num-days-in-month date))
+    d))
+
+(define (set-to-first-month date)
+  (let ((d (copy-date date)))
+    (set-field d "months" 1)
+    d))
+
+(define (set-to-last-month date)
+  (let ((d (copy-date date)))
+    (set-field d "months" 12)
+    d))
+
+(define (set-to-next-day date)
+  (let ((d (copy-date date)))
+    (add-days d 1)
+    d))
+
+(define (set-to-next-month date)
+  (let ((d (copy-date date)))
+    (add-months d 1)
+    d))
+
+(define (set-to-previous-day date)
+  (let ((d (copy-date date)))
+    (subtract-days d 1)
+    d))
+
+(define (set-to-previous-month date)
+  (let ((d (copy-date date)))
+    (subtract-months d 1)
+    d))
+
+(define (set-seconds-to date seconds)
+  (let ((d (copy-date date)))
+    (set-field d "seconds" seconds)
+    d))
+
+(define (set-minutes-to date minutes)
+  (let ((d (copy-date date)))
+    (set-field d "minutes" minutes)
+    d))
+
+(define (set-hours-to date hours)
+  (let ((d (copy-date date)))
+    (set-field d "hours" hours)
+    d))
+
+(define (set-days-to date days)
+  (let ((d (copy-date date)))
+    (set-field d "days" days)
+    d))
+
+(define (set-months-to date months)
+  (let ((d (copy-date date)))
+    (set-field d "months" months)
+    d))
+
+(define (set-years-to date years)
+  (let ((d (copy-date date)))
+    (set-field d "years" years)
+    d))
+
 (provide new-date add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours subtract-days subtract-months subtract-years
          set-field get-field is-leap create-date extract-date-from-epoch date-subtract date-le date-ge date-lt date-gt date-equal extract-seconds extract-minutes extract-hours extract-days extract-months extract-years
-         copy-date extract-day-of-year extract-epoch extract-day-of-week)
+         copy-date extract-day-of-year extract-epoch extract-day-of-week set-seconds-to set-minutes-to set-hours-to set-days-to set-months-to set-years-to set-to-first-day-of-month set-to-last-day-of-month set-to-first-month set-to-last-month
+         set-to-next-day set-to-next-month set-to-previous-day set-to-previous-month)

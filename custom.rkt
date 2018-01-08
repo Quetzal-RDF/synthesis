@@ -60,6 +60,20 @@
            (list (append (car l) (car r))
                  (list 'send 'p 'basic-binary op (cadr l) (cadr r))
                  'number))]
+        [(set-seconds-to set-minutes-to set-hours-to set-days-to set-months-to set-years-to)
+         (let ((op (car form))
+               (l (to-custom-int (second form) (cons 1 nested-pos)))
+               (r (to-custom-int (third form) (cons 2 nested-pos))))
+           (list (append (car l) (car r))
+                 (list 'send 'p 'basic-binary op (cadr l) (cadr r))
+                 'date))]
+        [(set-to-first-day-of-month set-to-last-day-of-month set-to-first-month set-to-last-month
+                                    set-to-next-day set-to-next-month set-to-previous-day set-to-previous-month)
+         (let ((op (car form))
+               (v (to-custom-int (second form) (cons 1 nested-pos))))
+           (list (car v)
+                 (list 'send 'p 'basic-unary op (cadr v))
+                 'date))]
         [(sum average min max)
          (let ((op (car form))
                (e (to-custom-int (second form) (cons 1 nested-pos))))
@@ -365,7 +379,7 @@
          (stuff-2 (parse-2 text)))
     
          (with-handlers ([exn:fail?
-                           (lambda (e) (cons used-cols '()))])
+                          (lambda (e) (cons used-cols '()))])
            (let* ((fs (test-custom stuff-2 used-cols))
                   (actual-cols (gather-cols (map car fs) used-cols)))
              (cons actual-cols

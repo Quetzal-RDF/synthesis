@@ -104,7 +104,7 @@
 
 (define (prep-table-for-json table colMetadata symbolics)
   (let ((header (car table))
-        (rows (cadr table))
+        (rows (if (null? (cdr table)) '() (cadr table)))
         (replace-exp (lambda (lst)
                        (println (last lst))
                        (append (take lst (- (length lst) 1))
