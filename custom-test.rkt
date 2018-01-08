@@ -365,4 +365,11 @@
          (symbolics (parse-column-metadata col)))
             (generate-data (lex (open-input-string "if col1=4 then if col2=2 then 4 else col3"))
                    symbolics col)))
+
+(define (test23)
+  (let* ((col '((columnName "Hourly overage" primitiveTypes (1)) (columnName "Is_Valid" primitiveTypes (4)) (columnName "Min servers" primitiveTypes (1)) (columnName "Notes" primitiveTypes (3)) (columnName "Pay_Cycle" primitiveTypes (3)) (columnName "Pay_Method" primitiveTypes (3)) (columnName "Price_Per_Server" primitiveTypes (1)) (columnName "Terms" primitiveTypes (3)) (columnName "Valid_From" primitiveTypes (2)) (columnName "Valid_To" primitiveTypes (2)) (columnName "agent_first_count" primitiveTypes (1)) (columnName "agent_hwm" primitiveTypes (1)) (columnName "agent_last_count" primitiveTypes (1)) (columnName "agent_lwm" primitiveTypes (1)) (columnName "average" primitiveTypes (1)) (columnName "aws_lwm" primitiveTypes (1)) (columnName "aws_first_count" primitiveTypes (1)) (columnName "aws_hwm" primitiveTypes (1)) (columnName "aws_last_count" primitiveTypes (1)) (columnName "elapsed_hours" primitiveTypes (1)) (columnName "first_count" primitiveTypes (1)) (columnName "first_hour" primitiveTypes (2)) (columnName "hwm" primitiveTypes (1)) (columnName "last_count" primitiveTypes (1)) (columnName "last_hour" primitiveTypes (2)) (columnName "lwm" primitiveTypes (1)) (columnName "server_hours" primitiveTypes (1)) (columnName "std_dev" primitiveTypes (1)) (columnName "top13" primitiveTypes (1)) (columnName "top25" primitiveTypes (1)) (columnName "top95p" primitiveTypes (1)) (columnName "top99p" primitiveTypes (1)) (columnName "std_plan_billable_hours" primitiveTypes (1)) (columnName "MRR" primitiveTypes (1))))
+         (symbolics (parse-column-metadata col)))
+    (print (lex (open-input-string "if Terms is Committed and 'Hourly overage'  is not blank then 'Hourly overage' else 0 else 99")))
+    (generate-data (lex (open-input-string "if Terms is Committed and 'Hourly overage'  is not blank then 'Hourly overage' else 0 else 99"))
+                   symbolics col)))
  
