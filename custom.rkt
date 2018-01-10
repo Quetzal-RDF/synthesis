@@ -7,6 +7,7 @@
 (require "expression-lexer.rkt")
 (require "expression-writer.rkt")
 (require "dates.rkt")
+(require "utils.rkt")
 (require rosette/solver/smt/z3)
 
 (define-namespace-anchor anc)
@@ -371,19 +372,21 @@
                        (union-contents (cadr f))))))
               fs))))
 
-(define (generate-data text cols columnMetadata)
-  (let* ((parse (apply make-parser (map ~a cols)))
+(define (generate-data text cols columnNames)
+  (let* ((parse (apply make-parser columnNames))
          (stuff (parse text))
-         (used-cols (gather-cols stuff cols))
-         (parse-2 (apply make-parser (map ~a used-cols)))
+         (used-cols (gather-cols stuff columnNames))
+         (used-symbolics (gather-cols stuff cols))
+         (parse-2 (apply make-parser used-cols))
          (stuff-2 (parse-2 text)))
-    
-         (with-handlers ([exn:fail?
-                          (lambda (e) (cons used-cols '()))])
-           (let* ((fs (test-custom stuff-2 used-cols))
+    (println used-symbolics)
+;         (with-handlers ([exn:fail?
+;                          (lambda (e) (cons used-cols '()))])
+           (let* ((fs (test-custom stuff-2 used-symbolics))
                   (actual-cols (gather-cols (map car fs) used-cols)))
+            
              (cons actual-cols
-                   (map (lambda (f) (to-table f #t)) fs))))))
+                   (apply append (map (lambda (f) (to-table f #t)) fs)))))) ;)
 
 (define (generate-models exprs controlss extra)
   (letrec ((solve (lambda (formula)
@@ -486,7 +489,7 @@
 
 (define (parse-column-metadata p)
   (let ((sym (lambda (colName type)
-               (val (string->symbol colName)
+               (val (make-col-name colName)
                     (cond [(= type 1) integer?]
                           [(= type 3) string?]
                           [(= type 4) boolean?]

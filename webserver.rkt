@@ -60,19 +60,6 @@
 (define (parse-post response)
   (bytes->jsexpr response))
 
-(define (parse-column-metadata m)
-  (for/list ([i m])
-    (let ((type (car (list-ref i 3)))
-          (colName (cadr i)))
-      (if (= type 2)
-          (for/vector ([elt '("s" "m" "h" "dy" "mn" "yr")])
-            (val (make-col-name-for-date colName elt) integer?))
-          (val (make-col-name colName)
-               (cond [(= type 1) integer?]
-                     [(= type 3) string?]
-                     [(= type 4) boolean?]
-                     [(= type 5) real?]
-                     [#t string?]))))))
 
 (define (json-response-maker status headers body)
   (println (jsexpr->string body))
@@ -90,30 +77,41 @@
            (output (read (open-input-string (hash-ref parsed 'outputStr))))
            (query (lex (open-input-string (hash-ref parsed 'query))))
            (columnMetadata (read (open-input-string (hash-ref parsed 'columnMetadata))))
-           (symbolics (parse-column-metadata columnMetadata)))
+           (symbolics (parse-column-metadata columnMetadata))
+           (cols (columns columnMetadata))
+           (parser (apply make-parser cols))
+           (result (parser query)))
     (println input)
     (println output)
     (println query)
     (println columnMetadata)
     (println symbolics)
-    ; analyze returns multiple solutions, support only 1 solution for now
-    (let ((result (car (apply analyze-custom query output symbolics input))))
-      (let ((h (hasheq 'html (to-html (cadr result) columnMetadata) 'json (jsonify (cadr result) columnMetadata))))
-        (send/back
-         (json-response-maker 202 '() h))))))
+    ; try parse again - if the parse works we are done
+    (let ((h (if (= 1 (length result))
+                 (hasheq 'html (to-html (car result) columnMetadata)
+                         'json (jsonify (car result) columnMetadata))
+                 (let ((res (car (apply analyze-custom query output symbolics input))))
+                   (if (null? res)
+                       (hasheq 'html (to-html (cadr result) columnMetadata))
+                       (hasheq 'html (to-html (cadr result) columnMetadata) 'json (jsonify (cadr res) columnMetadata)))))))
+      (println h)
+      ; analyze returns multiple solutions, support only 1 solution for now
+      (send/back
+       (json-response-maker 202 '() h)))))
+
 
 (define (prep-table-for-json table colMetadata symbolics)
-  (let ((header (car table))
-        (rows (if (null? (cdr table)) '() (cadr table)))
-        (replace-exp (lambda (lst)
+  (let* ((header (car table))
+         (rows (if (null? (cdr table)) '() (cdr table)))
+         (index (lambda (x) (index-of header (cadr x))))
+         (compare (lambda (x y) (<  (index x) (index y))))
+         (used-cols (sort (filter (lambda(x) (member (list-ref x 1) header)) colMetadata) compare))
+         (replace-exp (lambda (lst)
                        (println (last lst))
                        (append (take lst (- (length lst) 1))
-                               (list (to-html (last lst) colMetadata)))))
-        (replace-constant (lambda (x)
-                          (let ((i (index-of symbolics x)))
-                            (cadr (list-ref colMetadata i))))))
-    (println (constant? (car header)))
-    (cons (map replace-constant header)
+                               (list (to-html (last lst) used-cols))))))
+    (println used-cols)
+    (cons header
           (map replace-exp rows))))
 
 (define (columns columnMetadata)
@@ -136,7 +134,7 @@
      (let ((h (if (= 1 (length result))
                   (hasheq 'html (to-html (car result) columnMetadata)
                           'json (jsonify (car result) columnMetadata))
-                  (let ((sample (prep-table-for-json (generate-data query symbolics columnMetadata) columnMetadata symbolics)))
+                  (let ((sample (prep-table-for-json (generate-data query symbolics cols) columnMetadata symbolics)))
                     (hasheq 'html (string-join (map (lambda (x) (to-html x columnMetadata)) result))
                             'table sample)))))
        (println h)
