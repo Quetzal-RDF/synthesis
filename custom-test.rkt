@@ -392,5 +392,7 @@
            (outputstr (map (lambda(row) (list-ref row 5)) rows))
            (syb (map (lambda(x) (val (make-col-name x) integer?)) header)))
       (println syb)
+      (println inputstr)
+      (println outputstr)
       (apply analyze-custom text outputstr header syb inputstr))))
  
