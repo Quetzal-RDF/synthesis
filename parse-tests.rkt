@@ -722,3 +722,20 @@
            (result (p '( "sum" "(" "if" "Start Date" ">" "12-3-2015" "then" "Start Date" "else" "0" ")" "by" "Organization"))))
     (println result)))
 
+(define (test113)
+  (letrec ((p (apply make-parser '("Hourly overage" "Is_Valid" "Min servers" "Notes" "Pay_Cycle" "Pay_Method" "Price_Per_Server" "Terms" "Valid_From" "Valid_To" "agent_first_count" "agent_hwm" "agent_last_count" "agent_lwm" "average" "aws_lwm" "aws_first_count" "aws_hwm" "aws_last_count" "elapsed_hours" "first_count" "first_hour" "hwm" "last_count" "last_hour" "lwm" "server_hours" "std_dev" "top13" "top25" "top95p" "top99p" "std_plan_billable_hours" "MRR")))
+           (result (p '("if" "Terms" "is" "Committed" "and" "Hourly overage" "is" "not" "blank" "then" "Hourly overage" "else" "0" "else" "99"))))
+    (println result)
+    (println (length result))))
+
+(define (test114)
+    (letrec ((p (apply make-parser '("col1")))
+           (result (p '("set" "date" "to" "next" "month" "(" "col1" ")"))))
+    (println result)
+    (println (length result))))
+
+(define (test115)
+    (letrec ((p (apply make-parser '("Hourly overage" "Monthly overage" "Is_Valid" "Min servers" "Notes" "Pay_Cycle" "Pay_Method" "Price_Per_Server" "Price per server" "Terms" "Valid_From" "Valid_To" "agent_first_count" "agent_hwm" "agent_last_count" "agent_lwm" "average" "aws_lwm" "aws_first_count" "aws_hwm" "aws_last_count" "elapsed_hours" "first_count" "first_hour" "hwm" "last_count" "last_hour" "lwm" "server_hours" "std_dev" "top13" "top25" "top95p" "top99p" "std_plan_billable_hours" "MRR")))
+           (result (p '("if" "Terms" "=" "Committed" "then" "Price_Per_Server" "*" "Min servers" "otherwise" "0" "otherwise" "if" "Terms" "=" "Standard" "then" "top99p" "*" "Price_Per_Server" "plus" "Monthly overage" "otherwise" "0"))))
+    (println result)
+    (println (length result))))

@@ -1,5 +1,6 @@
 #lang racket
 
+; escape parens, vertical bars, semi-column , white space, commas
 (define (make-col-name colName)
   (string->symbol (string-replace colName " " "_" #:all? #t)))
 
