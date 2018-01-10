@@ -346,11 +346,12 @@
                                    (#t (cons (car l) (add e (cdr l))))))))
                (add fs hs))))))
 
-(define (analyze-custom text outputs symbolic . inputs)
-  (let* ((parse (apply make-parser (map ~a symbolic)))
+(define (analyze-custom text outputs columnNames symbolic . inputs)
+  (let* ((parse (apply make-parser columnNames))
          (stuff (parse text))
-         (custom (make-custom-table stuff (map ~a symbolic)))
+         (custom (make-custom-table stuff columnNames))
          (start (length (remove-duplicates (apply append (hash-values custom))))))
+    (println stuff)
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
 (define (get-rows fs)
