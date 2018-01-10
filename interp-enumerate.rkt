@@ -668,9 +668,9 @@
       (for/list ([p processors] [l left] [r right])
         (send p basic-binary f l r)))
     
-    (define/public (is-null-v? mbs vs pos)
-      (for/list ([p processors] [mb mbs] [v vs])
-        (send p is-null? mb v pos)))
+    (define/public (is-null-v? mb vs pos)
+      (for/list ([p processors] [v vs])
+        (send p is-null-v? mb v pos)))
       
     (define/public (is-null? pos)
       (for/list ([p processors])
