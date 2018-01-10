@@ -379,9 +379,18 @@
                    symbolics (map cadr col))))
 
 (define (test25)
-  (let* ((col '((columnName "Hourly overage" primitiveTypes (1))(columnName "Monthly overage" primitiveTypes (1))(columnName "Is_Valid" primitiveTypes (4)) (columnName "Min servers" primitiveTypes (1)) (columnName "Notes" primitiveTypes (3)) (columnName "Pay_Cycle" primitiveTypes (3))
-                                                                 (columnName "Pay_Method" primitiveTypes (3)) (columnName "Price Per Server" primitiveTypes (1)) (columnName "Terms" primitiveTypes (3)) (columnName "Valid_From" primitiveTypes (2)) (columnName "Valid_To" primitiveTypes (2)) (columnName "agent_first_count" primitiveTypes (1)) (columnName "agent_hwm" primitiveTypes (1)) (columnName "agent_last_count" primitiveTypes (1)) (columnName "agent_lwm" primitiveTypes (1)) (columnName "average" primitiveTypes (1)) (columnName "aws_lwm" primitiveTypes (1)) (columnName "aws_first_count" primitiveTypes (1)) (columnName "aws_hwm" primitiveTypes (1)) (columnName "aws_last_count" primitiveTypes (1)) (columnName "elapsed_hours" primitiveTypes (1)) (columnName "first_count" primitiveTypes (1)) (columnName "first_hour" primitiveTypes (2)) (columnName "hwm" primitiveTypes (1)) (columnName "last_count" primitiveTypes (1)) (columnName "last_hour" primitiveTypes (2)) (columnName "lwm" primitiveTypes (1)) (columnName "server_hours" primitiveTypes (1)) (columnName "std_dev" primitiveTypes (1)) (columnName "top13" primitiveTypes (1)) (columnName "top25" primitiveTypes (1)) (columnName "top95p" primitiveTypes (1)) (columnName "top99p" primitiveTypes (1)) (columnName "std_plan_billable_hours" primitiveTypes (1)) (columnName "MRR" primitiveTypes (1))))
+  (let* ((col
+          '((columnName "Hourly overage" primitiveTypes (1))
+            (columnName "Monthly overage" primitiveTypes (1))(columnName "Is_Valid" primitiveTypes (4)) (columnName "Min servers" primitiveTypes (1)) (columnName "Notes" primitiveTypes (3)) (columnName "Pay_Cycle" primitiveTypes (3))
+            (columnName "Pay_Method" primitiveTypes (3)) (columnName "Price Per Server" primitiveTypes (1)) (columnName "Terms" primitiveTypes (3)) (columnName "Valid_From" primitiveTypes (2)) (columnName "Valid_To" primitiveTypes (2)) (columnName "agent_first_count" primitiveTypes (1)) (columnName "agent_hwm" primitiveTypes (1)) (columnName "agent_last_count" primitiveTypes (1)) (columnName "agent_lwm" primitiveTypes (1)) (columnName "average" primitiveTypes (1)) (columnName "aws_lwm" primitiveTypes (1)) (columnName "aws_first_count" primitiveTypes (1)) (columnName "aws_hwm" primitiveTypes (1)) (columnName "aws_last_count" primitiveTypes (1)) (columnName "elapsed_hours" primitiveTypes (1)) (columnName "first_count" primitiveTypes (1)) (columnName "first_hour" primitiveTypes (2)) (columnName "hwm" primitiveTypes (1)) (columnName "last_count" primitiveTypes (1)) (columnName "last_hour" primitiveTypes (2)) (columnName "lwm" primitiveTypes (1)) (columnName "server_hours" primitiveTypes (1)) (columnName "std_dev" primitiveTypes (1)) (columnName "top13" primitiveTypes (1)) (columnName "top25" primitiveTypes (1)) (columnName "top95p" primitiveTypes (1)) (columnName "top99p" primitiveTypes (1)) (columnName "std_plan_billable_hours" primitiveTypes (1)) (columnName "MRR" primitiveTypes (1))))
          (symbolics (parse-column-metadata col)))
-    (generate-data (lex (open-input-string "if Terms=Committed then 'Price Per Server' *  'Min servers' otherwise 0 otherwise if Terms=Standard then top99p * 'Price Per Server' plus 'Monthly overage' otherwise 0"))
-                   symbolics (map cadr col))))
+    (let* ((text (lex (open-input-string "if Terms=Committed then 'Price Per Server' *  'Min servers' otherwise 0 otherwise if Terms=Standard then top99p * 'Price Per Server' plus 'Monthly overage' otherwise 0")))
+           (table (generate-data text symbolics (map cadr col)))
+           (header '("Terms" "Price Per Server" "Min servers" "top99p" "Monthly overage"))
+           (rows (cdr table))
+           (inputstr (map (lambda(row) (take row 5)) rows))
+           (outputstr (map (lambda(row) (list-ref row 5)) rows))
+           (syb (map (lambda(x) (val (make-col-name x) integer?)) header)))
+      (println syb)
+      (apply analyze-custom text outputstr header syb inputstr))))
  
