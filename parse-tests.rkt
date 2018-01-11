@@ -739,3 +739,9 @@
            (result (p '("if" "Terms" "=" "Committed" "then" "Price_Per_Server" "*" "Min servers" "otherwise" "0" "otherwise" "if" "Terms" "=" "Standard" "then" "top99p" "*" "Price_Per_Server" "plus" "Monthly overage" "otherwise" "0"))))
     (println result)
     (println (length result))))
+
+(define (test116)
+    (letrec ((p (apply make-parser '("Hourly overage" "Monthly overage" "Is_Valid" "Min servers" "Notes" "Pay_Cycle" "Pay_Method" "Price_Per_Server" "Price per server" "Terms" "Valid_From" "Valid_To" "agent_first_count" "agent_hwm" "agent_last_count" "agent_lwm" "average" "aws_lwm" "aws_first_count" "aws_hwm" "aws_last_count" "elapsed_hours" "first_count" "first_hour" "hwm" "last_count" "last_hour" "lwm" "server_hours" "std_dev" "top13" "top25" "top95p" "top99p" "std_plan_billable_hours" "MRR")))
+           (result (p '("(" "if" "(" "Terms" "=" "Committed" ")" "then" "(" "Price_Per_Server" "*" "Min servers" ")" "otherwise" "if" "(" "Terms" "=" "Standard" ")" "then" "(" "(" "top99p" "*" "Price_Per_Server" ")" "plus" "Monthly overage" ")" "otherwise" "0" ")"))))
+    (println result)
+    (println (length result))))
