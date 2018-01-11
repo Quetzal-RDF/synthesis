@@ -287,7 +287,7 @@
           (if (equal? (car r) 'null)
               r
               (cond ((equal? "(" next)
-                     (let ((x (parse-if (cdr tokens))))
+                     (let ((x (parse-templates (cdr tokens))))
                        (if (and (car x) (equal? (cadr x) ")"))
                            (cons (car x) (cddr x))
                            (list #f tokens))))
