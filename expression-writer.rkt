@@ -133,7 +133,7 @@
 (hash-set! pretty 'floor "floor of expression")
 (hash-set! pretty 'truncate "truncated expression")
 (hash-set! pretty 'sign "sign of expression")
-(hash-set! pretty 'if "if one is true then two otherwise three")
+(hash-set! pretty 'if "if one then two otherwise three")
 (hash-set! pretty 'substring "a part of one from location two to location three")
 (hash-set! pretty 'index-of "location of rhs in lhs")
 (hash-set! pretty 'length "length of expression")
