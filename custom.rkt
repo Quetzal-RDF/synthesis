@@ -86,10 +86,10 @@
                        (list 'quote 'integer)
                        (cadr e)
                        (case op
-                         ((sum average) +)
+                         ((sum avg) +)
                          ((min) min)
                          ((max) max))
-                       (eq? op 'average))
+                       (eq? op 'avg))
                  (caddr e)))]
         [(index-of)
          (let ((op (car form))

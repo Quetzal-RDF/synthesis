@@ -102,10 +102,10 @@
       (test #t (car (caddar fs))))))
                           
 (define (test4)
-  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") '(50 0) (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
+  (analyze-custom '("if" "s1" "==" "bad" "then" "i2" "*" "i3") '(50 0) '("s1" "i2" "i3") (list s1 i2 i3) '("bad" 5 10) '("good" 5 10)))
 
 (define (test5)
-  (analyze-custom '("if" "s1" "==" "bad" "," "i2" "*" "i3") '(40 50 0) (list s1 i2 i3) '("bad" 4 10) '("bad" 5 10) '("good" 5 10)))
+  (analyze-custom '("if" "s1" "==" "bad" "," "i2" "*" "i3") '(40 50 0) '("s1" "i2" "i3") (list s1 i2 i3) '("bad" 4 10) '("bad" 5 10) '("good" 5 10)))
 
 (define (test6)
    (analyze-custom '("s1" "==" "Committed" "and" "i1" ">=" 25 "," "i3" "-" "(" "i4" "*" "i5" ")")
