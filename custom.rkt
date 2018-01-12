@@ -75,7 +75,7 @@
            (list (car v)
                  (list 'send 'p 'basic-unary op (cadr v))
                  'date))]
-        [(sum average min max)
+        [(sum avg min max)
          (let ((op (car form))
                (e (to-custom-int (second form) (cons 1 nested-pos))))
            (list (car e)
