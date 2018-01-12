@@ -350,7 +350,9 @@
   (let* ((parse (apply make-parser columnNames))
          (stuff (parse text))
          (custom (make-custom-table stuff columnNames))
-         (start (length (remove-duplicates (apply append (hash-values custom))))))
+         (start (* 3 (length (remove-duplicates (apply append (hash-values custom)))))))
+    (println stuff)
+    (println custom)
     (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
 
 (define (get-rows fs)
