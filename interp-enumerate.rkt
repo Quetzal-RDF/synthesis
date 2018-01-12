@@ -1082,6 +1082,11 @@
            ;(println formula)
            ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
            ; raise models, which will then be trapped by the handler code
+           (when (and (not (symbolic? formula)) (eq? #t formula))
+             (set! models
+                   (append
+                    models
+                    (list (list (car y) (remove-duplicates (cadr y)) (car (third y)) null null)))))
            (send z3-engines solve formula x
              (lambda (formula result)
                ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
