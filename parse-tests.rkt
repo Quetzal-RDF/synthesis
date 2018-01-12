@@ -746,6 +746,7 @@
     (println result)
     (println (length result))))
 
+
 (define (test117)
     (letrec ((p (apply make-parser '("Start Date")))
            (result (p '("if" "(" "day" "of" "Start Date" ")" ">" "15" "then" "(" "set" "to" "first" "day" "of" "(" "set" "date" "to" "next" "month" "of" "Start Date" ")" ")" "else" "(" "set" "to" "first" "day" "of" "Start Date" ")"))))
@@ -755,5 +756,11 @@
 (define (test118)
       (letrec ((p (apply make-parser '("Start Date" "Term Date")))
            (result (p '("set" "date" "to" "1" "," "(" "round" "Term Date" "-" "Start Date" "/" "30" ")" "+" "1" "," "(" "year" "of" "Start Date" ")"))))
+    (println result)
+    (println (length result))))
+
+(define (test119)
+    (letrec ((p (apply make-parser '("Hourly overage" "Monthly overage" "Is_Valid" "Min servers" "Notes" "Pay_Cycle" "Pay_Method" "Price_Per_Server" "Price per server" "Terms" "Valid_From" "Valid_To" "agent_first_count" "agent_hwm" "agent_last_count" "agent_lwm" "average" "aws_lwm" "aws_first_count" "aws_hwm" "aws_last_count" "elapsed_hours" "first_count" "first_hour" "hwm" "last_count" "last_hour" "lwm" "server_hours" "std_dev" "top13" "top25" "top95p" "top99p" "std_plan_billable_hours" "MRR")))
+           (result (p '("Price_Per_Server" "*" "Min servers" "top99p" "*" "Price_Per_Server" "plus" "Monthly overage"))))
     (println result)
     (println (length result))))
