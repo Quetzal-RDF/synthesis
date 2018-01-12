@@ -1082,7 +1082,7 @@
            ;(println formula)
            ; solver assertions.  When we have a satisfiable model and we have reached the number of goal (or solutions) we want
            ; raise models, which will then be trapped by the handler code
-           (when (eq? #t formula)
+           (when (and (not (symbolic? formula)) (eq? #t formula))
              (set! models
                    (append
                     models
