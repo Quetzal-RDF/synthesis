@@ -745,3 +745,15 @@
            (result (p '("(" "if" "(" "Terms" "=" "Committed" ")" "then" "(" "Price_Per_Server" "*" "Min servers" ")" "otherwise" "if" "(" "Terms" "=" "Standard" ")" "then" "(" "(" "top99p" "*" "Price_Per_Server" ")" "plus" "Monthly overage" ")" "otherwise" "0" ")"))))
     (println result)
     (println (length result))))
+
+(define (test117)
+    (letrec ((p (apply make-parser '("Start Date")))
+           (result (p '("if" "(" "day" "of" "Start Date" ")" ">" "15" "then" "(" "set" "to" "first" "day" "of" "(" "set" "date" "to" "next" "month" "of" "Start Date" ")" ")" "else" "(" "set" "to" "first" "day" "of" "Start Date" ")"))))
+    (println result)
+    (println (length result))))
+
+(define (test118)
+      (letrec ((p (apply make-parser '("Start Date" "Term Date")))
+           (result (p '("set" "date" "to" "1" "," "(" "round" "Term Date" "-" "Start Date" "/" "30" ")" "+" "1" "," "(" "year" "of" "Start Date" ")"))))
+    (println result)
+    (println (length result))))

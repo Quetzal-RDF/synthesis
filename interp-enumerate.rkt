@@ -482,6 +482,12 @@
            'invalid))
     
     (define/public (if-then-else case l r)
+;      (println "IF_THEN_ELSE")
+;      (println case)
+;      (println l)
+;      (println r)
+;      (println "********")
+ 
       (if (and (boolean? case))
           (if case l r)
            'invalid))
@@ -976,8 +982,6 @@
   (do-ternary-op do-all-str do-all-int do-all-int 'substr size pos p f))
 
 (define (do-like size pos p f)
-  (println "do-like")
-  (println size)
   (do-binary-op do-all-str do-all-str 'like size pos p f))
 
 (define (do-aggregate do-all-op type size pos p f)
