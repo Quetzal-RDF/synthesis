@@ -1132,6 +1132,7 @@
   (let ((solver (current-solver))
         (goal 2)
         (models (list))
+        (start-time (current-seconds))
         (i 0))
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
       ((cond ((boolean? (car results)) do-all-bool)
@@ -1177,7 +1178,7 @@
                (when (and (sat? result) (evaluate formula result))
                  (set! models (cons (list (car y) result strop) models))
                  (set! goal (- goal 1))
-                 (when (= goal 0)
+                 (when (or (= goal 0) (> 60 (- current-seconds start-time)))
                    (raise models))))))))
       (list))))
 

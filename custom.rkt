@@ -350,10 +350,9 @@
   (let* ((parse (apply make-parser columnNames))
          (stuff (parse text))
          (custom (make-custom-table stuff columnNames))
-         (start (* 3 (length (remove-duplicates (apply append (hash-values custom)))))))
-    (println stuff)
-    (println custom)
-    (test-int analyze '() custom '() '() start (*  2 start) outputs symbolic inputs)))
+         (start (length (remove-duplicates (apply append (hash-values custom))))))
+    (println start)
+    (test-int analyze '() custom '() '() start 10 outputs symbolic inputs)))
 
 (define (get-rows fs)
   (filter (lambda (l) (not (null? l)))
@@ -382,13 +381,13 @@
          (parse-2 (apply make-parser used-cols))
          (stuff-2 (parse-2 text)))
     (println used-symbolics)
-;         (with-handlers ([exn:fail?
-;                          (lambda (e) (cons used-cols '()))])
+    (with-handlers ([exn:fail?
+                          (lambda (e) (cons used-cols '()))])
            (let* ((fs (test-custom stuff-2 used-symbolics))
                   (actual-cols (gather-cols (map car fs) used-cols)))
             
              (cons actual-cols
-                   (apply append (map (lambda (f) (to-table f #t)) fs)))))) ;)
+                   (apply append (map (lambda (f) (to-table f #t)) fs)))))))
 
 (define (generate-models exprs controlss extra)
   (letrec ((solve (lambda (formula)
