@@ -37,9 +37,13 @@
                  (outputs
                   (for/list ([row table])
                     (list-ref row (- (length row) 2))))
-                 (custom (make-custom-table exp cols)))
+                 (custom (make-custom-table (list exp) cols)))
+            (println exp)
+            (println custom)
             (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
+              (println outputs)
               (for/list ([s synthesized])
+                (println s)
                 (let* ((check
                         (and
                          (letrec ((g (lambda (ss)
@@ -48,7 +52,7 @@
                                            (and
                                             (equal? (caar ss) (cdar ss))
                                             (g (cdr ss)))))))
-                           (g (hash->list (model (fourth s)))))
+                           (g (if (null? (fourth s)) '() (hash->list (model (fourth s))))))
                          (not (equal? (car (cadr f)) (third s)))))
                        (m (solve (assert check))))
                   (println check)
