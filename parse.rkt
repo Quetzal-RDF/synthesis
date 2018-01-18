@@ -152,6 +152,8 @@
             (set-to-next-month ("set" "date" "to" "next" "month")("set" "to" "next" "month"))
             (set-to-previous-day ("set" "date" "to" "previous" "day")("set" "to" "previous" "day"))
             (set-to-previous-month ("set" "date" "to" "previous" "month")("set" "to" "previous" "month"))
+            (last ("last")("past")("most" "recent"))
+            (days360 ("days360"))
             (of ("of")("in"))
             (group ("group") ("group" "by") ("grouped" "by") ("organize" "by") ("organized" "by") ("cluster" "by") ("clustered" "by") ("by") ("based" "on"))))
          (reserved (filter string? (flatten keywords)))
@@ -169,7 +171,7 @@
                      (grouping-function-forms (avg group average-group) (sum group sum-group) (count group count-group) (max group maximum-group) (min group minimum-group))
                      (ternary-function-forms between replace substring create-date create-time)
                      (binary-function-forms index-of exponent add-seconds add-minutes add-hours add-days add-months
-                                           add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list)
+                                           add-years subtract-seconds subtract-hours subtract-minutes subtract-days subtract-months subtract-years in-list days360)
                      (unary-function-forms group-concat is-null is-not-null abs round ceiling floor truncate sign logarithm natural-logarithm
                                            sqrt upper lower length trim avg min max count sum not set-to-first-day-of-month set-to-last-day-of-month
                                            set-to-first-month set-to-last-month set-to-next-day set-to-next-month set-to-previous-day set-to-previous-month) 
@@ -224,7 +226,9 @@
                       (list '("set" "hours" of () "to" ()) (lambda (x) (list 'set-hours-to (list-ref x 3)(list-ref x 5))))        
                       (list '("set" "days" of () "to" ()) (lambda (x) (list 'set-days-to (list-ref x 3)(list-ref x 5))))        
                       (list '("set" "months" of () "to" ()) (lambda (x) (list 'set-months-to (list-ref x 3)(list-ref x 5))))        
-                      (list '("set" "years" of () "to" ()) (lambda (x) (list 'set-years-to (list-ref x 3)(list-ref x 5))))        
+                      (list '("set" "years" of () "to" ()) (lambda (x) (list 'set-years-to (list-ref x 3)(list-ref x 5))))
+                      (list '(() "is" "in" "current" "month") (lambda (x) (list 'is-in-current-month (list-ref x 0))))
+                      (list '(() "is" "in" last () "months") (lambda (x) (list 'is-in-last-x-months (list-ref x 0)(list-ref x 4))))
                       ))))
 
     ; val-f is applied to every element of the list

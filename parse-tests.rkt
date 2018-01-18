@@ -764,3 +764,21 @@
            (result (p '("Price_Per_Server" "*" "Min servers" "top99p" "*" "Price_Per_Server" "plus" "Monthly overage"))))
     (println result)
     (println (length result))))
+
+(define (test120)
+    (letrec ((p (apply make-parser '("Start Date")))
+           (result (p '("Start Date" "is" "in" "current" "month"))))
+    (println result)
+    (println (length result))))
+
+(define (test121)
+    (letrec ((p (apply make-parser '("Start Date")))
+           (result (p '("Start Date" "is" "in" "most" "recent" "2" "months"))))
+    (println result)
+    (println (length result))))
+
+(define (test122)
+    (letrec ((p (apply make-parser '("Start Date" "End Date")))
+           (result (p '("days360" "(" "Start Date" "," "End Date" ")"))))
+    (println result)
+    (println (length result))))

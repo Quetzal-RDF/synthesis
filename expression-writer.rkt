@@ -101,6 +101,10 @@
 (hash-set! mappings 'set-days-to '("set-days-to" "BinaryExpression"))
 (hash-set! mappings 'set-months-to '("set-months-to" "BinaryExpression"))
 (hash-set! mappings 'set-years-to '("set-years-to" "BinaryExpression"))
+(hash-set! mappings 'is-in-current-month '("is-in-current-month" "UnaryExpression"))
+(hash-set! mappings 'is-in-last-x-months '("is-in-last-x-months" "BinaryExpression"))
+(hash-set! mappings 'days360 '("days360" "BinaryExpression"))
+
 (hash-set! mappings 'not '("not" "UnaryExpression"))
 
 
@@ -206,6 +210,9 @@
 (hash-set! pretty 'set-months-to "set months in lhs to rhs")
 (hash-set! pretty 'set-years-to "set years in lhs to rhs")
 (hash-set! pretty 'trim "trim white spaces from expression")
+(hash-set! pretty 'is-in-current-month "expression is in current month")
+(hash-set! pretty 'is-in-last-x-months "left is in last right months")
+(hash-set! pretty 'days360 "days360 of left, right")
 
 
 (define (check-exp type)
