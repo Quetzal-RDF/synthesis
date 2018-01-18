@@ -36,8 +36,9 @@
                     (take row (- (length row) 2))))
                  (outputs
                   (for/list ([row table])
-                    (list-ref row (- (length row) 2)))))
-            (let ((synthesized (apply analyze (hash) '() '() 5 outputs symbolics inputs)))
+                    (list-ref row (- (length row) 2))))
+                 (custom (make-custom-table exp cols)))
+            (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
               (for/list ([s synthesized])
                 (let* ((check
                         (and

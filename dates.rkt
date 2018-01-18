@@ -379,4 +379,4 @@
 (provide new-date add-seconds add-minutes add-hours add-days add-months add-years subtract-seconds subtract-minutes subtract-hours subtract-days subtract-months subtract-years
          set-field get-field is-leap create-date extract-date-from-epoch date-subtract date-le date-ge date-lt date-gt date-equal extract-seconds extract-minutes extract-hours extract-days extract-months extract-years
          copy-date extract-day-of-year extract-epoch extract-day-of-week set-seconds-to set-minutes-to set-hours-to set-days-to set-months-to set-years-to set-to-first-day-of-month set-to-last-day-of-month set-to-first-month set-to-last-month
-         set-to-next-day set-to-next-month set-to-previous-day set-to-previous-month)
+         set-to-next-day set-to-next-month set-to-previous-day set-to-previous-month num-days-in-month)

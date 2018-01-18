@@ -138,7 +138,55 @@
 
     (define/public (like pos lhs rhs)
       (merge (list do-like) lhs rhs))
+
+    (define/public (set-seconds-to l r)
+      (merge (list 'set-seconds-to) l r))
     
+    (define/public (set-minutes-to l r)
+      (merge (list 'set-minutes-to) l r))
+    
+    (define/public (set-hours-to l r)
+      (merge (list 'set-hours-to) l r))
+
+    (define/public (set-days-to l r)
+      (merge (list 'set-days-to) l r))
+
+    (define/public (set-months-to l r)
+      (merge (list 'set-months-to) l r))
+
+    (define/public (set-years-to l r)
+      (merge (list 'set-years-to) l r))
+
+    (define/public (set-to-first-day-of-month v)
+      (merge (list 'set-to-first-day-of-month) v))
+
+    (define/public (set-to-last-day-of-month v)
+      (merge (list 'set-to-last-day-of-month) v))
+
+    (define/public (set-to-first-month v)
+      (merge (list 'set-to-first-month) v))
+
+    (define/public (set-to-last-month v)
+      (merge (list 'set-to-last-month) v))
+
+    (define/public (set-to-next-day v)
+      (merge (list 'set-to-next-day) v))
+
+    (define/public (set-to-previous-day v)
+      (merge (list 'set-to-previous-day) v))
+
+    (define/public (set-to-next-month v)
+      (merge (list 'set-to-next-month) v))
+
+    (define/public (set-to-previous-month v)
+      (merge (list 'set-to-previous-month) v))
+
+    (define/public (is-in-current-month v)
+      (merge (list 'is-in-current-month) v))
+
+    (define/public (is-in-last-x-months l r)
+      (merge (list 'is-in-last-x-months) l r))
+  
     (define/public (aggregate pos type v)
       (let* ((op
               (if (eq? type 'string)
@@ -283,6 +331,54 @@
     (define/public (date-to-epoch pos v)
       (list 'date-to-epoch v))
 
+    (define/public (set-seconds-to l r)
+      (list 'set-seconds-to l r))
+    
+    (define/public (set-minutes-to l r)
+      (list 'set-minutes-to l r))
+    
+    (define/public (set-hours-to l r)
+      (list 'set-hours-to l r))
+
+    (define/public (set-days-to l r)
+      (list 'set-days-to l r))
+
+    (define/public (set-months-to l r)
+      (list 'set-months-to l r))
+
+    (define/public (set-years-to l r)
+      (list 'set-years-to l r))
+
+    (define/public (set-to-first-day-of-month v)
+      (list 'set-to-first-day-of-month v))
+
+    (define/public (set-to-last-day-of-month v)
+      (list 'set-to-last-day-of-month v))
+
+    (define/public (set-to-first-month v)
+      (list 'set-to-first-month v))
+
+    (define/public (set-to-last-month v)
+      (list 'set-to-last-month v))
+
+    (define/public (set-to-next-day v)
+      (list 'set-to-next-day v))
+
+    (define/public (set-to-previous-day v)
+      (list 'set-to-previous-day v))
+
+    (define/public (set-to-next-month v)
+      (list 'set-to-next-month v))
+
+    (define/public (set-to-previous-month v)
+      (list 'set-to-previous-month v))
+
+    (define/public (is-in-current-month v)
+      (list 'is-in-current-month v))
+
+    (define/public (is-in-last-x-months l r)
+     (list 'is-in-last-x-months l r))
+
     (define/public (date-from-epoch pos v)
       (list 'date-from-epoch v))
 
@@ -412,7 +508,55 @@
       (if (or (eq? l 'invalid) (eq? r 'invalid))
           'invalid
           (f l r)))
+
+    (define/public (set-seconds-to l r)
+      (create-date r (get-field l "minutes") (get-field l "hours") (get-field l "days") (get-field l "months") (get-field l "years")))
     
+    (define/public (set-minutes-to l r)
+      (create-date (get-field l "seconds") r (get-field l "hours") (get-field l "days") (get-field l "months") (get-field l "years")))
+    
+    (define/public (set-hours-to l r)
+      (create-date (get-field l "seconds") (get-field l "minutes") r (get-field l "days") (get-field l "months") (get-field l "years")))
+
+    (define/public (set-days-to l r)
+      (create-date (get-field l "seconds") (get-field l "minutes") (get-field l "hours") r (get-field l "months") (get-field l "years")))
+
+    (define/public (set-months-to l r)
+      (create-date (get-field l "seconds") (get-field l "minutes") (get-field l "hours") (get-field l "days") r (get-field l "years")))
+
+    (define/public (set-years-to l r)
+      (create-date (get-field l "seconds") (get-field l "minutes") (get-field l "hours") (get-field l "days") (get-field l "months") r))
+
+    (define/public (set-to-first-day-of-month v)
+      (create-date (get-field v "seconds") (get-field v "minutes") (get-field v "hours") 1 (get-field v "months") (get-field v "years")))
+
+    (define/public (set-to-last-day-of-month v)
+      (create-date (get-field v "seconds") (get-field v "minutes") (get-field v "hours") (num-days-in-month (get-field v "months")) (get-field v "years")))
+
+    (define/public (set-to-first-month v)
+      (create-date (get-field v "seconds") (get-field v "minutes") (get-field v "hours") (get-field v "days") 1 (get-field v "years")))
+
+    (define/public (set-to-last-month v)
+      (create-date (get-field v "seconds") (get-field v "minutes") (get-field v "hours") (get-field v "days") 12 (get-field v "years")))
+
+    (define/public (set-to-next-day v)
+      (add-days v 1))
+
+    (define/public (set-to-previous-day v)
+      (subtract-days v 1))
+
+    (define/public (set-to-next-month v)
+      (add-months v 1))
+
+    (define/public (set-to-previous-month v)
+      (subtract-months v 1))
+
+    (define/public (is-in-current-month v)
+      (equal? (extract-months (extract-date-from-epoch (current-seconds))) (extract-months v)))
+
+    (define/public (is-in-last-x-months l r)
+      (>= l (subtract-months (extract-date-from-epoch (current-seconds)) r)))
+  
     (define/public (is-null-v? mb v pos)
       (send this basic-unary (lambda (v) (if mb (equal? v '()) (not (equal? v '())))) v))
 
@@ -774,6 +918,70 @@
     (define/public (date-from-epoch pos v)
       (for/list ([p processors] [vs v])
         (send p date-from-epoch pos vs)))
+
+    (define/public (set-seconds-to pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p set-seconds-to pos l r)))
+
+    (define/public (set-minutes-to pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p set-minutes-to pos l r)))
+    
+    (define/public (set-hours-to pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p set-hours-to pos l r)))
+    
+    (define/public (set-days-to pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p set-days-to pos l r)))
+
+    (define/public (set-months-to pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p set-months-to pos l r)))
+
+    (define/public (set-years-to pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p set-years-to pos l r)))
+
+    (define/public (set-to-first-day-of-month pos v)
+       (for/list ([p processors] [vs v])
+        (send p set-to-first-day-of-month pos vs)))
+
+    (define/public (set-to-last-day-of-month pos v)
+       (for/list ([p processors] [vs v])
+        (send p set-to-last-day-of-month pos vs)))
+
+    (define/public (set-to-first-month pos v)
+       (for/list ([p processors] [vs v])
+        (send p set-to-first-month pos vs)))
+
+    (define/public (set-to-last-month pos v)
+      (for/list ([p processors] [vs v])
+        (send p set-to-last-month pos vs)))
+
+    (define/public (set-to-next-day pos v)
+     (for/list ([p processors] [vs v])
+        (send p set-to-next-day pos vs)))
+
+    (define/public (set-to-previous-day pos v)
+      (for/list ([p processors] [vs v])
+        (send p set-to-previous-day pos vs)))
+
+    (define/public (set-to-next-month pos v)
+     (for/list ([p processors] [vs v])
+        (send p set-to-next-month pos vs)))
+
+    (define/public (set-to-previous-month pos v)
+      (for/list ([p processors] [vs v])
+        (send p set-to-previous-month pos vs)))
+
+    (define/public (is-in-current-month pos v)
+     (for/list ([p processors] [vs v])
+        (send p is-in-current-month pos vs)))
+
+    (define/public (is-in-last-x-months pos left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p is-in-last-x-months pos l r)))
 
     (define/public (aggregate-op pos type vs op is-average)
       (for/list ([p processors] [v vs])

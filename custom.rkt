@@ -75,6 +75,19 @@
            (list (car v)
                  (list 'send 'p 'basic-unary op (cadr v))
                  'date))]
+        [(is-in-current-month)
+                 (let ((op (car form))
+               (v (to-custom-int (second form) (cons 1 nested-pos))))
+           (list (car v)
+                 (list 'send 'p 'basic-unary op (cadr v))
+                 'boolean))]
+        [(is-in-last-x-months)
+         (let ((op (car form))
+               (l (to-custom-int (second form) (cons 1 nested-pos)))
+               (r (to-custom-int (third form) (cons 2 nested-pos))))
+           (list (append (car l) (car r))
+                 (list 'send 'p 'basic-binary op (cadr l) (cadr r))
+                 'boolean))]
         [(sum avg min max)
          (let ((op (car form))
                (e (to-custom-int (second form) (cons 1 nested-pos))))
@@ -228,7 +241,7 @@
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
-    ; (println x)
+   ; (println x)
     (values
      (map cadr (car x))
      (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)
