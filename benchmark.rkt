@@ -4,7 +4,7 @@
 (require "custom.rkt")
 
 (define (benchmark)
-  (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
+  (let ((lines (file->lines "expressionsNew.txt" #:mode 'text)))
     (for/list ([line lines])
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
@@ -18,7 +18,7 @@
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
 (define (benchmark-synthesis)
-    (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
+    (let ((lines (file->lines "expressions6.txt" #:mode 'text)))
     (for/list ([line lines])
       (println "parsing")
       (println line)
@@ -28,36 +28,43 @@
              (columnMetadata (cadr exp-types))
              (cols (map cadr columnMetadata))
              (symbolics (parse-column-metadata (cadr exp-types)))
-             (fs (test-custom (list exp) symbolics)))
-        (for/list ([f fs])
-          (let* ((table (to-table f #t))
-                 (inputs
-                  (for/list ([row table])
-                    (take row (- (length row) 2))))
-                 (outputs
-                  (for/list ([row table])
-                    (list-ref row (- (length row) 2))))
-                 (custom (make-custom-table (list exp) cols)))
-            (println exp)
-            (println custom)
-            (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
-              (println outputs)
-              (for/list ([s synthesized])
-                (println s)
-                (let* ((check
-                        (and
-                         (letrec ((g (lambda (ss)
-                                       (if (null? ss)
-                                           #t
-                                           (and
-                                            (equal? (caar ss) (cdar ss))
-                                            (g (cdr ss)))))))
-                           (g (if (null? (fourth s)) '() (hash->list (model (fourth s))))))
-                         (not (equal? (car (cadr f)) (third s)))))
-                       (m (solve (assert check))))
-                  (println check)
-                  (if (sat? m)
-                      (let ((a1 (evaluate (car (cadr f)) m))
-                            (a2 (evaluate (third s) m)))
-                        (list 'x (render s) a1 a2 (evaluate symbolics m)))
-                      (render s)))))))))))
+             (fs  (with-handlers ([exn:fail?
+                          (lambda (e) '())])
+                    (test-custom (list exp) symbolics))))
+        (println "FINISHED CUSTOM CREATION")
+        (println fs)
+        (if (null? fs)
+            (println "failed to create custom")
+            (for/list ([f fs])
+              (let* ((table (to-table f #t))
+                     (inputs
+                      (for/list ([row table])
+                        (take row (- (length row) 2))))
+                     (outputs
+                      (for/list ([row table])
+                        (list-ref row (- (length row) 2))))
+                     (custom (make-custom-table (list exp) cols)))
+                (println exp)
+                (println custom)
+                (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
+                  (println outputs)
+                  (for/list ([s synthesized])
+                    (println s)
+                    (let* ((check
+                            (and
+                             (letrec ((g (lambda (ss)
+                                           (if (null? ss)
+                                               #t
+                                               (and
+                                                (equal? (caar ss) (cdar ss))
+                                                (g (cdr ss)))))))
+                               (g (if (null? (fourth s)) '() (hash->list (model (fourth s))))))
+                             (not (equal? (car (cadr f)) (third s)))))
+                           (m (solve (assert check))))
+                      (println check)
+                      (if (sat? m)
+                          (let ((a1 (evaluate (car (cadr f)) m))
+                                (a2 (evaluate (third s) m)))
+                            (println (render s))
+                            (list 'x (render s) a1 a2 (evaluate symbolics m)))
+                          (render s))))))))))))

@@ -7,6 +7,7 @@
 (require math/statistics)
 (require racket/async-channel)
 (require rosette/solver/smt/z3)
+(require srfi/19)
 
 (require "../rosette/rosette/solver/smt/server.rkt")
 (require "dates.rkt")
@@ -186,6 +187,12 @@
 
     (define/public (is-in-last-x-months l r)
       (merge (list 'is-in-last-x-months) l r))
+
+    (define/public (general-compare date-op number-op left right)
+      (merge (list 'general-compare) number-op left right))
+
+    (define/public (aggregate-op pos type v op is-average)
+      (merge (list 'agg) op v))
   
     (define/public (aggregate pos type v)
       (let* ((op
@@ -284,6 +291,7 @@
     (define/public (date-diff pos left right)
       (list 'date-subtract left right))
 
+  
     (define/public (date-compare pos left right)
       (let ((di1 (val (cons 'di1 pos) boolean?))
             (di2 (val (cons 'di2 pos) boolean?))
@@ -363,6 +371,9 @@
 
     (define/public (set-to-next-day v)
       (list 'set-to-next-day v))
+
+    (define/public (general-compare date-op number-op left right)
+      (list 'general-compare number-op left right))
 
     (define/public (set-to-previous-day v)
       (list 'set-to-previous-day v))
@@ -447,6 +458,32 @@
 
 (define (create-like-constraints lhs like-list)
    (regexp-match-exact? (apply regexp-concat like-list) lhs))
+
+(define (convert-string-to-date str)
+  (with-handlers ([exn:fail?
+                   (lambda (e) #f)])
+    (let ((d (string->date str "~m-~d-~Y")))
+      (vector (date-second d) (date-minute d) (date-hour d) (date-day d) (date-month d) (date-year d)))))
+
+(define (dateable? v)
+  (or (vector? v)
+      (and
+       (string? v)
+       (not (symbolic? v))(convert-string-to-date v))))
+
+(define-syntax date-case-op
+  (syntax-rules ()
+    ((_ (arg ...) (body ...) (otherwise ...))
+     (if (and (dateable? arg) ...)
+         (let ((arg (if (vector? arg) arg (convert-string-to-date arg))) ...)
+            body ...)
+	 (begin
+	   otherwise ...)))))
+
+(define-syntax date-op
+  (syntax-rules ()
+    ((_ (arg ...) body ...)
+     (date-case-op (arg ...) (body ...) ('invalid)))))
 
 (define (like-constant lhs rhs)
   (println "called like constant")
@@ -663,52 +700,50 @@
         v))
 
     (define/public (date-diff pos left right)
-      (if (and (vector? left) (vector? right))
-          (date-subtract left right)
-          'invalid))
+      (date-op (left right) (date-subtract left right)))
 
     (define/public (date-compare pos left right)
-      (if (and (vector? left) (integer? right))
-          (let ((di1 (val (cons 'di1 pos) boolean?))
-                (di2 (val (cons 'di2 pos) boolean?))
-                (di3 (val (cons 'di3 pos) boolean?)))
-            (if (and (not di1) (not di2) (not di3))
-                'invalid
-                (send this basic-binary
-                      (if di1
-                          (if di2
-                              (if di3
-                                  date-le
-                                  date-ge)
-                              (if di3
-                                  date-gt date-lt))
-                          date-equal))))
-          'invalid))
+      (date-op (left right) 
+               (let ((di1 (val (cons 'di1 pos) boolean?))
+                     (di2 (val (cons 'di2 pos) boolean?))
+                     (di3 (val (cons 'di3 pos) boolean?)))
+                 (if (and (not di1) (not di2) (not di3))
+                     'invalid
+                     (send this basic-binary
+                           (if di1
+                               (if di2
+                                   (if di3
+                                       date-le
+                                       date-ge)
+                                   (if di3
+                                       date-gt date-lt))
+                               date-equal) left right)))))
 
     (define/public (date-interval pos left right)
-      (if (and (vector? left) (integer? right))
-          (let ((d (copy-date left))
-                (di1 (val (cons 'di1 pos) boolean?))
-                (di2 (val (cons 'di2 pos) boolean?))
-                (di3 (val (cons 'di3 pos) boolean?))
-                (di4 (val (cons 'di4 pos) boolean?)))
-            (if (and (not di1) (not di2)(not di3))
-                'invalid
-                (send this basic-binary
-                      (if di1
-                          (if di2
-                              (if di3
-                                  (if di4 add-seconds add-minutes)
-                                  (if di4 add-hours add-days))
-                              (if di3
-                                  (if di4 add-months add-years)
-                                  (if di4 subtract-seconds subtract-minutes)))
-                          (if di2
-                              (if di3 subtract-hours subtract-days)
-                              (if di3 subtract-months subtract-years)))
-                      d right))
-            d)
-          'invalid))
+      (date-op (left)
+        (if (integer? right)
+            (let ((d (copy-date left))
+                  (di1 (val (cons 'di1 pos) boolean?))
+                  (di2 (val (cons 'di2 pos) boolean?))
+                  (di3 (val (cons 'di3 pos) boolean?))
+                  (di4 (val (cons 'di4 pos) boolean?)))
+              (if (and (not di1) (not di2)(not di3))
+                  'invalid
+                  (send this basic-binary
+                        (if di1
+                            (if di2
+                                (if di3
+                                    (if di4 add-seconds add-minutes)
+                                    (if di4 add-hours add-days))
+                                (if di3
+                                    (if di4 add-months add-years)
+                                    (if di4 subtract-seconds subtract-minutes)))
+                            (if di2
+                                (if di3 subtract-hours subtract-days)
+                                (if di3 subtract-months subtract-years)))
+                        d right))
+              d)
+            'invalid)))
  
     (define/public (date-extract-bin pos v f)
       (if (vector? v)
@@ -716,24 +751,25 @@
           'invalid))
 
     (define/public (date-extract pos v)
-      (if (vector? v)
-          (let ((de1 (val (cons 'de1 pos) boolean?))
-                (de2 (val (cons 'de2 pos) boolean?))
-                (de3 (val (cons 'de3 pos) boolean?)))
-            (date-extract-bin pos v 
-                  (if de1
-                      (if de2
-                          (if de3 extract-seconds extract-minutes)
-                          (if de3 extract-hours extract-days))
-                      (if de2
-                          (if de3 extract-months extract-years)
-                          (if de3 extract-day-of-year extract-day-of-week)))))  
-          'invalid))
+      (date-op (v)
+              (let ((de1 (val (cons 'de1 pos) boolean?))
+                    (de2 (val (cons 'de2 pos) boolean?))
+                    (de3 (val (cons 'de3 pos) boolean?)))
+                (date-extract-bin pos v 
+                                  (if de1
+                                      (if de2
+                                          (if de3 extract-seconds extract-minutes)
+                                          (if de3 extract-hours extract-days))
+                                      (if de2
+                                          (if de3 extract-months extract-years)
+                                          (if de3 extract-day-of-year extract-day-of-week)))))))
+    
+    (define/public (general-compare date-op number-op left right)
+      (date-case-op (left right) ((date-op left right)) ((number-op left right))))
 
     (define/public (date-to-epoch pos v)
-      (if (vector? v)
-          (send this basic-unary extract-epoch v)
-          'invalid))
+      (date-op (v)
+          (send this basic-unary extract-epoch v)))
 
     (define/public (date-from-epoch pos v)
       (if (integer? v)
@@ -970,6 +1006,10 @@
     (define/public (set-to-next-month pos v)
      (for/list ([p processors] [vs v])
         (send p set-to-next-month pos vs)))
+
+    (define/public (general-compare date-op number-op left right)
+      (for/list ([p processors] [l left] [r right])
+        (send p general-compare date-op number-op l r)))
 
     (define/public (set-to-previous-month pos v)
       (for/list ([p processors] [vs v])

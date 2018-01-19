@@ -14,7 +14,7 @@
 (define ns (namespace-anchor->namespace anc))
 
 (define (to-custom-int form nested-pos)
-  ; (println form)
+;  (println form)
   (if (list? form)
       (case (car form)
         [(in)
@@ -201,7 +201,7 @@
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'basic-binary equal? (cadr l) (cadr r))
+                 (list 'send 'p 'general-compare equal? equal? (cadr l) (cadr r))
                  'boolean))]
         [(and or)
          (let ((op (car form))
@@ -215,20 +215,14 @@
         [(< > <= >=)
          (let* ((op (car form))
                 (l (to-custom-int (second form) (cons 1 nested-pos)))
-                (r (to-custom-int (third form) (cons 2 nested-pos)))
-                (type
-                 (cond ((eq? (caddr l) 'date) 'date)
-                       ((eq? (caddr r) 'date) 'date)
-                       (#t 'number))))
+                (r (to-custom-int (third form) (cons 2 nested-pos))))
                (list (append (car l) (car r))
-                     (list 'send 'p 'basic-binary
-                           (cond ((eq? type 'number) op)
-                                 ((eq? op '<) date-lt)
+                     (list 'send 'p 'general-compare
+                           (cond ((eq? op '<) date-lt)
                                  ((eq? op '<=) date-le)
                                  ((eq? op '>) date-gt)
-                                 ((eq? op '>=) date-ge)
-                                 (#t op))
-                           (cadr l) (cadr r))
+                                 ((eq? op '>=) date-ge))
+                          op (cadr l) (cadr r))
                      'boolean))])
                
      (list '()
@@ -241,7 +235,7 @@
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
-   ; (println x)
+    (println (list "KAVITHA" x))
     (values
      (map cadr (car x))
      (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)
@@ -394,13 +388,13 @@
          (parse-2 (apply make-parser used-cols))
          (stuff-2 (parse-2 text)))
     (println used-symbolics)
-    (with-handlers ([exn:fail?
-                          (lambda (e) (cons used-cols '()))])
+  ;  (with-handlers ([exn:fail?
+   ;                       (lambda (e) (cons used-cols '()))])
            (let* ((fs (test-custom stuff-2 used-symbolics))
                   (actual-cols (gather-cols (map car fs) used-cols)))
             
              (cons actual-cols
-                   (apply append (map (lambda (f) (to-table f #t)) fs)))))))
+                   (apply append (map (lambda (f) (to-table f #t)) fs))))));)
 
 (define (generate-models exprs controlss extra)
   (letrec ((solve (lambda (formula)
