@@ -373,7 +373,8 @@
       (list 'set-to-next-day v))
 
     (define/public (general-compare date-op number-op left right)
-      (list 'general-compare number-op left right))
+      (if (equal? number-op equal?)
+          (list '= left right) (list number-op left right)))
 
     (define/public (set-to-previous-day v)
       (list 'set-to-previous-day v))
