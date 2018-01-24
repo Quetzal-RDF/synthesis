@@ -4,7 +4,7 @@
 (require "custom.rkt")
 
 (define (benchmark)
-  (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
+  (let ((lines (file->lines "tests.txt" #:mode 'text)))
     (for/list ([line lines])
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
@@ -18,7 +18,7 @@
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
 (define (benchmark-synthesis)
-    (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
+    (let ((lines (file->lines "tests.txt" #:mode 'text)))
     (for/list ([line lines])
       (println "parsing")
       (println line)

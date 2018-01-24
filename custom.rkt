@@ -241,7 +241,7 @@
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
-   ; (println x)
+   (println x)
     (values
      (map cadr (car x))
      (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)

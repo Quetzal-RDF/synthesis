@@ -1273,6 +1273,7 @@
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
           (when (null? (apply append (hash-values extra)))
+            (println (car y))
          (set! outstanding (+ outstanding 1))
          (let ((formula
                 (for/fold ([formula #t])
