@@ -611,7 +611,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		putInOps("if");
 		for (int i = whenclauses.size() - 1; i >= 0; i--) {
 			buf.append("(").append("if").append(" ").append(process(whenclauses.get(i).getOperand(), context))
-					.append(process(whenclauses.get(i).getResult(), context)).append(result);
+					.append(process(whenclauses.get(i).getResult(), context)).append(result).append(")");
 		}
 		return buf.toString();
 	}
@@ -969,7 +969,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		if (node.getRight() instanceof StringLiteral && !(processOp(node.getType().getValue()).equals("=")) && !(processOp(node.getType().getValue()).equals("!="))) {
 			record(node.getLeft(), getLiteralForType(2), context);
 			return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
-			+ "#(0 0 0 1 1 1970)";
+			+ "#(0 0 0 1 1 1970)" + ")";
 		} else {
 			record(node.getLeft(), node.getRight(), context);
 			return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "

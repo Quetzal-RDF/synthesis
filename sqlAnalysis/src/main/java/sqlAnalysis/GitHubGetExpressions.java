@@ -92,6 +92,7 @@ public class GitHubGetExpressions {
 				buf.append(line).append("\n");
 			}
 		}
+		/*
 		System.out.println("num of expressions:" + expressions.size());
 		System.out.println("num of statements:" + i);
 		System.out.println("num of statements parsed:" + numParses);
@@ -103,12 +104,13 @@ public class GitHubGetExpressions {
         .forEach(System.out::println); 
 
 		System.out.println("Expressions");
+		*/
 		expressions.forEach((k, v) -> System.out.println("(" + k + " " + v + ")")); 
-		
+		/*
 		System.out.println("OpsToCounts");
 		opsToCounts.entrySet().stream()
         .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()) 
-        .forEach(System.out::println); 
+        .forEach(System.out::println); */
 	}
 
 }
