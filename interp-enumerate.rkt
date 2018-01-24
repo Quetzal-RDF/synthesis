@@ -478,8 +478,7 @@
      (if (and (dateable? arg) ...)
          (let ((arg (if (vector? arg) arg (convert-string-to-date arg))) ...)
             body ...)
-	 (begin
-	   otherwise ...)))))
+	 (if (and (not (eq? arg 'invalid)) ...) (begin otherwise ...) 'invalid)))))
 
 (define-syntax date-op
   (syntax-rules ()
@@ -487,12 +486,7 @@
      (date-case-op (arg ...) (body ...) ('invalid)))))
 
 (define (like-constant lhs rhs)
-  (println "called like constant")
-  (println lhs)
-  (println rhs)
-  (println (string? lhs))
-  (println (string? rhs))
-  (if (and (string? lhs) (string? rhs))
+ (if (and (string? lhs) (string? rhs))
       (let* ((indexes
               (filter (lambda (x) (not (equal? x -1)))
                       (for/list ([i rhs]
@@ -703,22 +697,20 @@
     (define/public (date-diff pos left right)
       (date-op (left right) (date-subtract left right)))
 
-    (define/public (date-compare pos left right)
-      (date-op (left right) 
-               (let ((di1 (val (cons 'di1 pos) boolean?))
-                     (di2 (val (cons 'di2 pos) boolean?))
-                     (di3 (val (cons 'di3 pos) boolean?)))
-                 (if (and (not di1) (not di2) (not di3))
-                     'invalid
-                     (send this basic-binary
-                           (if di1
-                               (if di2
-                                   (if di3
-                                       date-le
-                                       date-ge)
-                                   (if di3
-                                       date-gt date-lt))
-                               date-equal) left right)))))
+    (define/public (date-compare pos left right) 
+      (let ((di1 (val (cons 'di1 pos) boolean?))
+            (di2 (val (cons 'di2 pos) boolean?))
+            (di3 (val (cons 'di3 pos) boolean?)))
+        (if (and (not di1) (not di2) (not di3))
+            'invalid
+            (date-op (left right) ((if di1
+                                       (if di2
+                                           (if di3
+                                               date-le
+                                               date-ge)
+                                           (if di3
+                                               date-gt date-lt))
+                                       date-equal) left right)))))
 
     (define/public (date-interval pos left right)
       (date-op (left)
@@ -766,7 +758,7 @@
                                           (if de3 extract-day-of-year extract-day-of-week)))))))
     
     (define/public (general-compare date-op number-op left right)
-      (date-case-op (left right) ((date-op left right)) ((number-op left right))))
+     (date-case-op (left right) ((date-op left right)) ((number-op left right))))
 
     (define/public (date-to-epoch pos v)
       (date-op (v)
