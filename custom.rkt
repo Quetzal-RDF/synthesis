@@ -13,6 +13,9 @@
 (define-namespace-anchor anc)
 (define ns (namespace-anchor->namespace anc))
 
+(define (safe-divide left right)
+  (if (= right 0) 'invalid (/ left right)))
+
 (define (to-custom-int form nested-pos)
 ;  (println form)
   (if (list? form)
@@ -55,7 +58,7 @@
                  (list 'send 'p 'logic-op-not (list 'append (list 'quote nested-pos) 'pos) (cadr l))
                  'boolean))]
         [(+ - * /)
-         (let ((op (car form))
+         (let ((op (if (equal? (car form) '/) 'safe-divide (car form)))
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))

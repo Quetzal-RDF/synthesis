@@ -4,7 +4,7 @@
 (require "custom.rkt")
 
 (define (benchmark)
-  (let ((lines (file->lines "tests.txt" #:mode 'text)))
+  (let ((lines (file->lines "test.txt" #:mode 'text)))
     (for/list ([line lines])
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
@@ -14,11 +14,15 @@
           (println (car (cadr f)))
           (to-table f #t))))))
 
+(define (write-to-file s)
+  (with-output-to-file "benchmark.out"
+    (lambda () (printf s)) #:exists 'append))
+
 ;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
 (define (benchmark-synthesis)
-    (let ((lines (file->lines "tests.txt" #:mode 'text)))
+    (let ((lines (file->lines "test.txt" #:mode 'text)))
     (for/list ([line lines])
       (println "parsing")
       (println line)

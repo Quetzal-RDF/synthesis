@@ -782,3 +782,15 @@
            (result (p '("days360" "(" "Start Date" "," "End Date" ")"))))
     (println result)
     (println (length result))))
+
+(define (test123)
+    (letrec ((p (apply make-parser '("Terms" "Hourly overage")))
+           (result (p '("Terms = Committed and 'Hourly overage'  is not null"))))
+    (println result)
+    (println (length result))))
+
+(define (test124)
+    (letrec ((p (apply make-parser '("Terms" "Hourly overage")))
+           (result (p '("Terms" "is" "not" "equal" "to" "Committed" "and" "Terms" "is" "not" "equal" "to" "Standard"))))
+    (println result)
+    (println (length result))))
