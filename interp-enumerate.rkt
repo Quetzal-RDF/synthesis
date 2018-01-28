@@ -494,10 +494,10 @@
                          (if (or (equal? i #\%) (equal? i #\_)) k -1))))
              (ll (create-like-list indexes rhs))
              (lc (create-like-constraints lhs ll)))
-        (println "like list")
-        (println ll)
-        (println "constraint")
-        (println lc)
+        ; (println "like list")
+        ; (println ll)
+        ; (println "constraint")
+        ; (println lc)
         lc)
       'invalid))
 
@@ -527,16 +527,16 @@
                             (> yr 0))
                        v
                        'invalid)))))
-        ;(println "value")
-        ;(println r)
+        ;; (println "value")
+        ;; (println r)
         r))
     
     (define/public (basic-unary f v)
       (f v))
     
     (define/public (basic-binary f l r)
-      ;(println (type-of l))
-      ;(println (type-of r))
+      ;; (println (type-of l))
+      ;; (println (type-of r))
       (if (or (eq? l 'invalid) (eq? r 'invalid))
           'invalid
           (f l r)))
@@ -658,11 +658,11 @@
            'invalid))
     
     (define/public (if-then-else case l r)
-;      (println "IF_THEN_ELSE")
-;      (println case)
-;      (println l)
-;      (println r)
-;      (println "********")
+;      ; (println "IF_THEN_ELSE")
+;      ; (println case)
+;      ; (println l)
+;      ; (println r)
+;      ; (println "********")
  
       (if (and (boolean? case))
           (if case l r)
@@ -770,11 +770,11 @@
           'invalid))
 
     (define/public (like pos lhs rhs)
-      (println "like")
-      (println "rhs")
-      (println rhs)
-      (println "lhs")
-      (println lhs)
+      ; (println "like")
+      ; (println "rhs")
+      ; (println rhs)
+      ; (println "lhs")
+      ; (println lhs)
       (if (and (string? lhs) (string? rhs))
           (let ((m1 (val (cons 'li1 pos) boolean?))
                 (m2 (val (cons 'li2 pos) boolean?)))
@@ -791,9 +791,9 @@
                                  (string-suffix? lhs rhs)
                                  (string-prefix? lhs rhs))
                              (string-contains? lhs rhs))))
-                    (println "expr")
-                    (println expr)
-                    (println "expr")
+                    ; (println "expr")
+                    ; (println expr)
+                    ; (println "expr")
                     expr))))
           'invalid))
 
@@ -932,7 +932,7 @@
         (send p date-interval pos l r)))
 
     (define/public (like pos left right)
-      (println "c like")
+      ; (println "c like")
       (for/list ([p processors] [l left] [r right])
         (send p like pos l r)))
 
@@ -1306,7 +1306,7 @@
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
           (when (null? (apply append (hash-values extra)))
-            (println (car y))
+            ; (println (car y))
          (set! outstanding (+ outstanding 1))
          (let ((formula
                 (for/fold ([formula #t])
@@ -1354,8 +1354,8 @@
                               guard
                               (not formula)))
                             (solver (z3)))
-                       (print universals)
-                       (println guard)
+                       ; (print universals)
+                       ; (println guard)
                        (solver-clear solver)
                        (solver-assert solver (list negated-formula))
                        (let ((negated-result (solver-check solver)))
@@ -1364,6 +1364,10 @@
                            (set! models
                                  (append
                                   models
+                                  ; cadr y is the set of logging processor function
+                                  ; car y doc processor output
+                                  ; caddr y the formula itself which is usually a guardian union
+                                  ; result one example satisfiable synthesized model with variable bindings
                                   (list (list (car y) (remove-duplicates (cadr y)) (caddr y) result null)))))))))))
            (when (> (length models) goal)
              (raise models)))))))

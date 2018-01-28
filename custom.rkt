@@ -17,7 +17,7 @@
   (if (= right 0) 'invalid (/ left right)))
 
 (define (to-custom-int form nested-pos)
-;  (println form)
+;  ; (println form)
   (if (list? form)
       (case (car form)
         [(in)
@@ -238,7 +238,7 @@
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
-   (println x)
+   ; (println x)
     (values
      (map cadr (car x))
      (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)
@@ -261,7 +261,7 @@
 (define (make-custom-functions columns fragments do-all-int do-all-bool do-all-str do-all-any)
   (let* ((make-custom 
           (make-custom-function do-all-int do-all-bool do-all-str do-all-any)))
-    ; (println make-custom)
+    ; ; (println make-custom)
     (map make-custom (filter cons? fragments))))
 
 (define tracing-expr-processor%
@@ -324,7 +324,7 @@
                   (expr '())
                   (doc '()))
              (f 5 '() p (lambda (x y)
-                          ; (println y)
+                          ; ; (println y)
                           (set! expr (cadr y)) (set! doc (car y))))
              (list doc expr (send trace controls) (cons columns cols))))
           (map car
@@ -361,7 +361,7 @@
          (stuff (parse text))
          (custom (make-custom-table stuff columnNames))
          (start (length (remove-duplicates (apply append (hash-values custom))))))
-    (println start)
+    ; (println start)
     (test-int analyze '() custom '() '() start 10 outputs symbolic inputs)))
 
 (define (get-rows fs)
@@ -390,7 +390,7 @@
          (used-symbolics (gather-cols stuff cols))
          (parse-2 (apply make-parser used-cols))
          (stuff-2 (parse-2 text)))
-    (println used-symbolics)
+    ; (println used-symbolics)
   ;  (with-handlers ([exn:fail?
    ;                       (lambda (e) (cons used-cols '()))])
            (let* ((fs (test-custom stuff-2 used-symbolics))
@@ -444,12 +444,12 @@
                             (or (car uc) ee)
                             ee))
                       #t)))))
-      (println "guard")
-      (println guard)
+      ; (println "guard")
+      ; (println guard)
       (models guard controlss))))
 
 (define (non-default-answer answers)
-  (println answers)
+  ; (println answers)
   (for/fold ([x #f])
             ([answer answers])
     (or x
@@ -475,6 +475,11 @@
          (answers (non-default-answer (cdr (cadr f))))
          (m (generate-models (cdr (cadr f)) (cdr (caddr f)) (and extra diff answers)))
          (models (if (and m (>= (length m) 1)) m (generate-models (cdr (cadr f)) (cdr (caddr f)) extra))))
+    ; (println "DEBUG")
+    ; (println models)
+    ; (println m)
+    ; (println answers)
+ 
     (assert (>= (length models) 1))
     (map (lambda (x y)
            (append x (list y) (list (evaluate (car f) (cadr models)))))
@@ -485,12 +490,12 @@
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list
     ; is the expected output for that subexpression, and the second element is a list of column bindings
   (let ((used-cols (gather-cols result cols)))
-    (println used-cols)
+    ; (println used-cols)
     (cons (map ~v used-cols)
           (to-table result cols))))
 
 (define (gather-cols result cols)
-  (println result)
+  ; (println result)
   (letrec ((gather-int
             (lambda (result)
               (cond [(and (cons? result) (eq? (car result) 'in)) (list (- (cadr result) 1))]
