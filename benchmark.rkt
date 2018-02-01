@@ -4,14 +4,15 @@
 (require "custom.rkt")
 
 (define (benchmark)
-  (let ((lines (file->lines "tests.txt" #:mode 'text)))
+  (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
     (for/list ([line lines])
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
              (symbolics (parse-column-metadata (cadr exp-types)))
              (fs (test-custom (list exp) symbolics)))
         (for/list ([f fs])
-          (println (car (cadr f)))
+          (println "f")
+          (println f)
           (to-table f #t))))))
 
 ;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
