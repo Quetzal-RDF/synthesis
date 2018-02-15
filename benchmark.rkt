@@ -4,7 +4,7 @@
 (require "custom.rkt")
 
 (define (benchmark)
-  (let ((lines (file->lines "test.txt" #:mode 'text)))
+  (let ((lines (file->lines "tests.txt" #:mode 'text)))
     (for/list ([line lines])
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
@@ -68,3 +68,5 @@
                              (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
                     (if result (write-to-file (string-append "solved: " (~v exp))) (write-to-file (string-append "failed synthesis: " (~v exp))))
                     result)))))))))
+
+(provide benchmark)

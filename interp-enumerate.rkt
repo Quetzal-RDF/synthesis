@@ -12,6 +12,7 @@
 (require "../rosette/rosette/solver/smt/server.rkt")
 (require "dates.rkt")
 
+(require "local-engine.rkt")
 (require "threads.rkt")
 
 (define vals (make-hash))
@@ -1262,7 +1263,7 @@
 (define (analyze extra white black limit outputs symbolic . inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
-  (letrec ((z3-engines (new engines% [n 5]))
+  (letrec ((z3-engines (new local-engines% [n 5]))
            (time-limit 30000)
            (start-time (current-inexact-milliseconds))
            (results-channel (make-async-channel 10000))

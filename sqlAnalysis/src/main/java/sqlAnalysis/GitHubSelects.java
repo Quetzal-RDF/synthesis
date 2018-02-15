@@ -3,7 +3,6 @@ package sqlAnalysis;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 import com.ibm.wala.classLoader.ClassLoaderFactory;
 
@@ -14,7 +13,6 @@ public class GitHubSelects {
 		StringBuffer buf = new StringBuffer();
 		int i = 0;
 		int numParses = 0;
-		int debug = 0;
 		for (String line : lines) {
 			line = line.trim();
 			if (line.startsWith("SELECT") || line.startsWith("select") || line.startsWith("INSERT") || line.startsWith("insert")
@@ -62,9 +60,9 @@ public class GitHubSelects {
 		System.out.println("control dependence graph" + SQLToGraph.controlflowGraph);
 		System.out.println("control dependence edgecount" + SQLToGraph.controlflowEdgeCount);
 		System.out.println("DataFlow:");
-		SQLToGraph.printEdges(SQLToGraph.dataflowEdgeCount, "/tmp/dataFlowEdges");
+		SQLToGraph.printEdgeCounts(SQLToGraph.dataflowEdgeCount);
 		System.out.println("ControlFlow:");
-		SQLToGraph.printEdges(SQLToGraph.controlflowEdgeCount, "/tmp/controlFlowEdges");
+		SQLToGraph.printEdgeCounts(SQLToGraph.controlflowEdgeCount);
 
 	}
 
