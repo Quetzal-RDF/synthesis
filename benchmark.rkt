@@ -4,7 +4,7 @@
 (require "custom.rkt")
 
 (define (benchmark)
-  (let ((lines (file->lines "expressions5.txt" #:mode 'text)))
+  (let ((lines (file->lines "test.txt" #:mode 'text)))
     (for/list ([line lines])
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
@@ -15,15 +15,20 @@
           (println f)
           (to-table f #t))))))
 
+(define (write-to-file s)
+  (with-output-to-file "benchmark.out"
+    (lambda () (printf s) (newline)) #:exists 'append))
+
 ;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
 (define (benchmark-synthesis)
-    (let ((lines (file->lines "tests.txt" #:mode 'text)))
+  (when (file-exists? "benchmark.out") (delete-file "benchmark.out"))
+  (let ((lines (file->lines "expressionsNew.txt" #:mode 'text)))
     (for/list ([line lines])
-      (println "parsing")
-      (println line)
-      (println "*****")
+      ; (println "parsing")
+      (write-to-file (string-append "processing:" line))
+    ;  (println "*****")
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
              (columnMetadata (cadr exp-types))
@@ -32,10 +37,10 @@
              (fs  (with-handlers ([exn:fail?
                           (lambda (e) '())])
                     (test-custom (list exp) symbolics))))
-        (println "FINISHED CUSTOM CREATION")
-        (println fs)
+       ; (println "FINISHED CUSTOM CREATION")
+       ; (println fs)
         (if (null? fs)
-            (println "failed to create custom")
+            (write-to-file (string-append "failed to create custom:" line))
             (for/list ([f fs])
               (let* ((table (to-table f #t))
                      (inputs
@@ -45,27 +50,21 @@
                       (for/list ([row table])
                         (list-ref row (- (length row) 2))))
                      (custom (make-custom-table (list exp) cols)))
-                (println exp)
-                (println custom)
+               ; (println exp)
+               ; (println custom)
                 (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
-                  (println outputs)
-                  (for/list ([s synthesized])
-                    (println s)
-                    (let* ((check
-                            (and
-                             (letrec ((g (lambda (ss)
-                                           (if (null? ss)
-                                               #t
-                                               (and
-                                                (equal? (caar ss) (cdar ss))
-                                                (g (cdr ss)))))))
-                               (g (if (null? (fourth s)) '() (hash->list (model (fourth s))))))
-                             (not (equal? (car (cadr f)) (third s)))))
-                           (m (solve (assert check))))
-                      (println check)
-                      (if (sat? m)
-                          (let ((a1 (evaluate (car (cadr f)) m))
-                                (a2 (evaluate (third s) m)))
-                            (println (render s))
-                            (list 'x (render s) a1 a2 (evaluate symbolics m)))
-                          (if (null? (fourth s)) (car s) (render s)))))))))))))
+                  ; (println outputs)
+                  (let ((result
+                         (for/fold ([v #f])
+                                   ([s synthesized])
+                           (let ((x
+                                  (if (not (null? (cadddr s)))
+                                      (evaluate (caddr s) (cadddr s))
+                                      (caddr s))))
+                             (write-to-file  (if (not (null? (cadddr s)))
+                                      (~v (evaluate (caddr s) (cadddr s))) "model is null"))
+                             (write-to-file (~v x))
+                         ;    (println (car (cadr f)))
+                             (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
+                    (if result (write-to-file (string-append "solved: " (~v exp))) (write-to-file (string-append "failed synthesis: " (~v exp))))
+                    result)))))))))

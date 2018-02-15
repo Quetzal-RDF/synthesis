@@ -1,8 +1,8 @@
 package sqlAnalysis;
 
 import java.time.LocalDate;
-
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.StringTokenizer;
 import com.facebook.presto.sql.tree.ArithmeticExpression;
 import com.facebook.presto.sql.tree.BetweenPredicate;
 import com.facebook.presto.sql.tree.BooleanLiteral;
@@ -400,7 +400,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		functionNameMap.put("coalesce", "coalesce");
 		functionNameMap.put("isnull", "coalesce");
 		functionNameMap.put("nvl", "coalesce");
-        functionNameNormalizedMap.put("coalesce", "if");
+        functionNameNormalizedMap.put("coalesce", "is-null");
 
 		l = new LinkedList<Integer>();
 		l.add(1);
@@ -779,8 +779,34 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 													try {
 														ret = LocalDate.parse(s, DateTimeFormatter.RFC_1123_DATE_TIME);
 													} catch (Exception e12) {
-														
-													}
+													  // 1916-10-11-12.47.34.000000
+													  try {
+  													    int idx  = s.lastIndexOf("-");
+  													    String str = s.substring(0, idx);
+  													    ret = LocalDate.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+													  } catch (Exception e) {
+													    try {
+													     // Fri Jul 02 065354 PDT 1993
+													      if (s.startsWith("Fri") || s.startsWith("Thu") || s.startsWith("Wed") || s.startsWith("Tue") || s.startsWith("Mon") || s.startsWith("Sun") || s.startsWith("Sat")) {
+													        StringTokenizer t = new StringTokenizer(s);
+													        t.nextToken();
+													        String m = t.nextToken();
+													       
+													        List months = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+													        int mth = months.indexOf(m) + 1;
+													        int day = Integer.parseInt(t.nextToken());
+													        t.nextToken();
+													        t.nextToken();
+													        
+													        int year = Integer.parseInt(t.nextToken());
+													        ret = LocalDate.of(year, mth, day);
+													        
+													      }
+													    } catch (Exception e13) {
+													      
+													    }
+													  }
+													} 
 												}
 											}
 										}
@@ -969,7 +995,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		if (node.getRight() instanceof StringLiteral && !(processOp(node.getType().getValue()).equals("=")) && !(processOp(node.getType().getValue()).equals("!="))) {
 			record(node.getLeft(), getLiteralForType(2), context);
 			return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
-			+ "#(0 0 0 1 1 1970)" + ")";
+			+ process(node.getRight(), context) + ")";
 		} else {
 			record(node.getLeft(), node.getRight(), context);
 			return "(" + processOp(node.getType().getValue()) + " " + process(node.getLeft(), context) + " "
@@ -1255,13 +1281,10 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 		LocalDate d = tryDateParse(node.getValue());
 		String ret = null;
 		if (d != null) {
-			StringBuffer buf = new StringBuffer("#(");
-			buf.append("0").append(" ");
-			buf.append("0").append(" ");
-			buf.append("0").append(" ");
-			buf.append(d.getDayOfMonth()).append(" ");
-			buf.append(d.getMonthValue()).append(" ");
-			buf.append(d.getYear()).append(")");
+			StringBuffer buf = new StringBuffer("\"");
+			buf.append(d.getMonthValue()).append("-");
+	        buf.append(d.getDayOfMonth()).append("-");
+			buf.append(d.getYear()).append("\"");
 			ret = buf.toString();
 		} else {
 			ret = "\"" + node.getValue() + "\"";
