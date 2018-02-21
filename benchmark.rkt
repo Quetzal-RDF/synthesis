@@ -15,19 +15,19 @@
           (println f)
           (to-table f #t))))))
 
-(define (write-to-file s)
-  (with-output-to-file "benchmark.out"
+(define (write-to-file file s)
+  (with-output-to-file file
     (lambda () (printf s) (newline)) #:exists 'append))
 
 ;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
-(define (benchmark-synthesis f)
-  (when (file-exists? "benchmark.out") (delete-file "benchmark.out"))
-  (let ((lines (file->lines f #:mode 'text)))
+(define (benchmark-synthesis infile)
+  (when (file-exists? (string-append infile ".out")) (delete-file (string-append infile ".out")))
+  (let ((lines (file->lines infile #:mode 'text)))
     (for/list ([line lines])
       ; (println "parsing")
-      (write-to-file (string-append "processing:" line))
+      (write-to-file (string-append infile ".out") (string-append "processing:" line))
     ;  (println "*****")
       (let* ((exp-types (read (open-input-string line)))
              (exp (car exp-types))
@@ -40,7 +40,7 @@
        ; (println "FINISHED CUSTOM CREATION")
        ; (println fs)
         (if (null? fs)
-            (write-to-file (string-append "failed to create custom:" line))
+            (write-to-file (string-append infile ".out") (string-append "failed to create custom:" line))
             (for/list ([f fs])
               (let* ((table (to-table f #t))
                      (inputs
@@ -61,12 +61,12 @@
                                   (if (not (null? (cadddr s)))
                                       (evaluate (caddr s) (cadddr s))
                                       (caddr s))))
-                             (write-to-file  (if (not (null? (cadddr s)))
+                             (write-to-file  (string-append infile ".out") (if (not (null? (cadddr s)))
                                       (~v (evaluate (caddr s) (cadddr s))) "model is null"))
-                             (write-to-file (~v x))
+                             (write-to-file (string-append infile ".out") (~v x))
                          ;    (println (car (cadr f)))
                              (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
-                    (if result (write-to-file (string-append "solved: " (~v exp))) (write-to-file (string-append "failed synthesis: " (~v exp))))
+                    (if result (write-to-file (string-append infile ".out") (string-append "solved: " (~v exp))) (write-to-file (string-append infile ".out") (string-append "failed synthesis: " (~v exp))))
                     result)))))))))
 
 (provide benchmark benchmark-synthesis)
