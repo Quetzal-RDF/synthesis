@@ -22,9 +22,9 @@
 ;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
-(define (benchmark-synthesis)
+(define (benchmark-synthesis f)
   (when (file-exists? "benchmark.out") (delete-file "benchmark.out"))
-  (let ((lines (file->lines "expressionsNew.txt" #:mode 'text)))
+  (let ((lines (file->lines f #:mode 'text)))
     (for/list ([line lines])
       ; (println "parsing")
       (write-to-file (string-append "processing:" line))
@@ -69,4 +69,4 @@
                     (if result (write-to-file (string-append "solved: " (~v exp))) (write-to-file (string-append "failed synthesis: " (~v exp))))
                     result)))))))))
 
-(provide benchmark)
+(provide benchmark benchmark-synthesis)
