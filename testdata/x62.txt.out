@@ -1,0 +1,11 @@
+processing:((and (>= (in 1) 481300) (< (in 1) 481400)) ((columnName "col149640_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 481300 col149640_1) (< col149640_1 481400))
+model is null
+(&& (<= 481300 col149640_1) (< col149640_1 481400))
+solved: '(and (>= (in 1) 481300) (< (in 1) 481400))
+processing:("localitygroup" ())
+failed to create custom:("localitygroup" ())
+processing:((notImplemented_date_add "2010-2-23" 1 ) ())
+failed to create custom:((notImplemented_date_add "2010-2-23" 1 ) ())
+processing:((and (and (and (and (and (< (in 1) "12-14-1982") (> (in 1) "5-26-1968")) (and (< (in 2) "12-4-2004") (> (in 2) "10-20-2004"))) (and (< (in 3) "12-27-1988") (> (in 3) "7-5-1978"))) (= (in 4) (in 5))) (= (in 6) (in 7))) ((columnName "col122049_1" primitiveTypes (2 )) (columnName "col122049_2" primitiveTypes (2 )) (columnName "col122049_3" primitiveTypes (2 )) (columnName "col122049_4" primitiveTypes (1 )) (columnName "col122049_5" primitiveTypes (1 )) (columnName "col122049_6" primitiveTypes (1 )) (columnName "col122049_7" primitiveTypes (1 )) ))

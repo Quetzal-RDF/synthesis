@@ -1,0 +1,75 @@
+processing:((concat (concat (concat (concat "GRANT " (in 2) ) " TO " ) (in 1) ) " " ) ((columnName "col164897_1" primitiveTypes (3 )) (columnName "col164897_2" primitiveTypes (3 )) ))
+model is null
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+(string-append (string-append (string-append (string-append GRANT  col164897_2)  TO ) col164897_1)  )
+solved: '(concat (concat (concat (concat "GRANT " (in 2)) " TO ") (in 1)) " ")
+processing:((= (in 1) "Laptop") ((columnName "col137087_1" primitiveTypes (3 )) ))
+model is null
+(= Laptop col137087_1)
+model is null
+(= Laptop col137087_1)
+solved: '(= (in 1) "Laptop")
+processing:((and (>= (in 1) 264300) (< (in 1) 264400)) ((columnName "col147470_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 264300 col147470_1) (< col147470_1 264400))
+model is null
+(&& (<= 264300 col147470_1) (< col147470_1 264400))
+solved: '(and (>= (in 1) 264300) (< (in 1) 264400))
+processing:((and (>= (in 1) 247400) (< (in 1) 247500)) ((columnName "col147301_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 247400 col147301_1) (< col147301_1 247500))
+model is null
+(&& (<= 247400 col147301_1) (< col147301_1 247500))
+solved: '(and (>= (in 1) 247400) (< (in 1) 247500))
+processing:((and (and (and (not (in-list (in 3) ("ANONYMOUS" "APEX_PUBLIC_USER" "APPQOSSYS" "BI" "CTXSYS" "DBSNMP" "DIP" "EXFSYS" "FLOWS_30000" "FLOWS_FILES" "HR" "IX" "LBACSYS" "MDDATA" "MDSYS" "MGMT_VIEW" "OE" "OLAPSYS" "ORACLE_OCM" "ORDPLUGINS" "ORDSYS" "OUTLN" "OWBSYS" "PM" "SCOTT" "SH" "SI_INFORMTN_SCHEMA" "SPATIAL_CSW_ADMIN_USR" "SPATIAL_WFS_ADMIN_USR" "SYS" "SYSMAN" "SYSTEM" "TSMSYS" "WKPROXY" "WKSYS" "WK_TEST" "WMSYS" "XDB" "XS$NULL" "RDSADMIN" ))) (not (notImplemented_regexp_like (in 3) "^APEX_0-9{6}$" ))) (not (notImplemented_regexp_like (in 3) "^FLOWS_0-9{5,6}$" ))) (notImplemented_regexp_like (in 3) "${schemas}" )) ((columnName "col4309_1" primitiveTypes (3 )) (columnName "col4309_2" primitiveTypes (3 )) (columnName "col4309_3" primitiveTypes (3 )) ))
+failed to create custom:((and (and (and (not (in-list (in 3) ("ANONYMOUS" "APEX_PUBLIC_USER" "APPQOSSYS" "BI" "CTXSYS" "DBSNMP" "DIP" "EXFSYS" "FLOWS_30000" "FLOWS_FILES" "HR" "IX" "LBACSYS" "MDDATA" "MDSYS" "MGMT_VIEW" "OE" "OLAPSYS" "ORACLE_OCM" "ORDPLUGINS" "ORDSYS" "OUTLN" "OWBSYS" "PM" "SCOTT" "SH" "SI_INFORMTN_SCHEMA" "SPATIAL_CSW_ADMIN_USR" "SPATIAL_WFS_ADMIN_USR" "SYS" "SYSMAN" "SYSTEM" "TSMSYS" "WKPROXY" "WKSYS" "WK_TEST" "WMSYS" "XDB" "XS$NULL" "RDSADMIN" ))) (not (notImplemented_regexp_like (in 3) "^APEX_0-9{6}$" ))) (not (notImplemented_regexp_like (in 3) "^FLOWS_0-9{5,6}$" ))) (notImplemented_regexp_like (in 3) "${schemas}" )) ((columnName "col4309_1" primitiveTypes (3 )) (columnName "col4309_2" primitiveTypes (3 )) (columnName "col4309_3" primitiveTypes (3 )) ))
+processing:(9203 ())
+failed to create custom:(9203 ())
+processing:((+ (+ (in 3) " ") (in 4)) ((columnName "col38812_1" primitiveTypes (1 )) (columnName "col38812_3" primitiveTypes (1 )) (columnName "col38812_5" primitiveTypes (1 )) (columnName "col38812_6" primitiveTypes (1 )) ))
+failed to create custom:((+ (+ (in 3) " ") (in 4)) ((columnName "col38812_1" primitiveTypes (1 )) (columnName "col38812_3" primitiveTypes (1 )) (columnName "col38812_5" primitiveTypes (1 )) (columnName "col38812_6" primitiveTypes (1 )) ))
+processing:((sum (* (in 10) (in 2)) ) ((columnName "col4795_1" primitiveTypes (1 )) (columnName "col4795_3" primitiveTypes (1 )) (columnName "col4795_4" primitiveTypes (1 )) (columnName "col4795_5" primitiveTypes (1 )) (columnName "col4795_6" primitiveTypes (1 )) (columnName "col4795_7" primitiveTypes (1 )) (columnName "col4795_8" primitiveTypes (1 )) (columnName "col4795_9" primitiveTypes (1 )) (columnName "col4795_10" primitiveTypes (1 )) (columnName "col4795_11" primitiveTypes (1 )) (columnName "col4795_2" primitiveTypes (1 )) (columnName "col4795_12" primitiveTypes (1 )) (columnName "col4795_13" primitiveTypes (3 )) ))
+model is null
+(+ -1 (* col4795_3 col4795_11))
+(+ -1 (* col4795_3 col4795_11))
+(+ -1 (* col4795_3 col4795_11))
+solved: '(sum (* (in 10) (in 2)))
+processing:((= (null (in 1) ) 1991) ((columnName "col150729_1" primitiveTypes (1 )) ))
+failed to create custom:((= (null (in 1) ) 1991) ((columnName "col150729_1" primitiveTypes (1 )) ))
+processing:((and (>= (in 1) 184000) (< (in 1) 184100)) ((columnName "col146667_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 184000 col146667_1) (< col146667_1 184100))
+model is null
+(&& (<= 184000 col146667_1) (< col146667_1 184100))
+solved: '(and (>= (in 1) 184000) (< (in 1) 184100))
+processing:("EX_VerticalExtent" ())
+failed to create custom:("EX_VerticalExtent" ())
+processing:((and (>= (in 1) 64100) (< (in 1) 64200)) ((columnName "col145468_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 64100 col145468_1) (< col145468_1 64200))
+model is null
+(&& (<= 64100 col145468_1) (< col145468_1 64200))
+solved: '(and (>= (in 1) 64100) (< (in 1) 64200))
+processing:((= (in 1) 2201022) ((columnName "col150944_1" primitiveTypes (1 )) ))
+model is null
+(= 2201022 col150944_1)
+model is null
+(= 2201022 col150944_1)
+solved: '(= (in 1) 2201022)
+processing:((and (>= (in 1) 440700) (< (in 1) 440800)) ((columnName "col149234_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 440700 col149234_1) (< col149234_1 440800))
+model is null
+(&& (<= 440700 col149234_1) (< col149234_1 440800))
+solved: '(and (>= (in 1) 440700) (< (in 1) 440800))
+processing:((and (and (and (= (in 1) 0) (= (in 2) (in 3))) (> (in 4) (in 5))) (= (in 6) (in 7))) ((columnName "col174837_1" primitiveTypes (1 )) (columnName "col174837_2" primitiveTypes (1 )) (columnName "col174837_3" primitiveTypes (1 )) (columnName "col174837_4" primitiveTypes (1 )) (columnName "col174837_5" primitiveTypes (1 )) (columnName "col174837_6" primitiveTypes (1 )) (columnName "col174837_7" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (= 0 col174837_1) (= col174837_2 col174837_3)) (< col174837_5 col174837_4)) (= col174837_6 col174837_7))
+model is null
+(&& (&& (&& (= 0 col174837_1) (= col174837_2 col174837_3)) (< col174837_5 col174837_4)) (= col174837_6 col174837_7))
+solved: '(and (and (and (= (in 1) 0) (= (in 2) (in 3))) (> (in 4) (in 5))) (= (in 6) (in 7)))
+processing:((if "VIEW""Views"(in 1))(if "TABLE""Tables"(in 1)) ((columnName "col176257_2" primitiveTypes (3 )) (columnName "col176257_1" primitiveTypes (3 )) (columnName "col176257_3" primitiveTypes (3 )) (columnName "col176257_4" primitiveTypes (1 )) (columnName "col176257_5" primitiveTypes (1 )) ))

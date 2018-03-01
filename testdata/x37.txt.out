@@ -1,0 +1,41 @@
+processing:((and (>= (in 1) 473300) (< (in 1) 473400)) ((columnName "col149560_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 473300 col149560_1) (< col149560_1 473400))
+model is null
+(&& (<= 473300 col149560_1) (< col149560_1 473400))
+solved: '(and (>= (in 1) 473300) (< (in 1) 473400))
+processing:((- (max (in 1) ) (max (in 2) )) ((columnName "col81924_1" primitiveTypes (1 )) (columnName "col81924_2" primitiveTypes (1 )) (columnName "col81924_3" primitiveTypes (1 )) (columnName "col81924_4" primitiveTypes (1 )) (columnName "col81924_5" primitiveTypes (1 )) (columnName "col81924_6" primitiveTypes (1 )) (columnName "col81924_7" primitiveTypes (1 )) (columnName "col81924_8" primitiveTypes (1 )) ))
+model is null
+(+ (ite (<= 0 col81924_1) col81924_1 0) (- (ite (<= 1 col81924_2) col81924_2 1)))
+(+ (ite (<= 0 col81924_1) col81924_1 0) (- (ite (<= 1 col81924_2) col81924_2 1)))
+(+ (ite (<= 0 col81924_1) col81924_1 0) (- (ite (<= 1 col81924_2) col81924_2 1)))
+failed synthesis: '(- (max (in 1)) (max (in 2)))
+processing:((and (= (in 1) (in 2)) (= (in 3) 675)) ((columnName "col135183_1" primitiveTypes (1 )) (columnName "col135183_2" primitiveTypes (1 )) (columnName "col135183_3" primitiveTypes (1 )) ))
+model is null
+(&& (= col135183_1 col135183_2) (= 675 col135183_3))
+model is null
+(&& (= col135183_1 col135183_2) (= 675 col135183_3))
+solved: '(and (= (in 1) (in 2)) (= (in 3) 675))
+processing:((and (and (= (in 1) "Акмолинская") (= (in 2) "Обработка растительных и животных питательных продуктов")) (>= (in 3) "1897")) ((columnName "col48015_1" primitiveTypes (3 )) (columnName "col48015_2" primitiveTypes (3 )) (columnName "col48015_3" primitiveTypes (2 )) ))
+model is null
+{[(&& (= Акмолинская col48015_1) (= Обработка растительных и животных питательных продуктов col48015_2)) invalid] [(! (&& (= Акмолинская col48015_1) (= Обработка растительных и животных питательных продуктов col48015_2))) #f]}
+model is null
+{[(&& (= Акмолинская col48015_1) (= Обработка растительных и животных питательных продуктов col48015_2)) invalid] [(! (&& (= Акмолинская col48015_1) (= Обработка растительных и животных питательных продуктов col48015_2))) #f]}
+solved: '(and (and (= (in 1) "Акмолинская") (= (in 2) "Обработка растительных и животных питательных продуктов")) (>= (in 3) "1897"))
+processing:((- 2.2250738585072014E-308 1.7976931348623157E308) ())
+model is null
+-1.7976931348623157e+308
+-1.7976931348623157e+308
+-1.7976931348623157e+308
+solved: '(- 2.2250738585072014e-308 1.7976931348623157e+308)
+processing:((and (and (and (= (in 4) (in 5)) (= (in 1) (in 6))) (= (in 2) (in 7))) (= (in 1) (in 8))) ((columnName "col50330_1" primitiveTypes (3 )) (columnName "col50330_2" primitiveTypes (3 )) (columnName "col50330_3" primitiveTypes (3 )) (columnName "col50330_4" primitiveTypes (1 )) (columnName "col50330_5" primitiveTypes (1 )) (columnName "col50330_6" primitiveTypes (3 )) (columnName "col50330_7" primitiveTypes (3 )) (columnName "col50330_8" primitiveTypes (3 )) ))
+model is null
+(&& (&& (&& (= col50330_4 col50330_5) (= col50330_1 col50330_6)) (= col50330_2 col50330_7)) (= col50330_1 col50330_8))
+model is null
+(&& (&& (&& (= col50330_4 col50330_5) (= col50330_1 col50330_6)) (= col50330_2 col50330_7)) (= col50330_1 col50330_8))
+solved: '(and (and (and (= (in 4) (in 5)) (= (in 1) (in 6))) (= (in 2) (in 7))) (= (in 1) (in 8)))
+processing:((sum (if (= (in 1) 13) (in 2) 0) ) ((columnName "col104655_1" primitiveTypes (1 )) (columnName "col104655_6" primitiveTypes (1 )) (columnName "col104655_7" primitiveTypes (1 )) (columnName "col104655_8" primitiveTypes (1 )) (columnName "col104655_9" primitiveTypes (1 )) ))
+model is null
+(+ -3 (ite (= 13 col104655_1) col104655_6 0))
+(+ -3 (ite (= 13 col104655_1) col104655_6 0))
+(+ -3 (ite (= 13 col104655_1) col104655_6 0))

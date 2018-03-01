@@ -1,0 +1,1 @@
+processing:((/ (sum (* (in 1) (in 2)) ) (sum (in 2) )) ((columnName "col9516_1" primitiveTypes (1 )) (columnName "col9516_2" primitiveTypes (1 )) (columnName "col9516_3" primitiveTypes (1 )) (columnName "col9516_4" primitiveTypes (3 )) (columnName "col9516_5" primitiveTypes (1 )) (columnName "col9516_6" primitiveTypes (1 )) ))

@@ -1,0 +1,516 @@
+processing:((and (>= (in 1) 174500) (< (in 1) 174600)) ((columnName "col146572_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 174500 col146572_1) (< col146572_1 174600))
+model is null
+(&& (<= 174500 col146572_1) (< col146572_1 174600))
+solved: '(and (>= (in 1) 174500) (< (in 1) 174600))
+processing:((and (and (< (in 1) 2275) (> (in 1) 2193)) (and (< (in 2) 2097) (> (in 2) 40))) ((columnName "col122013_1" primitiveTypes (1 )) (columnName "col122013_2" primitiveTypes (1 )) ))
+model is null
+(&& (&& (< col122013_1 2275) (< 2193 col122013_1)) (&& (< col122013_2 2097) (< 40 col122013_2)))
+model is null
+(&& (&& (< col122013_1 2275) (< 2193 col122013_1)) (&& (< col122013_2 2097) (< 40 col122013_2)))
+solved: '(and (and (< (in 1) 2275) (> (in 1) 2193)) (and (< (in 2) 2097) (> (in 2) 40)))
+processing:((= (in 1) 317) ((columnName "col29379_1" primitiveTypes (1 )) (columnName "col29379_2" primitiveTypes (1 )) (columnName "col29379_3" primitiveTypes (1 )) ))
+model is null
+(= 317 col29379_1)
+model is null
+(= 317 col29379_1)
+solved: '(= (in 1) 317)
+processing:((= (in 1) "qhst55puauip8blpo0h176i8u4") ((columnName "col38589_1" primitiveTypes (3 )) ))
+model is null
+(= qhst55puauip8blpo0h176i8u4 col38589_1)
+model is null
+(= qhst55puauip8blpo0h176i8u4 col38589_1)
+solved: '(= (in 1) "qhst55puauip8blpo0h176i8u4")
+processing:((and (>= (in 1) 416200) (< (in 1) 416300)) ((columnName "col148989_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 416200 col148989_1) (< col148989_1 416300))
+model is null
+(&& (<= 416200 col148989_1) (< col148989_1 416300))
+solved: '(and (>= (in 1) 416200) (< (in 1) 416300))
+processing:((and (= (in 1) #t) (= (in 2) (in 3))) ((columnName "col54761_1" primitiveTypes (4 )) (columnName "col54761_2" primitiveTypes (1 )) (columnName "col54761_3" primitiveTypes (1 )) ))
+model is null
+(&& col54761_1 (= col54761_2 col54761_3))
+model is null
+(&& col54761_1 (= col54761_2 col54761_3))
+solved: '(and (= (in 1) #t) (= (in 2) (in 3)))
+processing:((= (in 2) "0") ((columnName "col50736_1" primitiveTypes (1 )) (columnName "col50736_2" primitiveTypes (3 )) ))
+model is null
+(= 0 col50736_2)
+model is null
+(= 0 col50736_2)
+solved: '(= (in 2) "0")
+processing:((substring "Sakila" -5 3 ) ())
+failed to create custom:((substring "Sakila" -5 3 ) ())
+processing:((and (>= (in 1) 460000) (< (in 1) 460100)) ((columnName "col149427_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 460000 col149427_1) (< col149427_1 460100))
+model is null
+(&& (<= 460000 col149427_1) (< col149427_1 460100))
+solved: '(and (>= (in 1) 460000) (< (in 1) 460100))
+processing:((< (in 1) "G") ((columnName "col179374_1" primitiveTypes (2 )) ))
+model is null
+'invalid
+model is null
+'invalid
+solved: '(< (in 1) "G")
+processing:(" => " ((columnName "col83676_1" primitiveTypes (1 )) (columnName "col83676_2" primitiveTypes (1 )) (columnName "col83676_3" primitiveTypes (1 )) (columnName "col83676_4" primitiveTypes (1 )) ))
+failed to create custom:(" => " ((columnName "col83676_1" primitiveTypes (1 )) (columnName "col83676_2" primitiveTypes (1 )) (columnName "col83676_3" primitiveTypes (1 )) (columnName "col83676_4" primitiveTypes (1 )) ))
+processing:((notImplemented_like (in 2) "%wards" ) ((columnName "col117474_1" primitiveTypes (1 )) (columnName "col117474_2" primitiveTypes (3 )) ))
+failed to create custom:((notImplemented_like (in 2) "%wards" ) ((columnName "col117474_1" primitiveTypes (1 )) (columnName "col117474_2" primitiveTypes (3 )) ))
+processing:((and (< (in 1) "11-12-1997") (> (in 1) "10-21-1997")) ((columnName "col30452_1" primitiveTypes (2 )) ))
+model is null
+{[(! (&& (<= 0 col30452_1_s) (&& (< col30452_1_s 60) (&& (<= 0 col30452_1_m) (&& (< col30452_1_m 60) (&& (<= 0 col30452_1_h) (&& (< col30452_1_h 24) (&& (< 0 col30452_1_dy) (&& (<= col30452_1_dy 31) (&& (< 0 col30452_1_mn) (&& (<= col30452_1_mn 12) (< 0 col30452_1_yr)))))))))))) invalid] [(&& (&& (<= 0 col30452_1_s) (&& (< col30452_1_s 60) (&& (<= 0 col30452_1_m) (&& (< col30452_1_m 60) (&& (<= 0 col30452_1_h) (&& (< col30452_1_h 24) (&& (< 0 col30452_1_dy) (&& (<= col30452_1_dy 31) (&& (< 0 col30452_1_mn) (&& (<= col30452_1_mn 12) (< 0 col30452_1_yr))))))))))) ...) (&& (< 877392000 (+ col30452_1_s (* 86400 (+ -719468 (+ (+ (+ (+ -1 (+ col30452_1_dy (quotient (+ 2 (* 153 (+ col30452_1_mn (ite (< 2 col30452_1_mn) -3 9)))) 5))) (* 365 (+ (ite (<= col30452_1_mn 2) (+ -1 col30452_1_yr) col30452_1_yr) (* -400 (ite (<= 0 (ite (<= col30452_1_mn 2) (+ -1 col30452_1_yr) col30452_1_yr)) ...)))) ...) ...) ...))) ...)) ...)]}
+model is null
+{[(&& (&& (<= 0 col30452_1_s) (&& (< col30452_1_s 60) (&& (<= 0 col30452_1_m) (&& (< col30452_1_m 60) (&& (<= 0 col30452_1_h) (&& (< col30452_1_h 24) (&& (< 0 col30452_1_dy) (&& (<= col30452_1_dy 31) (&& (< 0 col30452_1_mn) (&& (<= col30452_1_mn 12) (< 0 col30452_1_yr))))))))))) ...) (&& (&& (&& (<= 0 col30452_1_s) (&& (< col30452_1_s 60) (&& (<= 0 col30452_1_m) (&& (< col30452_1_m 60) (&& (<= 0 col30452_1_h) (&& (< col30452_1_h 24) (&& (< 0 col30452_1_dy) (&& (<= col30452_1_dy 31) (&& (< 0 col30452_1_mn) (&& (<= col30452_1_mn 12) (< 0 col30452_1_yr))))))))))) ...) ...)] [(! (&& (&& (<= 0 col30452_1_s) (&& (< col30452_1_s 60) (&& (<= 0 col30452_1_m) (&& (< col30452_1_m 60) (&& (<= 0 col30452_1_h) (&& (< col30452_1_h 24) (&& (< 0 col30452_1_dy) (&& (<= col30452_1_dy 31) (&& (< 0 col30452_1_mn) (&& (<= col30452_1_mn 12) (< 0 col30452_1_yr))))))))))) ...)) invalid]}
+solved: '(and (< (in 1) "11-12-1997") (> (in 1) "10-21-1997"))
+processing:((and (= (in 2) "A") (= (in 3) "Y")) ((columnName "col29519_1" primitiveTypes (1 )) (columnName "col29519_2" primitiveTypes (3 )) (columnName "col29519_3" primitiveTypes (3 )) (columnName "col29519_4" primitiveTypes (1 )) ))
+model is null
+(&& (= A col29519_2) (= Y col29519_3))
+model is null
+(&& (= A col29519_2) (= Y col29519_3))
+solved: '(and (= (in 2) "A") (= (in 3) "Y"))
+processing:((= (in 1) 2113549797) ((columnName "col49046_1" primitiveTypes (1 )) ))
+model is null
+(= 2113549797 col49046_1)
+model is null
+(= 2113549797 col49046_1)
+solved: '(= (in 1) 2113549797)
+processing:((and (>= (in 1) 48300) (< (in 1) 48400)) ((columnName "col145310_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 48300 col145310_1) (< col145310_1 48400))
+model is null
+(&& (<= 48300 col145310_1) (< col145310_1 48400))
+solved: '(and (>= (in 1) 48300) (< (in 1) 48400))
+processing:((and (and (and (< (in 1) 5975.156609235371) (> (in 1) 4322.3561797504535)) (and (< (in 2) 27.899275669299033) (> (in 2) 26.833440563527915))) (and (< (in 3) 29.970507827318063) (> (in 3) 27.882865480990255))) ((columnName "col122165_1" primitiveTypes (5 )) (columnName "col122165_2" primitiveTypes (5 )) (columnName "col122165_3" primitiveTypes (5 )) ))
+model is null
+(&& (&& (&& (< col122165_1 5975.156609235371) (< 4322.3561797504535 col122165_1)) (&& (< col122165_2 27.899275669299033) (< 26.833440563527915 col122165_2))) (&& (< col122165_3 29.970507827318063) (< 27.882865480990255 col122165_3)))
+model is null
+(&& (&& (&& (< col122165_1 5975.156609235371) (< 4322.3561797504535 col122165_1)) (&& (< col122165_2 27.899275669299033) (< 26.833440563527915 col122165_2))) (&& (< col122165_3 29.970507827318063) (< 27.882865480990255 col122165_3)))
+solved: '(and (and (and (< (in 1) 5975.156609235371) (> (in 1) 4322.3561797504535)) (and (< (in 2) 27.899275669299033) (> (in 2) 26.833440563527915))) (and (< (in 3) 29.970507827318063) (> (in 3) 27.882865480990255)))
+processing:((or (and (> (in 1) 1) (= (in 2) 1)) (> (in 3) 19)) ((columnName "col71_1" primitiveTypes (1 )) (columnName "col71_2" primitiveTypes (1 )) (columnName "col71_3" primitiveTypes (1 )) ))
+model is null
+(|| (&& (< 1 col71_1) (= 1 col71_2)) (&& (< 19 col71_3) (! (&& (< 1 col71_1) (= 1 col71_2)))))
+model is null
+(|| (&& (< 1 col71_1) (= 1 col71_2)) (&& (< 19 col71_3) (! (&& (< 1 col71_1) (= 1 col71_2)))))
+solved: '(or (and (> (in 1) 1) (= (in 2) 1)) (> (in 3) 19))
+processing:((and (= (in 1) 1) (= (in 2) "contacts")) ((columnName "col78295_1" primitiveTypes (1 )) (columnName "col78295_2" primitiveTypes (3 )) (columnName "col78295_3" primitiveTypes (1 )) (columnName "col78295_4" primitiveTypes (1 )) ))
+model is null
+(&& (= 1 col78295_1) (= contacts col78295_2))
+model is null
+(&& (= 1 col78295_1) (= contacts col78295_2))
+solved: '(and (= (in 1) 1) (= (in 2) "contacts"))
+processing:((and (and (< (in 1) 30.90521086118056) (> (in 1) 29.65652566746414)) (and (< (in 2) 6778.085461702261) (> (in 2) 5632.183777937852))) ((columnName "col122373_1" primitiveTypes (5 )) (columnName "col122373_2" primitiveTypes (5 )) ))
+model is null
+(&& (&& (< col122373_1 30.90521086118056) (< 29.65652566746414 col122373_1)) (&& (< col122373_2 6778.085461702261) (< 5632.183777937852 col122373_2)))
+model is null
+(&& (&& (< col122373_1 30.90521086118056) (< 29.65652566746414 col122373_1)) (&& (< col122373_2 6778.085461702261) (< 5632.183777937852 col122373_2)))
+solved: '(and (and (< (in 1) 30.90521086118056) (> (in 1) 29.65652566746414)) (and (< (in 2) 6778.085461702261) (> (in 2) 5632.183777937852)))
+processing:((and (>= (in 1) 384900) (< (in 1) 385000)) ((columnName "col148676_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 384900 col148676_1) (< col148676_1 385000))
+model is null
+(&& (<= 384900 col148676_1) (< col148676_1 385000))
+solved: '(and (>= (in 1) 384900) (< (in 1) 385000))
+processing:((and (notImplemented_like (in 2) "extra%" ) (and (< (in 3) "12-31-2010") (> (in 3) "1-1-2010"))) ((columnName "col13762_1" primitiveTypes (1 )) (columnName "col13762_2" primitiveTypes (3 )) (columnName "col13762_3" primitiveTypes (2 )) ))
+failed to create custom:((and (notImplemented_like (in 2) "extra%" ) (and (< (in 3) "12-31-2010") (> (in 3) "1-1-2010"))) ((columnName "col13762_1" primitiveTypes (1 )) (columnName "col13762_2" primitiveTypes (3 )) (columnName "col13762_3" primitiveTypes (2 )) ))
+processing:((and (< (in 1) 8611.905775595937) (> (in 1) 8554.786826128391)) ((columnName "col177995_1" primitiveTypes (5 )) ))
+model is null
+(&& (< col177995_1 8611.905775595937) (< 8554.786826128391 col177995_1))
+model is null
+(&& (< col177995_1 8611.905775595937) (< 8554.786826128391 col177995_1))
+solved: '(and (< (in 1) 8611.905775595937) (> (in 1) 8554.786826128391))
+processing:((if (= (in 3) (in 4)) (in 2) (in 5)) ((columnName "col181371_1" primitiveTypes (1 )) (columnName "col181371_3" primitiveTypes (1 )) (columnName "col181371_4" primitiveTypes (1 )) (columnName "col181371_6" primitiveTypes (1 )) (columnName "col181371_7" primitiveTypes (1 )) (columnName "col181371_8" primitiveTypes (1 )) (columnName "col181371_9" primitiveTypes (1 )) (columnName "col181371_10" primitiveTypes (1 )) (columnName "col181371_11" primitiveTypes (1 )) (columnName "col181371_12" primitiveTypes (1 )) (columnName "col181371_13" primitiveTypes (1 )) (columnName "col181371_14" primitiveTypes (1 )) (columnName "col181371_15" primitiveTypes (1 )) ))
+model is null
+(ite (= col181371_4 col181371_6) col181371_3 col181371_7)
+(integer->real (ite (= col181371_4 col181371_6) col181371_3 col181371_7))
+(integer->real (ite (= col181371_4 col181371_6) col181371_3 col181371_7))
+solved: '(if (= (in 3) (in 4)) (in 2) (in 5))
+processing:((and (>= (in 1) 389800) (< (in 1) 389900)) ((columnName "col148725_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 389800 col148725_1) (< col148725_1 389900))
+model is null
+(&& (<= 389800 col148725_1) (< col148725_1 389900))
+solved: '(and (>= (in 1) 389800) (< (in 1) 389900))
+processing:((count (if (= (in 1) "mlb") (in 2) '()) ) ((columnName "col5740_1" primitiveTypes (3 )) (columnName "col5740_3" primitiveTypes (3 )) (columnName "col5740_4" primitiveTypes (2 )) ))
+failed to create custom:((count (if (= (in 1) "mlb") (in 2) '()) ) ((columnName "col5740_1" primitiveTypes (3 )) (columnName "col5740_3" primitiveTypes (3 )) (columnName "col5740_4" primitiveTypes (2 )) ))
+processing:((and (>= (in 1) 469000) (< (in 1) 469100)) ((columnName "col149517_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 469000 col149517_1) (< col149517_1 469100))
+model is null
+(&& (<= 469000 col149517_1) (< col149517_1 469100))
+solved: '(and (>= (in 1) 469000) (< (in 1) 469100))
+processing:((and (and (and (and (and (and (and (and (= (in 5) (in 6)) (= (in 7) (in 8))) (= (in 9) (in 10))) (= (in 11) (in 12))) (= (in 13) "M")) (= (in 14) "S")) (= (in 15) "College")) (or (= (in 16) "N") (= (in 17) "N"))) (= (in 18) 2000)) ((columnName "col59029_1" primitiveTypes (1 )) (columnName "col59029_2" primitiveTypes (1 )) (columnName "col59029_3" primitiveTypes (1 )) (columnName "col59029_4" primitiveTypes (1 )) (columnName "col59029_5" primitiveTypes (1 )) (columnName "col59029_6" primitiveTypes (1 )) (columnName "col59029_7" primitiveTypes (1 )) (columnName "col59029_8" primitiveTypes (1 )) (columnName "col59029_9" primitiveTypes (1 )) (columnName "col59029_10" primitiveTypes (1 )) (columnName "col59029_11" primitiveTypes (1 )) (columnName "col59029_12" primitiveTypes (1 )) (columnName "col59029_13" primitiveTypes (3 )) (columnName "col59029_14" primitiveTypes (3 )) (columnName "col59029_15" primitiveTypes (3 )) (columnName "col59029_16" primitiveTypes (3 )) (columnName "col59029_17" primitiveTypes (3 )) (columnName "col59029_18" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (&& (&& (&& (&& (&& (= col59029_5 col59029_6) (= col59029_7 col59029_8)) (= col59029_9 col59029_10)) (= col59029_11 col59029_12)) (= M col59029_13)) (= S col59029_14)) (= College col59029_15)) (|| (= N col59029_16) (&& (= N col59029_17) (! (= N col59029_16))))) (= 2000 col59029_18))
+model is null
+(&& (&& (&& (&& (&& (&& (&& (&& (= col59029_5 col59029_6) (= col59029_7 col59029_8)) (= col59029_9 col59029_10)) (= col59029_11 col59029_12)) (= M col59029_13)) (= S col59029_14)) (= College col59029_15)) (|| (= N col59029_16) (&& (= N col59029_17) (! (= N col59029_16))))) (= 2000 col59029_18))
+solved: '(and (and (and (and (and (and (and (and (= (in 5) (in 6)) (= (in 7) (in 8))) (= (in 9) (in 10))) (= (in 11) (in 12))) (= (in 13) "M")) (= (in 14) "S")) (= (in 15) "College")) (or (= (in 16) "N") (= (in 17) "N"))) (= (in 18) 2000))
+processing:((and (< (in 1) 9181) (> (in 1) 3307)) ((columnName "col154043_1" primitiveTypes (1 )) ))
+model is null
+(&& (< col154043_1 9181) (< 3307 col154043_1))
+model is null
+(&& (< col154043_1 9181) (< 3307 col154043_1))
+solved: '(and (< (in 1) 9181) (> (in 1) 3307))
+processing:((max (if (= (in 1) 21) (in 5) 0) ) ((columnName "col104655_1" primitiveTypes (1 )) (columnName "col104655_6" primitiveTypes (1 )) (columnName "col104655_7" primitiveTypes (1 )) (columnName "col104655_8" primitiveTypes (1 )) (columnName "col104655_9" primitiveTypes (1 )) ))
+model is null
+(ite (<= 1 (ite (= 21 col104655_1) col104655_9 0)) (ite (= 21 col104655_1) col104655_9 0) 1)
+(ite (<= 1 (ite (= 21 col104655_1) col104655_9 0)) (ite (= 21 col104655_1) col104655_9 0) 1)
+(ite (<= 1 (ite (= 21 col104655_1) col104655_9 0)) (ite (= 21 col104655_1) col104655_9 0) 1)
+solved: '(max (if (= (in 1) 21) (in 5) 0))
+processing:((and (< (in 1) 31.439072206666566) (> (in 1) 29.595509732164928)) ((columnName "col170945_1" primitiveTypes (5 )) ))
+model is null
+(&& (< col170945_1 31.439072206666566) (< 29.595509732164928 col170945_1))
+model is null
+(&& (< col170945_1 31.439072206666566) (< 29.595509732164928 col170945_1))
+solved: '(and (< (in 1) 31.439072206666566) (> (in 1) 29.595509732164928))
+processing:((and (and (< (in 1) 8171.059640911871) (> (in 1) 6411.658183645889)) (and (< (in 2) 21.02519941108272) (> (in 2) 21.00888915101338))) ((columnName "col153566_1" primitiveTypes (5 )) (columnName "col153566_2" primitiveTypes (5 )) ))
+model is null
+(&& (&& (< col153566_1 8171.059640911871) (< 6411.658183645889 col153566_1)) (&& (< col153566_2 21.02519941108272) (< 21.00888915101338 col153566_2)))
+model is null
+(&& (&& (< col153566_1 8171.059640911871) (< 6411.658183645889 col153566_1)) (&& (< col153566_2 21.02519941108272) (< 21.00888915101338 col153566_2)))
+solved: '(and (and (< (in 1) 8171.059640911871) (> (in 1) 6411.658183645889)) (and (< (in 2) 21.02519941108272) (> (in 2) 21.00888915101338)))
+processing:((and (is-null (in 1)) (= (in 2) 17)) ((columnName "col98119_1" primitiveTypes (6 )) (columnName "col98119_2" primitiveTypes (1 )) (columnName "col98119_3" primitiveTypes (1 )) (columnName "col98119_4" primitiveTypes (6 )) ))
+model is null
+#f
+model is null
+#f
+solved: '(and (is-null (in 1)) (= (in 2) 17))
+processing:((and (and (and (= (in 1) "DCHPMCAID") (and (< (in 2) (in 3)) (> (in 2) (in 4)))) (= (in 5) "AXI")) (= (in 6) "AMERIGROUP")) ((columnName "col54698_1" primitiveTypes (3 )) (columnName "col54698_2" primitiveTypes (1 )) (columnName "col54698_3" primitiveTypes (1 )) (columnName "col54698_4" primitiveTypes (1 )) (columnName "col54698_5" primitiveTypes (3 )) (columnName "col54698_6" primitiveTypes (3 )) ))
+model is null
+(&& (&& (&& (= DCHPMCAID col54698_1) (&& (< col54698_2 col54698_3) (< col54698_4 col54698_2))) (= AXI col54698_5)) (= AMERIGROUP col54698_6))
+model is null
+(&& (&& (&& (= DCHPMCAID col54698_1) (&& (< col54698_2 col54698_3) (< col54698_4 col54698_2))) (= AXI col54698_5)) (= AMERIGROUP col54698_6))
+solved: '(and (and (and (= (in 1) "DCHPMCAID") (and (< (in 2) (in 3)) (> (in 2) (in 4)))) (= (in 5) "AXI")) (= (in 6) "AMERIGROUP"))
+processing:((<= (in 2) 110) ((columnName "col166720_1" primitiveTypes (3 )) (columnName "col166720_2" primitiveTypes (1 )) ))
+model is null
+(<= col166720_2 110)
+model is null
+(<= col166720_2 110)
+solved: '(<= (in 2) 110)
+processing:("SRID01" ())
+failed to create custom:("SRID01" ())
+processing:((and (and (and (< (in 1) 1984.0860494997182) (> (in 1) 681.1678704783294)) (= (in 2) (in 3))) (= (in 4) (in 5))) ((columnName "col122236_1" primitiveTypes (5 )) (columnName "col122236_2" primitiveTypes (1 )) (columnName "col122236_3" primitiveTypes (1 )) (columnName "col122236_4" primitiveTypes (1 )) (columnName "col122236_5" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (< col122236_1 1984.0860494997182) (< 681.1678704783294 col122236_1)) (= col122236_2 col122236_3)) (= col122236_4 col122236_5))
+model is null
+(&& (&& (&& (< col122236_1 1984.0860494997182) (< 681.1678704783294 col122236_1)) (= col122236_2 col122236_3)) (= col122236_4 col122236_5))
+solved: '(and (and (and (< (in 1) 1984.0860494997182) (> (in 1) 681.1678704783294)) (= (in 2) (in 3))) (= (in 4) (in 5)))
+processing:((and (>= (in 1) 397000) (< (in 1) 397100)) ((columnName "col148797_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 397000 col148797_1) (< col148797_1 397100))
+model is null
+(&& (<= 397000 col148797_1) (< col148797_1 397100))
+solved: '(and (>= (in 1) 397000) (< (in 1) 397100))
+processing:((and (= (in 1) "value1") (= (in 2) "value1")) ((columnName "col44091_1" primitiveTypes (3 )) (columnName "col44091_2" primitiveTypes (3 )) ))
+model is null
+(&& (= value1 col44091_1) (= value1 col44091_2))
+model is null
+(&& (= value1 col44091_1) (= value1 col44091_2))
+solved: '(and (= (in 1) "value1") (= (in 2) "value1"))
+processing:((or (= (in 1) "α") (= (in 2) "19th")) ((columnName "col158739_1" primitiveTypes (3 )) (columnName "col158739_2" primitiveTypes (3 )) ))
+model is null
+(|| (= α col158739_1) (&& (= 19th col158739_2) (! (= α col158739_1))))
+model is null
+(|| (= α col158739_1) (&& (= 19th col158739_2) (! (= α col158739_1))))
+solved: '(or (= (in 1) "α") (= (in 2) "19th"))
+processing:((and (>= (in 1) 394000) (< (in 1) 394100)) ((columnName "col148767_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 394000 col148767_1) (< col148767_1 394100))
+model is null
+(&& (<= 394000 col148767_1) (< col148767_1 394100))
+solved: '(and (>= (in 1) 394000) (< (in 1) 394100))
+processing:((and (< (in 1) 0.19020711656609002) (> (in 1) 0.1853525696680121)) ((columnName "col153400_1" primitiveTypes (5 )) ))
+model is null
+(&& (< col153400_1 0.19020711656609002) (< 0.1853525696680121 col153400_1))
+model is null
+(&& (< col153400_1 0.19020711656609002) (< 0.1853525696680121 col153400_1))
+solved: '(and (< (in 1) 0.19020711656609002) (> (in 1) 0.1853525696680121))
+processing:((and (and (and (< (in 1) 4884.552647442936) (> (in 1) 4858.912285443368)) (and (< (in 2) 27.556729023636784) (> (in 2) 25.766054423608935))) (and (< (in 3) 32.54708827939548) (> (in 3) 30.818847523159924))) ((columnName "col122565_1" primitiveTypes (5 )) (columnName "col122565_2" primitiveTypes (5 )) (columnName "col122565_3" primitiveTypes (5 )) ))
+model is null
+(&& (&& (&& (< col122565_1 4884.552647442936) (< 4858.912285443368 col122565_1)) (&& (< col122565_2 27.556729023636784) (< 25.766054423608935 col122565_2))) (&& (< col122565_3 32.54708827939548) (< 30.818847523159924 col122565_3)))
+model is null
+(&& (&& (&& (< col122565_1 4884.552647442936) (< 4858.912285443368 col122565_1)) (&& (< col122565_2 27.556729023636784) (< 25.766054423608935 col122565_2))) (&& (< col122565_3 32.54708827939548) (< 30.818847523159924 col122565_3)))
+solved: '(and (and (and (< (in 1) 4884.552647442936) (> (in 1) 4858.912285443368)) (and (< (in 2) 27.556729023636784) (> (in 2) 25.766054423608935))) (and (< (in 3) 32.54708827939548) (> (in 3) 30.818847523159924)))
+processing:((and (>= (in 1) 353100) (< (in 1) 353200)) ((columnName "col148358_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 353100 col148358_1) (< col148358_1 353200))
+model is null
+(&& (<= 353100 col148358_1) (< col148358_1 353200))
+solved: '(and (>= (in 1) 353100) (< (in 1) 353200))
+processing:((sum (* (in 3) (in 2)) ) ((columnName "col4795_1" primitiveTypes (1 )) (columnName "col4795_3" primitiveTypes (1 )) (columnName "col4795_4" primitiveTypes (1 )) (columnName "col4795_5" primitiveTypes (1 )) (columnName "col4795_6" primitiveTypes (1 )) (columnName "col4795_7" primitiveTypes (1 )) (columnName "col4795_8" primitiveTypes (1 )) (columnName "col4795_9" primitiveTypes (1 )) (columnName "col4795_10" primitiveTypes (1 )) (columnName "col4795_11" primitiveTypes (1 )) (columnName "col4795_2" primitiveTypes (1 )) (columnName "col4795_12" primitiveTypes (1 )) (columnName "col4795_13" primitiveTypes (3 )) ))
+model is null
+(+ -1 (* col4795_3 col4795_4))
+(+ -1 (* col4795_3 col4795_4))
+(+ -1 (* col4795_3 col4795_4))
+solved: '(sum (* (in 3) (in 2)))
+processing:((max (if (= (in 1) 21) (in 4) 0) ) ((columnName "col104655_1" primitiveTypes (1 )) (columnName "col104655_6" primitiveTypes (1 )) (columnName "col104655_7" primitiveTypes (1 )) (columnName "col104655_8" primitiveTypes (1 )) (columnName "col104655_9" primitiveTypes (1 )) ))
+model is null
+(ite (<= 1 (ite (= 21 col104655_1) col104655_8 0)) (ite (= 21 col104655_1) col104655_8 0) 1)
+(ite (<= 1 (ite (= 21 col104655_1) col104655_8 0)) (ite (= 21 col104655_1) col104655_8 0) 1)
+(ite (<= 1 (ite (= 21 col104655_1) col104655_8 0)) (ite (= 21 col104655_1) col104655_8 0) 1)
+solved: '(max (if (= (in 1) 21) (in 4) 0))
+processing:((and (= (in 1) "10-12-2016") (= (in 2) 3501)) ((columnName "col98809_1" primitiveTypes (2 )) (columnName "col98809_2" primitiveTypes (1 )) (columnName "col98809_3" primitiveTypes (1 )) (columnName "col98809_4" primitiveTypes (1 )) ))
+model is null
+{[(&& (<= 0 col98809_1_s) (&& (< col98809_1_s 60) (&& (<= 0 col98809_1_m) (&& (< col98809_1_m 60) (&& (<= 0 col98809_1_h) (&& (< col98809_1_h 24) (&& (< 0 col98809_1_dy) (&& (<= col98809_1_dy 31) (&& (< 0 col98809_1_mn) (&& (<= col98809_1_mn 12) (< 0 col98809_1_yr))))))))))) (&& (= 3501 col98809_2) (! (&& (&& (<= 0 col98809_1_s) (&& (< col98809_1_s 60) (&& (<= 0 col98809_1_m) (&& (< col98809_1_m 60) (&& (<= 0 col98809_1_h) (&& (< col98809_1_h 24) (&& (< 0 col98809_1_dy) (&& (<= col98809_1_dy 31) (&& (< 0 col98809_1_mn) (&& (<= col98809_1_mn ...) ...)))))))))) ...)))] [(! (&& (<= 0 col98809_1_s) (&& (< col98809_1_s 60) (&& (<= 0 col98809_1_m) (&& (< col98809_1_m 60) (&& (<= 0 col98809_1_h) (&& (< col98809_1_h 24) (&& (< 0 col98809_1_dy) (&& (<= col98809_1_dy 31) (&& (< 0 col98809_1_mn) (&& (<= col98809_1_mn 12) (< 0 col98809_1_yr)))))))))))) invalid]}
+model is null
+{[(&& (<= 0 col98809_1_s) (&& (< col98809_1_s 60) (&& (<= 0 col98809_1_m) (&& (< col98809_1_m 60) (&& (<= 0 col98809_1_h) (&& (< col98809_1_h 24) (&& (< 0 col98809_1_dy) (&& (<= col98809_1_dy 31) (&& (< 0 col98809_1_mn) (&& (<= col98809_1_mn 12) (< 0 col98809_1_yr))))))))))) (&& (&& (<= 0 col98809_1_s) (&& (< col98809_1_s 60) (&& (<= 0 col98809_1_m) (&& (< col98809_1_m 60) (&& (<= 0 col98809_1_h) (&& (< col98809_1_h 24) (&& (< 0 col98809_1_dy) (&& (<= col98809_1_dy 31) (&& (< 0 col98809_1_mn) (&& (<= col98809_1_mn 12) (< 0 col98809_1_yr))))))))))) ...)] [(! (&& (<= 0 col98809_1_s) (&& (< col98809_1_s 60) (&& (<= 0 col98809_1_m) (&& (< col98809_1_m 60) (&& (<= 0 col98809_1_h) (&& (< col98809_1_h 24) (&& (< 0 col98809_1_dy) (&& (<= col98809_1_dy 31) (&& (< 0 col98809_1_mn) (&& (<= col98809_1_mn 12) (< 0 col98809_1_yr)))))))))))) invalid]}
+solved: '(and (= (in 1) "10-12-2016") (= (in 2) 3501))
+processing:("MD_BrowseGraphic" ())
+failed to create custom:("MD_BrowseGraphic" ())
+processing:((>= (in 1) 5) ((columnName "col151907_1" primitiveTypes (1 )) (columnName "col151907_2" primitiveTypes (1 )) (columnName "col151907_3" primitiveTypes (1 )) ))
+model is null
+(<= 5 col151907_1)
+model is null
+(<= 5 col151907_1)
+solved: '(>= (in 1) 5)
+processing:((or (and (= 1 1) (= (in 1) "Jones")) (and (not (= 1 1)) (= (in 1) "Smith"))) ((columnName "col43233_1" primitiveTypes (3 )) (columnName "col43233_2" primitiveTypes (1 )) (columnName "col43233_3" primitiveTypes (1 )) ))
+failed to create custom:((or (and (= 1 1) (= (in 1) "Jones")) (and (not (= 1 1)) (= (in 1) "Smith"))) ((columnName "col43233_1" primitiveTypes (3 )) (columnName "col43233_2" primitiveTypes (1 )) (columnName "col43233_3" primitiveTypes (1 )) ))
+processing:((<= (in 5) "9-4-1998") ((columnName "col100369_1" primitiveTypes (1 )) (columnName "col100369_2" primitiveTypes (1 )) (columnName "col100369_3" primitiveTypes (1 )) (columnName "col100369_5" primitiveTypes (2 )) ))
+failed to create custom:((<= (in 5) "9-4-1998") ((columnName "col100369_1" primitiveTypes (1 )) (columnName "col100369_2" primitiveTypes (1 )) (columnName "col100369_3" primitiveTypes (1 )) (columnName "col100369_5" primitiveTypes (2 )) ))
+processing:((round (/ (+ (in 1) (in 2)) 1024) ) ((columnName "col84443_1" primitiveTypes (1 )) (columnName "col84443_2" primitiveTypes (1 )) (columnName "col84443_3" primitiveTypes (1 )) (columnName "col84443_4" primitiveTypes (1 )) ))
+failed to create custom:((round (/ (+ (in 1) (in 2)) 1024) ) ((columnName "col84443_1" primitiveTypes (1 )) (columnName "col84443_2" primitiveTypes (1 )) (columnName "col84443_3" primitiveTypes (1 )) (columnName "col84443_4" primitiveTypes (1 )) ))
+processing:((and (>= (in 1) 34900) (< (in 1) 35000)) ((columnName "col145176_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 34900 col145176_1) (< col145176_1 35000))
+model is null
+(&& (<= 34900 col145176_1) (< col145176_1 35000))
+solved: '(and (>= (in 1) 34900) (< (in 1) 35000))
+processing:((= (in 1) "11") ((columnName "col35667_1" primitiveTypes (3 )) ))
+model is null
+(= 11 col35667_1)
+model is null
+(= 11 col35667_1)
+solved: '(= (in 1) "11")
+processing:((and (>= (in 1) 64500) (< (in 1) 64600)) ((columnName "col145472_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 64500 col145472_1) (< col145472_1 64600))
+model is null
+(&& (<= 64500 col145472_1) (< col145472_1 64600))
+solved: '(and (>= (in 1) 64500) (< (in 1) 64600))
+processing:((and (>= (in 1) 484800) (< (in 1) 484900)) ((columnName "col149675_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 484800 col149675_1) (< col149675_1 484900))
+model is null
+(&& (<= 484800 col149675_1) (< col149675_1 484900))
+solved: '(and (>= (in 1) 484800) (< (in 1) 484900))
+processing:((>= (in 1) 6) ((columnName "col158934_1" primitiveTypes (1 )) ))
+model is null
+(<= 6 col158934_1)
+model is null
+(<= 6 col158934_1)
+solved: '(>= (in 1) 6)
+processing:((sum (if (= (in 1) 1) (in 3) 0) ) ((columnName "col104655_1" primitiveTypes (1 )) (columnName "col104655_6" primitiveTypes (1 )) (columnName "col104655_7" primitiveTypes (1 )) (columnName "col104655_8" primitiveTypes (1 )) (columnName "col104655_9" primitiveTypes (1 )) ))
+model is null
+(+ -3 (ite (= 1 col104655_1) col104655_7 0))
+(+ -3 (ite (= 1 col104655_1) col104655_7 0))
+(+ -3 (ite (= 1 col104655_1) col104655_7 0))
+solved: '(sum (if (= (in 1) 1) (in 3) 0))
+processing:((= (in 1) "cdr") ((columnName "col82201_1" primitiveTypes (3 )) ))
+model is null
+(= cdr col82201_1)
+model is null
+(= cdr col82201_1)
+solved: '(= (in 1) "cdr")
+processing:((<= (in 1) 110) ((columnName "col166719_1" primitiveTypes (1 )) ))
+model is null
+(<= col166719_1 110)
+model is null
+(<= col166719_1 110)
+solved: '(<= (in 1) 110)
+processing:("valuebreaks" ())
+failed to create custom:("valuebreaks" ())
+processing:("taxonomicidentgroup" ())
+failed to create custom:("taxonomicidentgroup" ())
+processing:((and (> (in 1) 69000) (< (in 1) 70001)) ((columnName "col66505_1" primitiveTypes (1 )) ))
+model is null
+(&& (< 69000 col66505_1) (< col66505_1 70001))
+model is null
+(&& (< 69000 col66505_1) (< col66505_1 70001))
+solved: '(and (> (in 1) 69000) (< (in 1) 70001))
+processing:((and (and (and (= (in 2) 1) (= (in 3) 1)) (= (in 4) 5)) (= (in 5) (in 6))) ((columnName "col89969_1" primitiveTypes (1 )) (columnName "col89969_2" primitiveTypes (1 )) (columnName "col89969_3" primitiveTypes (1 )) (columnName "col89969_4" primitiveTypes (1 )) (columnName "col89969_5" primitiveTypes (1 )) (columnName "col89969_6" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (= 1 col89969_2) (= 1 col89969_3)) (= 5 col89969_4)) (= col89969_5 col89969_6))
+model is null
+(&& (&& (&& (= 1 col89969_2) (= 1 col89969_3)) (= 5 col89969_4)) (= col89969_5 col89969_6))
+solved: '(and (and (and (= (in 2) 1) (= (in 3) 1)) (= (in 4) 5)) (= (in 5) (in 6)))
+processing:((= (in 1) "jozwik.kamila@gmail.com") ((columnName "col124011_1" primitiveTypes (3 )) (columnName "col124011_2" primitiveTypes (1 )) (columnName "col124011_3" primitiveTypes (1 )) ))
+model is null
+(= jozwik.kamila@gmail.com col124011_1)
+model is null
+(= jozwik.kamila@gmail.com col124011_1)
+solved: '(= (in 1) "jozwik.kamila@gmail.com")
+processing:((and (notImplemented_like (in 4) "%REALEC%" ) (or (or (is-null (in 3)) (is-null (in 1))) (is-null (in 5)))) ((columnName "col1642_1" primitiveTypes (2 6 )) (columnName "col1642_4" primitiveTypes (3 )) (columnName "col1642_3" primitiveTypes (6 )) (columnName "col1642_5" primitiveTypes (6 )) ))
+failed to create custom:((and (notImplemented_like (in 4) "%REALEC%" ) (or (or (is-null (in 3)) (is-null (in 1))) (is-null (in 5)))) ((columnName "col1642_1" primitiveTypes (2 6 )) (columnName "col1642_4" primitiveTypes (3 )) (columnName "col1642_3" primitiveTypes (6 )) (columnName "col1642_5" primitiveTypes (6 )) ))
+processing:((= (in 1) "&1") ((columnName "col80027_1" primitiveTypes (3 )) ))
+model is null
+(= &1 col80027_1)
+model is null
+(= &1 col80027_1)
+solved: '(= (in 1) "&1")
+processing:((* (* (in 2) 12) (in 1)) ((columnName "col185471_2" primitiveTypes (1 )) ))
+failed to create custom:((* (* (in 2) 12) (in 1)) ((columnName "col185471_2" primitiveTypes (1 )) ))
+processing:((and (>= (in 1) 174200) (< (in 1) 174300)) ((columnName "col146569_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 174200 col146569_1) (< col146569_1 174300))
+model is null
+(&& (<= 174200 col146569_1) (< col146569_1 174300))
+solved: '(and (>= (in 1) 174200) (< (in 1) 174300))
+processing:((* (in 2) 60) ((columnName "col81168_1" primitiveTypes (1 )) (columnName "col81168_2" primitiveTypes (1 )) (columnName "col81168_3" primitiveTypes (6 )) (columnName "col81168_4" primitiveTypes (3 )) (columnName "col81168_5" primitiveTypes (6 )) ))
+model is null
+(* 60 col81168_2)
+(integer->real (* 60 col81168_2))
+(integer->real (* 60 col81168_2))
+solved: '(* (in 2) 60)
+processing:((= (in 1) 34567) ((columnName "col139262_1" primitiveTypes (1 )) ))
+model is null
+(= 34567 col139262_1)
+model is null
+(= 34567 col139262_1)
+solved: '(= (in 1) 34567)
+processing:((= (in 1) "0359") ((columnName "col9521_1" primitiveTypes (3 )) ))
+model is null
+(= 0359 col9521_1)
+model is null
+(= 0359 col9521_1)
+solved: '(= (in 1) "0359")
+processing:((and (>= (in 1) 237600) (< (in 1) 237700)) ((columnName "col147203_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 237600 col147203_1) (< col147203_1 237700))
+model is null
+(&& (<= 237600 col147203_1) (< col147203_1 237700))
+solved: '(and (>= (in 1) 237600) (< (in 1) 237700))
+processing:((sum (if (= (in 1) 1) (in 2) 0) ) ((columnName "col104655_1" primitiveTypes (1 )) (columnName "col104655_6" primitiveTypes (1 )) (columnName "col104655_7" primitiveTypes (1 )) (columnName "col104655_8" primitiveTypes (1 )) (columnName "col104655_9" primitiveTypes (1 )) ))
+model is null
+(+ -3 (ite (= 1 col104655_1) col104655_6 0))
+(+ -3 (ite (= 1 col104655_1) col104655_6 0))
+(+ -3 (ite (= 1 col104655_1) col104655_6 0))
+solved: '(sum (if (= (in 1) 1) (in 2) 0))
+processing:((and (and (< (in 1) 34.188933901881875) (> (in 1) 19.868108847472325)) (= (in 2) (in 3))) ((columnName "col170756_1" primitiveTypes (5 )) (columnName "col170756_2" primitiveTypes (1 )) (columnName "col170756_3" primitiveTypes (1 )) ))
+model is null
+(&& (&& (< col170756_1 34.188933901881875) (< 19.868108847472325 col170756_1)) (= col170756_2 col170756_3))
+model is null
+(&& (&& (< col170756_1 34.188933901881875) (< 19.868108847472325 col170756_1)) (= col170756_2 col170756_3))
+solved: '(and (and (< (in 1) 34.188933901881875) (> (in 1) 19.868108847472325)) (= (in 2) (in 3)))
+processing:((if (notImplemented_like (in 2) "%ROW" ) "ROW" (if (notImplemented_like (in 2) "%STATEMENT" ) "STATEMENT" "UNKNOWN")) ((columnName "col4309_1" primitiveTypes (3 )) (columnName "col4309_2" primitiveTypes (3 )) (columnName "col4309_3" primitiveTypes (3 )) ))
+failed to create custom:((if (notImplemented_like (in 2) "%ROW" ) "ROW" (if (notImplemented_like (in 2) "%STATEMENT" ) "STATEMENT" "UNKNOWN")) ((columnName "col4309_1" primitiveTypes (3 )) (columnName "col4309_2" primitiveTypes (3 )) (columnName "col4309_3" primitiveTypes (3 )) ))
+processing:((notImplemented_like (in 1) "%1%" ) ((columnName "col26980_1" primitiveTypes (3 )) (columnName "col26980_2" primitiveTypes (1 )) (columnName "col26980_3" primitiveTypes (1 )) ))
+failed to create custom:((notImplemented_like (in 1) "%1%" ) ((columnName "col26980_1" primitiveTypes (3 )) (columnName "col26980_2" primitiveTypes (1 )) (columnName "col26980_3" primitiveTypes (1 )) ))
+processing:("collectionobjects_common" ((columnName "col179959_1" primitiveTypes (1 )) (columnName "col179959_2" primitiveTypes (1 )) (columnName "col179959_3" primitiveTypes (3 )) ))
+failed to create custom:("collectionobjects_common" ((columnName "col179959_1" primitiveTypes (1 )) (columnName "col179959_2" primitiveTypes (1 )) (columnName "col179959_3" primitiveTypes (3 )) ))
+processing:((= (in 1) "RS") ((columnName "col112503_1" primitiveTypes (3 )) ))
+model is null
+(= RS col112503_1)
+model is null
+(= RS col112503_1)
+solved: '(= (in 1) "RS")
+processing:((and (>= (in 1) 82200) (< (in 1) 82300)) ((columnName "col145649_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 82200 col145649_1) (< col145649_1 82300))
+model is null
+(&& (<= 82200 col145649_1) (< col145649_1 82300))
+solved: '(and (>= (in 1) 82200) (< (in 1) 82300))
+processing:((and (>= (in 1) 492300) (< (in 1) 492400)) ((columnName "col149750_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 492300 col149750_1) (< col149750_1 492400))
+model is null
+(&& (<= 492300 col149750_1) (< col149750_1 492400))
+solved: '(and (>= (in 1) 492300) (< (in 1) 492400))
+processing:((= (in 1) "198") ((columnName "col124174_1" primitiveTypes (3 )) ))
+model is null
+(= 198 col124174_1)
+model is null
+(= 198 col124174_1)
+solved: '(= (in 1) "198")
+processing:((and (= (in 1) "Investment") (= (in 2) "Open")) ((columnName "col54731_1" primitiveTypes (3 )) (columnName "col54731_2" primitiveTypes (3 )) (columnName "col54731_3" primitiveTypes (1 )) (columnName "col54731_4" primitiveTypes (1 )) ))
+model is null
+(&& (= Investment col54731_1) (= Open col54731_2))
+model is null
+(&& (= Investment col54731_1) (= Open col54731_2))
+solved: '(and (= (in 1) "Investment") (= (in 2) "Open"))
+processing:((and (>= (in 1) 318200) (< (in 1) 318300)) ((columnName "col148009_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 318200 col148009_1) (< col148009_1 318300))
+model is null
+(&& (<= 318200 col148009_1) (< col148009_1 318300))
+solved: '(and (>= (in 1) 318200) (< (in 1) 318300))
+processing:((and (and (and (< (in 1) 100.35496427347309) (> (in 1) 99.40648995715777)) (and (< (in 2) 8148) (> (in 2) 4140))) (and (< (in 3) 5404) (> (in 3) 2658))) ((columnName "col178378_1" primitiveTypes (5 )) (columnName "col178378_2" primitiveTypes (1 )) (columnName "col178378_3" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (< col178378_1 100.35496427347309) (< 99.40648995715777 col178378_1)) (&& (< col178378_2 8148) (< 4140 col178378_2))) (&& (< col178378_3 5404) (< 2658 col178378_3)))
+model is null
+(&& (&& (&& (< col178378_1 100.35496427347309) (< 99.40648995715777 col178378_1)) (&& (< col178378_2 8148) (< 4140 col178378_2))) (&& (< col178378_3 5404) (< 2658 col178378_3)))
+solved: '(and (and (and (< (in 1) 100.35496427347309) (> (in 1) 99.40648995715777)) (and (< (in 2) 8148) (> (in 2) 4140))) (and (< (in 3) 5404) (> (in 3) 2658)))
+processing:((ceiling "a" ) ())
+failed to create custom:((ceiling "a" ) ())
+processing:((and (>= (in 1) 133300) (< (in 1) 133400)) ((columnName "col146160_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 133300 col146160_1) (< col146160_1 133400))
+model is null
+(&& (<= 133300 col146160_1) (< col146160_1 133400))
+solved: '(and (>= (in 1) 133300) (< (in 1) 133400))
+processing:((+ (in 1) (in 2)) ((columnName "col4780_1" primitiveTypes (1 )) (columnName "col4780_3" primitiveTypes (1 )) ))
+model is null
+(+ col4780_1 col4780_3)
+(integer->real (+ col4780_1 col4780_3))
+(integer->real (+ col4780_1 col4780_3))
+solved: '(+ (in 1) (in 2))
+processing:((+ (avg (in 1) ) (avg (in 2) )) ((columnName "col6358_1" primitiveTypes (1 )) (columnName "col6358_2" primitiveTypes (1 )) ))
+model is null
+(+ (/ (integer->real (+ 24 col6358_1)) 6) (/ (integer->real (+ -26 col6358_2)) 6))
+(+ (/ (integer->real (+ 24 col6358_1)) 6) (/ (integer->real (+ -26 col6358_2)) 6))
+(+ (/ (integer->real (+ 24 col6358_1)) 6) (/ (integer->real (+ -26 col6358_2)) 6))
+solved: '(+ (avg (in 1)) (avg (in 2)))
+processing:((= (in 6) (in 6)) ((columnName "col98451_1" primitiveTypes (1 )) (columnName "col98451_2" primitiveTypes (1 )) (columnName "col98451_3" primitiveTypes (1 )) (columnName "col98451_4" primitiveTypes (1 )) (columnName "col98451_5" primitiveTypes (6 )) (columnName "col98451_6" primitiveTypes (1 )) ))
+model is null
+#t
+model is null
+#t
+solved: '(= (in 6) (in 6))
+processing:((and (= (in 1) "admin") (= (in 2) "projectadmin")) ((columnName "col186509_1" primitiveTypes (3 )) (columnName "col186509_2" primitiveTypes (3 )) ))
+model is null
+(&& (= admin col186509_1) (= projectadmin col186509_2))
+model is null
+(&& (= admin col186509_1) (= projectadmin col186509_2))
+solved: '(and (= (in 1) "admin") (= (in 2) "projectadmin"))
+processing:((concat (concat (in 6) (in 5) ) (in 4) ) ((columnName "col48716_1" primitiveTypes (1 3 )) (columnName "col48716_2" primitiveTypes (3 )) (columnName "col48716_4" primitiveTypes (3 )) (columnName "col48716_5" primitiveTypes (3 )) (columnName "col48716_7" primitiveTypes (1 )) (columnName "col48716_6" primitiveTypes (1 )) (columnName "col48716_9" primitiveTypes (3 )) (columnName "col48716_3" primitiveTypes (1 )) ))
+model is null
+'invalid
+model is null
+'invalid
+solved: '(concat (concat (in 6) (in 5)) (in 4))
+processing:((notImplemented_like (in 1) "hel%" ) ((columnName "col54888_1" primitiveTypes (3 )) ))
+failed to create custom:((notImplemented_like (in 1) "hel%" ) ((columnName "col54888_1" primitiveTypes (3 )) ))
+processing:((and (< (in 1) 26.24279348511486) (> (in 1) 26.165775443164307)) ((columnName "col154112_1" primitiveTypes (5 )) ))
+model is null
+(&& (< col154112_1 26.24279348511486) (< 26.165775443164307 col154112_1))
+model is null
+(&& (< col154112_1 26.24279348511486) (< 26.165775443164307 col154112_1))
+solved: '(and (< (in 1) 26.24279348511486) (> (in 1) 26.165775443164307))
+processing:((and (>= (in 1) 95900) (< (in 1) 96000)) ((columnName "col145786_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 95900 col145786_1) (< col145786_1 96000))
+model is null
+(&& (<= 95900 col145786_1) (< col145786_1 96000))
+solved: '(and (>= (in 1) 95900) (< (in 1) 96000))
+processing:((= (in 3) (in 6)) ((columnName "col91455_1" primitiveTypes (1 )) (columnName "col91455_3" primitiveTypes (6 )) (columnName "col91455_4" primitiveTypes (6 )) (columnName "col91455_5" primitiveTypes (1 )) (columnName "col91455_6" primitiveTypes (6 )) ))
+failed to create custom:((= (in 3) (in 6)) ((columnName "col91455_1" primitiveTypes (1 )) (columnName "col91455_3" primitiveTypes (6 )) (columnName "col91455_4" primitiveTypes (6 )) (columnName "col91455_5" primitiveTypes (1 )) (columnName "col91455_6" primitiveTypes (6 )) ))
+processing:((and (= (in 1) "Smith") (not null)) ((columnName "col32956_1" primitiveTypes (3 )) (columnName "col32956_2" primitiveTypes (1 )) (columnName "col32956_3" primitiveTypes (1 )) (columnName "col32956_4" primitiveTypes (3 )) (columnName "col32956_5" primitiveTypes (1 )) (columnName "col32956_6" primitiveTypes (1 )) ))
+failed to create custom:((and (= (in 1) "Smith") (not null)) ((columnName "col32956_1" primitiveTypes (3 )) (columnName "col32956_2" primitiveTypes (1 )) (columnName "col32956_3" primitiveTypes (1 )) (columnName "col32956_4" primitiveTypes (3 )) (columnName "col32956_5" primitiveTypes (1 )) (columnName "col32956_6" primitiveTypes (1 )) ))
+processing:((and (>= (in 1) 272500) (< (in 1) 272600)) ((columnName "col147552_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 272500 col147552_1) (< col147552_1 272600))
+model is null
+(&& (<= 272500 col147552_1) (< col147552_1 272600))
+solved: '(and (>= (in 1) 272500) (< (in 1) 272600))
+processing:((and (= (in 1) "ad") (< (in 2) 2011)) ((columnName "col141787_1" primitiveTypes (3 )) (columnName "col141787_2" primitiveTypes (1 )) ))
+model is null
+(&& (= ad col141787_1) (< col141787_2 2011))
+model is null
+(&& (= ad col141787_1) (< col141787_2 2011))
+solved: '(and (= (in 1) "ad") (< (in 2) 2011))
+processing:((and (= (in 1) 1) (= (in 2) "image")) ((columnName "col109619_1" primitiveTypes (1 )) (columnName "col109619_2" primitiveTypes (3 )) (columnName "col109619_3" primitiveTypes (1 )) (columnName "col109619_4" primitiveTypes (1 )) ))
+model is null
+(&& (= 1 col109619_1) (= image col109619_2))
+model is null
+(&& (= 1 col109619_1) (= image col109619_2))
+solved: '(and (= (in 1) 1) (= (in 2) "image"))

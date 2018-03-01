@@ -1,0 +1,29 @@
+processing:((and (and (and (and (< (in 1) 5.737985309224318E9) (> (in 1) 4.1652675907548604E9)) (and (< (in 2) 21.77119099437801) (> (in 2) 21.6902478910525))) (= (in 3) (in 4))) (= (in 3) (in 5))) ((columnName "col122201_1" primitiveTypes (5 )) (columnName "col122201_2" primitiveTypes (5 )) (columnName "col122201_3" primitiveTypes (1 )) (columnName "col122201_4" primitiveTypes (1 )) (columnName "col122201_5" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (&& (< col122201_1 5737985309.224318) (< 4165267590.7548604 col122201_1)) (&& (< col122201_2 21.77119099437801) (< 21.6902478910525 col122201_2))) (= col122201_3 col122201_4)) (= col122201_3 col122201_5))
+model is null
+(&& (&& (&& (&& (< col122201_1 5737985309.224318) (< 4165267590.7548604 col122201_1)) (&& (< col122201_2 21.77119099437801) (< 21.6902478910525 col122201_2))) (= col122201_3 col122201_4)) (= col122201_3 col122201_5))
+solved: '(and (and (and (and (< (in 1) 5737985309.224318) (> (in 1) 4165267590.7548604)) (and (< (in 2) 21.77119099437801) (> (in 2) 21.6902478910525))) (= (in 3) (in 4))) (= (in 3) (in 5)))
+processing:((and (>= (in 1) 305500) (< (in 1) 305600)) ((columnName "col147882_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 305500 col147882_1) (< col147882_1 305600))
+model is null
+(&& (<= 305500 col147882_1) (< col147882_1 305600))
+solved: '(and (>= (in 1) 305500) (< (in 1) 305600))
+processing:((and (= (in 1) 1) (= (in 2) 635)) ((columnName "col42638_1" primitiveTypes (1 )) (columnName "col42638_2" primitiveTypes (1 )) ))
+model is null
+(&& (= 1 col42638_1) (= 635 col42638_2))
+model is null
+(&& (= 1 col42638_1) (= 635 col42638_2))
+solved: '(and (= (in 1) 1) (= (in 2) 635))
+processing:("utils.placename_hierarchy" ())
+failed to create custom:("utils.placename_hierarchy" ())
+processing:((and (>= (in 1) 420700) (< (in 1) 420800)) ((columnName "col149034_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 420700 col149034_1) (< col149034_1 420800))
+model is null
+(&& (<= 420700 col149034_1) (< col149034_1 420800))
+solved: '(and (>= (in 1) 420700) (< (in 1) 420800))
+processing:((/ (+ (sum (in 3) ) (sum (in 10) )) (+ (sum (in 1) ) (sum (in 10) ))) ((columnName "col45973_1" primitiveTypes (1 )) (columnName "col45973_2" primitiveTypes (1 )) (columnName "col45973_3" primitiveTypes (1 )) (columnName "col45973_4" primitiveTypes (1 )) (columnName "col45973_5" primitiveTypes (1 )) (columnName "col45973_6" primitiveTypes (1 )) (columnName "col45973_7" primitiveTypes (1 )) (columnName "col45973_8" primitiveTypes (1 )) (columnName "col45973_9" primitiveTypes (1 )) (columnName "col45973_10" primitiveTypes (1 )) (columnName "col45973_11" primitiveTypes (1 )) (columnName "col45973_12" primitiveTypes (1 )) (columnName "col45973_13" primitiveTypes (1 )) (columnName "col45973_14" primitiveTypes (1 )) (columnName "col45973_15" primitiveTypes (1 )) (columnName "col45973_16" primitiveTypes (1 )) (columnName "col45973_17" primitiveTypes (1 )) (columnName "col45973_18" primitiveTypes (1 )) ))
+model is null
+{[(= 0 (+ col45973_1 (+ 1 col45973_10))) invalid] [(! (= 0 (+ col45973_1 (+ 1 col45973_10)))) (/ (integer->real (+ (+ col45973_3 (+ val$119 (+ val$101 (+ val$83 (+ val$47 val$65))))) (+ 1 col45973_10))) (integer->real (+ col45973_1 (+ 1 col45973_10))))]}

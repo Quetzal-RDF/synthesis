@@ -1,0 +1,35 @@
+processing:((and (>= (in 1) 52700) (< (in 1) 52800)) ((columnName "col145354_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 52700 col145354_1) (< col145354_1 52800))
+model is null
+(&& (<= 52700 col145354_1) (< col145354_1 52800))
+solved: '(and (>= (in 1) 52700) (< (in 1) 52800))
+processing:((and (< (in 1) 27.85770780728078) (> (in 1) 27.779887221655976)) ((columnName "col122054_1" primitiveTypes (5 )) ))
+model is null
+(&& (< col122054_1 27.85770780728078) (< 27.779887221655976 col122054_1))
+model is null
+(&& (< col122054_1 27.85770780728078) (< 27.779887221655976 col122054_1))
+solved: '(and (< (in 1) 27.85770780728078) (> (in 1) 27.779887221655976))
+processing:((and (>= (in 1) 259600) (< (in 1) 259700)) ((columnName "col147423_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 259600 col147423_1) (< col147423_1 259700))
+model is null
+(&& (<= 259600 col147423_1) (< col147423_1 259700))
+solved: '(and (>= (in 1) 259600) (< (in 1) 259700))
+processing:((and (>= (in 1) 121800) (< (in 1) 121900)) ((columnName "col146045_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 121800 col146045_1) (< col146045_1 121900))
+model is null
+(&& (<= 121800 col146045_1) (< col146045_1 121900))
+solved: '(and (>= (in 1) 121800) (< (in 1) 121900))
+processing:((and (and (and (and (< (in 1) 317) (> (in 1) 260)) (= (in 2) (in 3))) (= (in 2) (in 4))) (= (in 2) (in 5))) ((columnName "col171237_1" primitiveTypes (1 )) (columnName "col171237_2" primitiveTypes (1 )) (columnName "col171237_3" primitiveTypes (1 )) (columnName "col171237_4" primitiveTypes (1 )) (columnName "col171237_5" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (&& (< col171237_1 317) (< 260 col171237_1)) (= col171237_2 col171237_3)) (= col171237_2 col171237_4)) (= col171237_2 col171237_5))
+model is null
+(&& (&& (&& (&& (< col171237_1 317) (< 260 col171237_1)) (= col171237_2 col171237_3)) (= col171237_2 col171237_4)) (= col171237_2 col171237_5))
+solved: '(and (and (and (and (< (in 1) 317) (> (in 1) 260)) (= (in 2) (in 3))) (= (in 2) (in 4))) (= (in 2) (in 5)))
+processing:((/ (sum (in 2) ) (sum (in 3) )) ((columnName "col175741_1" primitiveTypes (1 )) (columnName "col175741_2" primitiveTypes (1 )) (columnName "col175741_3" primitiveTypes (1 )) (columnName "col175741_4" primitiveTypes (3 )) (columnName "col175741_5" primitiveTypes (3 )) (columnName "col175741_6" primitiveTypes (3 )) (columnName "col175741_7" primitiveTypes (1 )) (columnName "col175741_8" primitiveTypes (1 )) ))
+model is null
+{[(= 0 (+ 1 col175741_3)) invalid] [(! (= 0 (+ 1 col175741_3))) (/ (integer->real (+ col175741_2 (+ val$78 (+ val$70 (+ val$62 (+ val$46 val$54)))))) (integer->real (+ 1 col175741_3)))]}
+'({[(= 0 (+ 1 col175741_3)) invalid] [(! (= 0 (+ 1 col175741_3))) (real->integer (/ (integer->real (+ -6284 col175741_2)) (integer->real (+ 1 col175741_3))))]} -6284 -6284 -6284 -6284 -6284)
+'({[(= 0 (+ 1 col175741_3)) invalid] [(! (= 0 (+ 1 col175741_3))) (real->integer (/ (integer->real (+ -6284 col175741_2)) (integer->real (+ 1 col175741_3))))]} -6284 -6284 -6284 -6284 -6284)

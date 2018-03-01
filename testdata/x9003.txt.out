@@ -1,0 +1,33 @@
+processing:(304 ((columnName "col30548_1" primitiveTypes (2 )) ))
+failed to create custom:(304 ((columnName "col30548_1" primitiveTypes (2 )) ))
+processing:(305 ((columnName "col30549_1" primitiveTypes (1 )) (columnName "col30549_2" primitiveTypes (5 )) (columnName "col30549_3" primitiveTypes (1 )) ))
+failed to create custom:(305 ((columnName "col30549_1" primitiveTypes (1 )) (columnName "col30549_2" primitiveTypes (5 )) (columnName "col30549_3" primitiveTypes (1 )) ))
+processing:(306 ((columnName "col30550_1" primitiveTypes (5 )) (columnName "col30550_2" primitiveTypes (2 )) ))
+failed to create custom:(306 ((columnName "col30550_1" primitiveTypes (5 )) (columnName "col30550_2" primitiveTypes (2 )) ))
+processing:((and (and (= (in 2) 0) (>= (in 3) 1412795719)) (> (in 4) 8)) ((columnName "col186643_1" primitiveTypes (3 )) (columnName "col186643_2" primitiveTypes (1 )) (columnName "col186643_3" primitiveTypes (1 )) (columnName "col186643_4" primitiveTypes (1 )) ))
+model is null
+(&& (&& (= 0 col186643_2) (<= 1412795719 col186643_3)) (< 8 col186643_4))
+model is null
+(&& (&& (= 0 col186643_2) (<= 1412795719 col186643_3)) (< 8 col186643_4))
+solved: '(and (and (= (in 2) 0) (>= (in 3) 1412795719)) (> (in 4) 8))
+processing:(307 ((columnName "col30551_1" primitiveTypes (5 )) ))
+failed to create custom:(307 ((columnName "col30551_1" primitiveTypes (5 )) ))
+processing:(308 ((columnName "col30552_1" primitiveTypes (2 )) ))
+failed to create custom:(308 ((columnName "col30552_1" primitiveTypes (2 )) ))
+processing:(309 ((columnName "col30553_1" primitiveTypes (5 )) (columnName "col30553_2" primitiveTypes (1 )) ))
+failed to create custom:(309 ((columnName "col30553_1" primitiveTypes (5 )) (columnName "col30553_2" primitiveTypes (1 )) ))
+processing:("placetermgroup" ())
+failed to create custom:("placetermgroup" ())
+processing:((and (>= (in 1) 405100) (< (in 1) 405200)) ((columnName "col148878_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 405100 col148878_1) (< col148878_1 405200))
+model is null
+(&& (<= 405100 col148878_1) (< col148878_1 405200))
+solved: '(and (>= (in 1) 405100) (< (in 1) 405200))
+processing:((= (in 2) 34) ((columnName "col96091_1" primitiveTypes (1 )) (columnName "col96091_2" primitiveTypes (1 )) ))
+model is null
+(= 34 col96091_2)
+model is null
+(= 34 col96091_2)
+solved: '(= (in 2) 34)
+processing:((and (> (in 1) "10-24-2014") (< (in 1) "2014-10-24 99")) ((columnName "col87734_1" primitiveTypes (2 )) ))

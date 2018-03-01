@@ -1,0 +1,43 @@
+processing:((= (in 1) "861170001112159") ((columnName "col141685_1" primitiveTypes (3 )) ))
+model is null
+(= 861170001112159 col141685_1)
+model is null
+(= 861170001112159 col141685_1)
+solved: '(= (in 1) "861170001112159")
+processing:((and (= (in 1) (in 2)) (= (in 1) (in 2))) ((columnName "col174544_1" primitiveTypes (1 )) (columnName "col174544_2" primitiveTypes (1 )) ))
+model is null
+(= col174544_1 col174544_2)
+model is null
+(= col174544_1 col174544_2)
+solved: '(and (= (in 1) (in 2)) (= (in 1) (in 2)))
+processing:((and (>= (in 1) 8100) (< (in 1) 8200)) ((columnName "col144908_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 8100 col144908_1) (< col144908_1 8200))
+model is null
+(&& (<= 8100 col144908_1) (< col144908_1 8200))
+solved: '(and (>= (in 1) 8100) (< (in 1) 8200))
+processing:((and (>= (in 1) 26200) (< (in 1) 26300)) ((columnName "col145089_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 26200 col145089_1) (< col145089_1 26300))
+model is null
+(&& (<= 26200 col145089_1) (< col145089_1 26300))
+solved: '(and (>= (in 1) 26200) (< (in 1) 26300))
+processing:((and (>= (in 1) 91900) (< (in 1) 92000)) ((columnName "col145746_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 91900 col145746_1) (< col145746_1 92000))
+model is null
+(&& (<= 91900 col145746_1) (< col145746_1 92000))
+solved: '(and (>= (in 1) 91900) (< (in 1) 92000))
+processing:((and (< (in 1) 9) (< (in 2) 9)) ((columnName "col54747_1" primitiveTypes (1 )) (columnName "col54747_2" primitiveTypes (1 )) ))
+model is null
+(&& (< col54747_1 9) (< col54747_2 9))
+model is null
+(&& (< col54747_1 9) (< col54747_2 9))
+solved: '(and (< (in 1) 9) (< (in 2) 9))
+processing:((and (>= (in 1) 491100) (< (in 1) 491200)) ((columnName "col149738_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 491100 col149738_1) (< col149738_1 491200))
+model is null
+(&& (<= 491100 col149738_1) (< col149738_1 491200))
+solved: '(and (>= (in 1) 491100) (< (in 1) 491200))
+processing:((and (> (in 1) "10-23-2014") (< (in 1) "2014-10-23 99")) ((columnName "col87733_1" primitiveTypes (2 )) ))
