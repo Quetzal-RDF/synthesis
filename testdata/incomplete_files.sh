@@ -1,0 +1,1 @@
+for f in *.txt.out; do s=$(grep 'processing' $f | wc -l); if [ $s -lt 100 ]; then echo "$f $s"; fi; done
