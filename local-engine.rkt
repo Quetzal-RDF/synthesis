@@ -45,7 +45,8 @@
           (solver-clear z3)
           (solver-assert z3 (list problem))
           (let ((result (solver-check z3)))
-            ((send x get-callback) problem result)))))
+            ((send x get-callback) problem result)
+            (solver-shutdown z3)))))
 
     (define/public (solve formula priority hook)
       (heap-add! problem-queue (new problem% [smt formula] [priority priority] [hook hook]))
