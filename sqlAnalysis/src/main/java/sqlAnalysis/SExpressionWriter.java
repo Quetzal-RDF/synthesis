@@ -605,15 +605,17 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitSimpleCaseExpression(SimpleCaseExpression node, Void context) {
-		String result = process(node.getDefaultValue(), context);
-		StringBuffer buf = new StringBuffer();
-		List<WhenClause> whenclauses = node.getWhenClauses();
-		putInOps("if");
-		for (int i = whenclauses.size() - 1; i >= 0; i--) {
-			buf.append("(").append("if").append(" ").append(process(whenclauses.get(i).getOperand(), context))
-					.append(process(whenclauses.get(i).getResult(), context)).append(result).append(")");
-		}
-		return buf.toString();
+	    String result = process(node.getDefaultValue(), context);
+	    List<WhenClause> whenclauses = node.getWhenClauses();
+	    putInOps("if");
+	    for (int i = whenclauses.size() - 1; i >= 0; i--) {
+	      StringBuffer buf = new StringBuffer();
+	      buf.append("(").append("if").append(" ")
+	          .append(process(whenclauses.get(i).getOperand(), context)).append(" ")
+	          .append(process(whenclauses.get(i).getResult(), context)).append(" ").append(result).append(")");
+	      result = buf.toString();
+	    }
+	    return result;
 	}
 
 	@Override
@@ -824,9 +826,11 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 	
 	public List<Pair<String, String>> getExpressionsAndTypes() {
 		propagateTypes();
-		
+	    List<Pair<String, String>> ret = new LinkedList<Pair<String, String>>();
+
 		StringBuffer types = new StringBuffer("(");
 		Iterator<TypedNode> nodes = graph.iterator();
+		boolean addedCols = false;
 		while (nodes.hasNext()) {
 			TypedNode n = nodes.next();
 			StringBuffer t = new StringBuffer("(");
@@ -841,14 +845,17 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 				types.append("(").append("columnName").append(" ").append("\"")
 				.append(str).append("\"").append(" ").append("primitiveTypes").append(" ")
 				.append(t).append(")").append(" ");
+				addedCols = true;
 			}
+		}
+		if (!addedCols) {
+		  return ret;
 		}
 		types.append(")");
 		
-		List<Pair<String, String>> ret = new LinkedList<Pair<String, String>>();
 		
 		for (String s : expressions) {
-			if (s == null) {
+			if (s == null || s.indexOf("notImplemented") != -1) {
 				continue;
 			}
 			ret.add(Pair.make(s, types.toString()));
@@ -1241,15 +1248,17 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 	@Override
 	protected String visitSearchedCaseExpression(SearchedCaseExpression node, Void context) {
-		putInOps("if");
-
-		String result = process(node.getDefaultValue(), context);
-		List<WhenClause> whenclauses = node.getWhenClauses();
-		for (int i = whenclauses.size() - 1; i >= 0; i--) {
-			result = "(" + "if" + " " + process(whenclauses.get(i).getOperand(), context) + " "
-					+ process(whenclauses.get(i).getResult(), context) + " " + result + ")";
-		}
-		return result;
+	    String result = process(node.getDefaultValue(), context);
+	    List<WhenClause> whenclauses = node.getWhenClauses();
+	    putInOps("if");
+	    for (int i = whenclauses.size() - 1; i >= 0; i--) {
+	      StringBuffer buf = new StringBuffer();
+	      buf.append("(").append("if").append(" ")
+	          .append(process(whenclauses.get(i).getOperand(), context)).append(" ")
+	          .append(process(whenclauses.get(i).getResult(), context)).append(" ").append(result).append(")");
+	      result = buf.toString();
+	    }
+	    return result;
 	}
 
 	@Override
@@ -1287,7 +1296,13 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 			buf.append(d.getYear()).append("\"");
 			ret = buf.toString();
 		} else {
-			ret = "\"" + node.getValue() + "\"";
+		    String n = node.getValue().replaceAll("[^a-zA-Z0-9]", "");
+		    /**
+		    if (!n.equals(node.getValue())) {
+		      System.out.println(n);
+		      System.out.println(node.getValue());
+		    } */
+			ret = "\"" + n + "\"";
 		}
 		return ret;
 	}
