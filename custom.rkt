@@ -479,12 +479,15 @@
     ; (println models)
     ; (println m)
     ; (println answers)
- 
-    (assert (>= (length models) 1))
-    (map (lambda (x y)
-           (append x (list y) (list (evaluate (car f) (cadr models)))))
-         (evaluate (cdr (cadr (cddr f))) (cadr models))
-         (car models))))
+
+    (if models
+        (begin
+          (assert (>= (length models) 1))
+          (map (lambda (x y)
+                 (append x (list y) (list (evaluate (car f) (cadr models)))))
+               (evaluate (cdr (cadr (cddr f))) (cadr models))
+               (car models)))
+        #f)))
 
 (define (create-table result cols columnMetadata)
     ; for each subexpression we have a list of models which correspond to rows of the table.  The first element in that list

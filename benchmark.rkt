@@ -42,31 +42,32 @@
         (if (null? fs)
             (write-to-file (string-append infile ".out") (string-append "failed to create custom:" line))
             (for/list ([f fs])
-              (let* ((table (to-table f #t))
-                     (inputs
-                      (for/list ([row table])
-                        (take row (- (length row) 2))))
-                     (outputs
-                      (for/list ([row table])
-                        (list-ref row (- (length row) 2))))
-                     (custom (make-custom-table (list exp) cols)))
-               ; (println exp)
-               ; (println custom)
-                (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
-                  ; (println outputs)
-                  (let ((result
-                         (for/fold ([v #f])
-                                   ([s synthesized])
-                           (let ((x
-                                  (if (not (null? (cadddr s)))
-                                      (evaluate (caddr s) (cadddr s))
-                                      (caddr s))))
-                             (write-to-file  (string-append infile ".out") (if (not (null? (cadddr s)))
-                                      (~v (evaluate (caddr s) (cadddr s))) "model is null"))
-                             (write-to-file (string-append infile ".out") (~v x))
-                         ;    (println (car (cadr f)))
-                             (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
-                    (if result (write-to-file (string-append infile ".out") (string-append "solved: " (~v exp))) (write-to-file (string-append infile ".out") (string-append "failed synthesis: " (~v exp))))
-                    result)))))))))
-
+              (let* ((table (to-table f #t)))
+                (when table
+                  (let* ((inputs
+                          (for/list ([row table])
+                            (take row (- (length row) 2))))
+                         (outputs
+                          (for/list ([row table])
+                            (list-ref row (- (length row) 2))))
+                         (custom (make-custom-table (list exp) cols)))
+                    ; (println exp)
+                    ; (println custom)
+                    (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
+                      ; (println outputs)
+                      (let ((result
+                             (for/fold ([v #f])
+                                       ([s synthesized])
+                               (let ((x
+                                      (if (not (null? (cadddr s)))
+                                          (evaluate (caddr s) (cadddr s))
+                                          (caddr s))))
+                                 (write-to-file  (string-append infile ".out") (if (not (null? (cadddr s)))
+                                                                                   (~v (evaluate (caddr s) (cadddr s))) "model is null"))
+                                 (write-to-file (string-append infile ".out") (~v x))
+                                 ;    (println (car (cadr f)))
+                                 (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
+                        (if result (write-to-file (string-append infile ".out") (string-append "solved: " (~v exp))) (write-to-file (string-append infile ".out") (string-append "failed synthesis: " (~v exp))))
+                        result)))))))))))
+    
 (provide benchmark benchmark-synthesis)
