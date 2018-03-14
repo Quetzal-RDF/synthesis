@@ -77,7 +77,7 @@
 ((and (>= (in 1) 157300) (< (in 1) 157400)) ((columnName "col118772_1" primitiveTypes (1 )) ))
 ((= (in 1) "commodulesmodule147") ((columnName "col98791_1" primitiveTypes (3 )) ))
 ((and (= (in 1) "Y") (!= (in 2) "nextprot")) ((columnName "col147360_1" primitiveTypes (3 )) (columnName "col147360_2" primitiveTypes (3 )) (columnName "col147360_3" primitiveTypes (1 )) (columnName "col147360_4" primitiveTypes (1 )) ))
-((sum (if (and (= (in 3) "enGB") (= (in 4) 1226)) (in 5) 0) ) ((columnName "col4645_1" primitiveTypes (1 )) (columnName "col4645_2" primitiveTypes (1 )) (columnName "col4645_3" primitiveTypes (3 )) (columnName "col4645_4" primitiveTypes (1 6 )) (columnName "col4645_6" primitiveTypes (3 )) (columnName "col4645_7" primitiveTypes (1 )) ))
+((sum (if (and (= (in 3) "enGB") (= (in 4) 1226)) (in 5) 0) ) ((columnName "col4645_1" primitiveTypes (1 )) (columnName "col4645_2" primitiveTypes (1 )) (columnName "col4645_3" primitiveTypes (3 )) (columnName "col4645_4" primitiveTypes (1 )) (columnName "col4645_6" primitiveTypes (1 )) (columnName "col4645_7" primitiveTypes (1 )) ))
 ((= (in 1) 2044824607) ((columnName "col48809_1" primitiveTypes (1 )) ))
 ((and (= (in 1) (in 4)) (= (in 3) 3)) ((columnName "col113271_1" primitiveTypes (1 )) (columnName "col113271_2" primitiveTypes (1 )) (columnName "col113271_3" primitiveTypes (1 )) (columnName "col113271_4" primitiveTypes (1 )) (columnName "col113271_5" primitiveTypes (3 )) (columnName "col113271_6" primitiveTypes (1 )) (columnName "col113271_7" primitiveTypes (1 )) ))
 ((and (>= (in 1) 71200) (< (in 1) 71300)) ((columnName "col117911_1" primitiveTypes (1 )) ))
