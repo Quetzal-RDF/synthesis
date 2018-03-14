@@ -54,7 +54,7 @@
 ((and (>= (in 1) 44700) (< (in 1) 44800)) ((columnName "col117646_1" primitiveTypes (1 )) ))
 ((and (>= (in 1) 462900) (< (in 1) 463000)) ((columnName "col121828_1" primitiveTypes (1 )) ))
 ((= (in 1) "comcontentarticle1") ((columnName "col40294_1" primitiveTypes (3 )) (columnName "col40294_2" primitiveTypes (1 )) (columnName "col40294_3" primitiveTypes (1 )) (columnName "col40294_4" primitiveTypes (1 )) (columnName "col40294_5" primitiveTypes (1 )) ))
-((sum (if (= (in 3) "enGB") (in 5) 0) ) ((columnName "col4645_1" primitiveTypes (1 )) (columnName "col4645_2" primitiveTypes (1 )) (columnName "col4645_3" primitiveTypes (3 )) (columnName "col4645_4" primitiveTypes (1 6 )) (columnName "col4645_6" primitiveTypes (3 )) (columnName "col4645_7" primitiveTypes (1 )) ))
+((sum (if (= (in 3) "enGB") (in 5) 0) ) ((columnName "col4645_1" primitiveTypes (1 )) (columnName "col4645_2" primitiveTypes (1 )) (columnName "col4645_3" primitiveTypes (3 )) (columnName "col4645_4" primitiveTypes (1 6 )) (columnName "col4645_6" primitiveTypes (1 )) (columnName "col4645_7" primitiveTypes (1 )) ))
 ((and (>= (in 1) 410100) (< (in 1) 410200)) ((columnName "col121300_1" primitiveTypes (1 )) ))
 ((and (>= (in 1) 132300) (< (in 1) 132400)) ((columnName "col118522_1" primitiveTypes (1 )) ))
 ((and (< (in 1) 34606) (> (in 1) 29836)) ((columnName "col146938_1" primitiveTypes (1 )) ))
