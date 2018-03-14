@@ -1,0 +1,49 @@
+processing:((= (in 1) 40663) ((columnName "col124527_1" primitiveTypes (1 )) ))
+model is null
+(= 40663 col124527_1)
+model is null
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+(= 40663 col124527_1)
+solved: '(= (in 1) 40663)
+processing:((= (in 8) (in 7)) ((columnName "col63389_1" primitiveTypes (3 )) (columnName "col63389_2" primitiveTypes (1 )) (columnName "col63389_3" primitiveTypes (1 )) (columnName "col63389_4" primitiveTypes (1 )) (columnName "col63389_5" primitiveTypes (1 )) (columnName "col63389_6" primitiveTypes (1 )) (columnName "col63389_7" primitiveTypes (1 )) (columnName "col63389_8" primitiveTypes (1 )) ))
+model is null
+(= col63389_7 col63389_8)
+model is null
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+(= col63389_7 col63389_8)
+solved: '(= (in 8) (in 7))
+processing:((sum (if (= (in 2) 22) 1 0) ) ((columnName "col9596_1" primitiveTypes (1 )) (columnName "col9596_2" primitiveTypes (1 )) (columnName "col9596_3" primitiveTypes (3 )) ))
+model is null
+(ite (= 22 col9596_2) 4 3)
+(ite (= 22 col9596_2) 4 3)
+(ite (= 22 col9596_2) 4 3)
+(ite (= 22 col9596_2) 4 3)
+(ite (= 22 col9596_2) 4 3)
+{[(= 0 (integer->real (ite (<= col9596_2 5) col9596_2 5))) invalid] [(! (= 0 (integer->real (ite (<= col9596_2 5) col9596_2 5)))) (remainder (ite (= 22 col9596_2) 4 3) (ite (<= col9596_2 5) col9596_2 5))]}
+{[(= 0 (integer->real (ite (<= col9596_2 5) col9596_2 5))) invalid] [(! (= 0 (integer->real (ite (<= col9596_2 5) col9596_2 5)))) (remainder (ite (= 22 col9596_2) 4 3) (ite (<= col9596_2 5) col9596_2 5))]}
+(ite (<= 3 (/ (integer->real col9596_1) (integer->real (ite (= 22 col9596_2) 4 3)))) (/ (integer->real col9596_1) (integer->real (ite (= 22 col9596_2) 4 3))) 3)
+(ite (<= 3 (/ (integer->real col9596_1) (integer->real (ite (= 22 col9596_2) 4 3)))) (/ (integer->real col9596_1) (integer->real (ite (= 22 col9596_2) 4 3))) 3)
+3
+3
+(ite (<= (ite (< (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) 3.0) (ite (< (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) 3.0)
+(ite (<= (ite (< (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) 3.0) (ite (< (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 22 col9596_2) 4 3))))) 3.0)
+(ite (<= (integer->real (ite (= 22 col9596_2) 4 3)) 3) (integer->real (ite (= 22 col9596_2) 4 3)) 3)
+(ite (<= (integer->real (ite (= 22 col9596_2) 4 3)) 3) (integer->real (ite (= 22 col9596_2) 4 3)) 3)
+{[(= 0 col9596_2) invalid] [(! (= 0 col9596_2)) (remainder (ite (= 22 col9596_2) 4 3) col9596_2)]}
+{[(= 0 col9596_2) invalid] [(! (= 0 col9596_2)) (remainder (ite (= 22 col9596_2) 4 3) col9596_2)]}
+(/ (integer->real (ite (= 22 col9596_2) 19 18)) 6)
+(/ (integer->real (ite (= 22 col9596_2) 19 18)) 6)

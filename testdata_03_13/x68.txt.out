@@ -1,0 +1,33 @@
+processing:((and (>= (in 1) 227600) (< (in 1) 227700)) ((columnName "col119475_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+model is null
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+(&& (<= 227600 col119475_1) (< col119475_1 227700))
+solved: '(and (>= (in 1) 227600) (< (in 1) 227700))
+processing:((sum (if (= (in 1) 4) 1 0) ) ((columnName "col10938_1" primitiveTypes (1 )) ))
+model is null
+(ite (= 4 col10938_1) 4 3)
+(ite (= 4 col10938_1) 4 3)
+(ite (= 4 col10938_1) 4 3)
+(ite (= 4 col10938_1) 4 3)
+(ite (= 4 col10938_1) 4 3)
+{[(= 0 (integer->real (ite (<= 5 col10938_1) col10938_1 5))) invalid] [(! (= 0 (integer->real (ite (<= 5 col10938_1) col10938_1 5)))) (remainder (ite (= 4 col10938_1) 4 3) (ite (<= 5 col10938_1) col10938_1 5))]}
+{[(= 0 (integer->real (ite (<= 5 col10938_1) col10938_1 5))) invalid] [(! (= 0 (integer->real (ite (<= 5 col10938_1) col10938_1 5)))) (remainder (ite (= 4 col10938_1) 4 3) (ite (<= 5 col10938_1) col10938_1 5))]}
+5/2
+5/2
+(ite (<= (ite (< (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) 3.0) (ite (< (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) 3.0)
+(ite (<= (ite (< (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) 3.0) (ite (< (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))) 0) (+ 1 (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) (real->integer (+ 0.5 (integer->real (ite (= 4 col10938_1) 4 3))))) 3.0)
+(ite (<= (integer->real (ite (= 4 col10938_1) 4 3)) 3) (integer->real (ite (= 4 col10938_1) 4 3)) 3)
+(ite (<= (integer->real (ite (= 4 col10938_1) 4 3)) 3) (integer->real (ite (= 4 col10938_1) 4 3)) 3)
+{[(= 0 col10938_1) invalid] [(! (= 0 col10938_1)) (remainder (ite (= 4 col10938_1) 4 3) col10938_1)]}
+{[(= 0 col10938_1) invalid] [(! (= 0 col10938_1)) (remainder (ite (= 4 col10938_1) 4 3) col10938_1)]}
+(/ (integer->real (ite (= 4 col10938_1) 19 18)) 6)
+(/ (integer->real (ite (= 4 col10938_1) 19 18)) 6)

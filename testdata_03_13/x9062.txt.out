@@ -1,0 +1,25 @@
+processing:((and (>= (in 1) 280800) (< (in 1) 280900)) ((columnName "col120007_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+model is null
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+(&& (<= 280800 col120007_1) (< col120007_1 280900))
+solved: '(and (>= (in 1) 280800) (< (in 1) 280900))
+processing:((/ (* (sum (in 1) ) 8.0) 1024) ((columnName "col70905_1" primitiveTypes (1 )) ))
+model is null
+(/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024)
+(/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024)
+(/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024)
+(/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024)
+(/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024)
+{[(= 0 (integer->real (ite (<= 1 col70905_1) col70905_1 1))) invalid] [(! (= 0 (integer->real (ite (<= 1 col70905_1) col70905_1 1)))) (/ (/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024) (integer->real (ite (<= 1 col70905_1) col70905_1 1)))]}
+{[(= 0 (integer->real (ite (<= 1 col70905_1) col70905_1 1))) invalid] [(! (= 0 (integer->real (ite (<= 1 col70905_1) col70905_1 1)))) (/ (/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024) (integer->real (ite (<= 1 col70905_1) col70905_1 1)))]}
+(ite (<= (* (/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024) (integer->real col70905_1)) -0.0078125) (* (/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024) (integer->real col70905_1)) -0.0078125)
+(ite (<= (* (/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024) (integer->real col70905_1)) -0.0078125) (* (/ (integer->real (* 8.0 (+ -1 col70905_1))) 1024) (integer->real col70905_1)) -0.0078125)

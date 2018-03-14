@@ -1,0 +1,61 @@
+processing:((= (in 1) "Laptop") ((columnName "col111014_1" primitiveTypes (3 )) ))
+model is null
+(= Laptop col111014_1)
+model is null
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+(= Laptop col111014_1)
+solved: '(= (in 1) "Laptop")
+processing:((and (>= (in 1) 264300) (< (in 1) 264400)) ((columnName "col119842_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+model is null
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+(&& (<= 264300 col119842_1) (< col119842_1 264400))
+solved: '(and (>= (in 1) 264300) (< (in 1) 264400))
+processing:((and (>= (in 1) 247400) (< (in 1) 247500)) ((columnName "col119673_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+model is null
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+(&& (<= 247400 col119673_1) (< col119673_1 247500))
+solved: '(and (>= (in 1) 247400) (< (in 1) 247500))
+processing:((sum (* (in 10) (in 2)) ) ((columnName "col3653_1" primitiveTypes (1 )) (columnName "col3653_3" primitiveTypes (1 )) (columnName "col3653_4" primitiveTypes (1 )) (columnName "col3653_5" primitiveTypes (1 )) (columnName "col3653_6" primitiveTypes (1 )) (columnName "col3653_7" primitiveTypes (1 )) (columnName "col3653_8" primitiveTypes (1 )) (columnName "col3653_9" primitiveTypes (1 )) (columnName "col3653_10" primitiveTypes (1 )) (columnName "col3653_11" primitiveTypes (1 )) (columnName "col3653_2" primitiveTypes (1 )) (columnName "col3653_12" primitiveTypes (1 )) (columnName "col3653_13" primitiveTypes (3 )) ))
+model is null
+(+ -6 (* col3653_3 col3653_11))
+(+ -6 (* col3653_3 col3653_11))
+(+ -6 (* col3653_3 col3653_11))
+(+ -6 (* col3653_3 col3653_11))
+(+ -6 (* col3653_3 col3653_11))
+{[(= 0 (integer->real (ite (<= col3653_8 13) col3653_8 13))) invalid] [(! (= 0 (integer->real (ite (<= col3653_8 13) col3653_8 13)))) (remainder (+ -6 (* col3653_3 col3653_11)) (ite (<= col3653_8 13) col3653_8 13))]}
+{[(= 0 (integer->real (ite (<= col3653_8 13) col3653_8 13))) invalid] [(! (= 0 (integer->real (ite (<= col3653_8 13) col3653_8 13)))) (remainder (+ -6 (* col3653_3 col3653_11)) (ite (<= col3653_8 13) col3653_8 13))]}
+-6
+-6
+0
+0
+(ite (<= (+ -6 (* col3653_3 col3653_11)) -6) (+ -6 (* col3653_3 col3653_11)) -6)
+(ite (<= (+ -6 (* col3653_3 col3653_11)) -6) (+ -6 (* col3653_3 col3653_11)) -6)
+(ite (<= (integer->real (ite (<= (+ -6 (* col3653_3 col3653_11)) -6) (+ -6 (* col3653_3 col3653_11)) -6)) -6) (integer->real (ite (<= (+ -6 (* col3653_3 col3653_11)) -6) (+ -6 (* col3653_3 col3653_11)) -6)) -6)
+(ite (<= (integer->real (ite (<= (+ -6 (* col3653_3 col3653_11)) -6) (+ -6 (* col3653_3 col3653_11)) -6)) -6) (integer->real (ite (<= (+ -6 (* col3653_3 col3653_11)) -6) (+ -6 (* col3653_3 col3653_11)) -6)) -6)
+{[(= 0 col3653_10) invalid] [(! (= 0 col3653_10)) (remainder (+ -6 (* col3653_3 col3653_11)) col3653_10)]}
+{[(= 0 col3653_10) invalid] [(! (= 0 col3653_10)) (remainder (+ -6 (* col3653_3 col3653_11)) col3653_10)]}
