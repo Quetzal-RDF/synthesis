@@ -53,7 +53,8 @@
                          (custom (make-custom-table (list exp) cols)))
                     ; (println exp)
                     ; (println custom)
-                    (let ((synthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
+                    (let ((xsynthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
+                      (for/all ([synthesized xsynthesized]) 
                       ; (println outputs)
                       (let ((result
                              (for/fold ([v #f])
@@ -68,6 +69,6 @@
                                  ;    (println (car (cadr f)))
                                  (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
                         (if result (write-to-file (string-append infile ".out") (string-append "solved: " (~v exp))) (write-to-file (string-append infile ".out") (string-append "failed synthesis: " (~v exp))))
-                        result)))))))))))
+                        result))))))))))))
     
 (provide benchmark benchmark-synthesis)

@@ -1053,9 +1053,12 @@
           (for/list ([x v])
             'invalid)
           (let ((val
-                 (for/fold ([f (cadr v)])
-                           ([e (cddr v)])
-                   (op f e))))
+                 (letrec ((agg
+                           (lambda (e l)
+                             (if (null? l)
+                                 e
+                                 (agg (op e (car l)) (cdr l))))))
+                   (agg (cadr v) (cddr v)))))
             (cons
              (let ((v1 (op (car v) val)))
                (if is-average (/ v1 (length v)) v1))
