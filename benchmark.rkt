@@ -67,7 +67,10 @@
                                                                                    (~v (evaluate (caddr s) (cadddr s))) "model is null"))
                                  (write-to-file (string-append infile ".out") (~v x))
                                  ;    (println (car (cadr f)))
-                                 (or v (unsat? (solve (assert (not (equal? x (car (cadr f))))))))))))
+                                 (or v
+                                     (let ((xx (begin (print "here ") (solve (assert (not (equal? x (car (cadr f)))))))))
+                                       (println (type-of xx))
+                                       (and (not (equal? "any/c" (~v (type-of xx)))) (unsat? xx))))))))
                         (if result (write-to-file (string-append infile ".out") (string-append "solved: " (~v exp))) (write-to-file (string-append infile ".out") (string-append "failed synthesis: " (~v exp))))
                         result))))))))))))
     
