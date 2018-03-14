@@ -1,0 +1,1 @@
+processing:((and (and (< (in 1) 0.12292932188798551) (> (in 1) 0.121342519985011)) (and (< (in 2) "3-18-2008") (> (in 2) "3-18-2008"))) ((columnName "col125433_1" primitiveTypes (5 )) (columnName "col125433_2" primitiveTypes (2 )) ))

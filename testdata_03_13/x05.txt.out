@@ -1,0 +1,79 @@
+processing:(1105 ((columnName "col145721_1" primitiveTypes (5 )) (columnName "col145721_2" primitiveTypes (1 )) (columnName "col145721_3" primitiveTypes (1 )) (columnName "col145721_4" primitiveTypes (1 )) (columnName "col145721_5" primitiveTypes (1 )) (columnName "col145721_6" primitiveTypes (1 )) (columnName "col145721_7" primitiveTypes (1 )) (columnName "col145721_8" primitiveTypes (1 )) ))
+failed to create custom:(1105 ((columnName "col145721_1" primitiveTypes (5 )) (columnName "col145721_2" primitiveTypes (1 )) (columnName "col145721_3" primitiveTypes (1 )) (columnName "col145721_4" primitiveTypes (1 )) (columnName "col145721_5" primitiveTypes (1 )) (columnName "col145721_6" primitiveTypes (1 )) (columnName "col145721_7" primitiveTypes (1 )) (columnName "col145721_8" primitiveTypes (1 )) ))
+processing:(1104 ((columnName "col145720_1" primitiveTypes (2 )) ))
+failed to create custom:(1104 ((columnName "col145720_1" primitiveTypes (2 )) ))
+processing:(1103 ((columnName "col140504_1" primitiveTypes (5 )) (columnName "col140504_2" primitiveTypes (5 )) ))
+failed to create custom:(1103 ((columnName "col140504_1" primitiveTypes (5 )) (columnName "col140504_2" primitiveTypes (5 )) ))
+processing:((if (in 2) (in 2) (concat (in 1) "imgsregularpng" )) ((columnName "col139034_1" primitiveTypes (3 )) (columnName "col139034_3" primitiveTypes (1 )) ))
+model is null
+'invalid
+model is null
+'invalid
+'(invalid invalid invalid invalid invalid invalid)
+'(invalid invalid invalid invalid invalid invalid)
+'(invalid invalid invalid invalid invalid invalid)
+'(invalid invalid invalid invalid invalid invalid)
+solved: '(if (in 2) (in 2) (concat (in 1) "imgsregularpng"))
+processing:(1101 ((columnName "col140503_1" primitiveTypes (5 )) ))
+failed to create custom:(1101 ((columnName "col140503_1" primitiveTypes (5 )) ))
+processing:((and (and (and (and (and (= (in 2) (in 3)) (= (in 3) (in 4))) (= (in 4) (in 5))) (= (in 6) (in 7))) (= (in 7) (in 8))) (= (in 9) (in 10))) ((columnName "col112746_1" primitiveTypes (1 )) (columnName "col112746_2" primitiveTypes (1 )) (columnName "col112746_3" primitiveTypes (1 )) (columnName "col112746_4" primitiveTypes (1 )) (columnName "col112746_5" primitiveTypes (1 )) (columnName "col112746_6" primitiveTypes (1 )) (columnName "col112746_7" primitiveTypes (1 )) (columnName "col112746_8" primitiveTypes (1 )) (columnName "col112746_9" primitiveTypes (1 )) (columnName "col112746_10" primitiveTypes (1 )) ))
+model is null
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+model is null
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+(&& (&& (&& (&& (&& (= col112746_2 col112746_3) (= col112746_3 col112746_4)) (= col112746_4 col112746_5)) (= col112746_6 col112746_7)) (= col112746_7 col112746_8)) (= col112746_9 col112746_10))
+solved: '(and (and (and (and (and (= (in 2) (in 3)) (= (in 3) (in 4))) (= (in 4) (in 5))) (= (in 6) (in 7))) (= (in 7) (in 8))) (= (in 9) (in 10)))
+processing:((and (>= (in 1) 380200) (< (in 1) 380300)) ((columnName "col121001_1" primitiveTypes (1 )) ))
+model is null
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+model is null
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+(&& (<= 380200 col121001_1) (< col121001_1 380300))
+solved: '(and (>= (in 1) 380200) (< (in 1) 380300))
+processing:((and (and (and (= (in 1) (in 2)) (= (in 3) (in 4))) (= (in 5) (in 6))) (= (in 7) "38")) ((columnName "col45448_1" primitiveTypes (1 )) (columnName "col45448_2" primitiveTypes (1 )) (columnName "col45448_3" primitiveTypes (1 )) (columnName "col45448_4" primitiveTypes (1 )) (columnName "col45448_5" primitiveTypes (1 )) (columnName "col45448_6" primitiveTypes (1 )) (columnName "col45448_7" primitiveTypes (3 )) ))
+model is null
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+model is null
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+(&& (&& (&& (= col45448_1 col45448_2) (= col45448_3 col45448_4)) (= col45448_5 col45448_6)) (= 38 col45448_7))
+solved: '(and (and (and (= (in 1) (in 2)) (= (in 3) (in 4))) (= (in 5) (in 6))) (= (in 7) "38"))
+processing:((sum (* (in 4) (in 2)) ) ((columnName "col3653_1" primitiveTypes (1 )) (columnName "col3653_3" primitiveTypes (1 )) (columnName "col3653_4" primitiveTypes (1 )) (columnName "col3653_5" primitiveTypes (1 )) (columnName "col3653_6" primitiveTypes (1 )) (columnName "col3653_7" primitiveTypes (1 )) (columnName "col3653_8" primitiveTypes (1 )) (columnName "col3653_9" primitiveTypes (1 )) (columnName "col3653_10" primitiveTypes (1 )) (columnName "col3653_11" primitiveTypes (1 )) (columnName "col3653_2" primitiveTypes (1 )) (columnName "col3653_12" primitiveTypes (1 )) (columnName "col3653_13" primitiveTypes (3 )) ))
+model is null
+(+ -6 (* col3653_3 col3653_5))
+(+ -6 (* col3653_3 col3653_5))
+(+ -6 (* col3653_3 col3653_5))
+(+ -6 (* col3653_3 col3653_5))
+(+ -6 (* col3653_3 col3653_5))
+{[(= 0 (integer->real (ite (<= col3653_12 21) col3653_12 21))) invalid] [(! (= 0 (integer->real (ite (<= col3653_12 21) col3653_12 21)))) (remainder (+ -6 (* col3653_3 col3653_5)) (ite (<= col3653_12 21) col3653_12 21))]}
+{[(= 0 (integer->real (ite (<= col3653_12 21) col3653_12 21))) invalid] [(! (= 0 (integer->real (ite (<= col3653_12 21) col3653_12 21)))) (remainder (+ -6 (* col3653_3 col3653_5)) (ite (<= col3653_12 21) col3653_12 21))]}
+(/ (+ -30 (integer->real (* col3653_3 (+ -6 (* col3653_3 col3653_5))))) 6)
+(/ (+ -30 (integer->real (* col3653_3 (+ -6 (* col3653_3 col3653_5))))) 6)
+0
+0
+(ite (<= (+ -6 (* col3653_3 col3653_5)) -6) (+ -6 (* col3653_3 col3653_5)) -6)
+(ite (<= (+ -6 (* col3653_3 col3653_5)) -6) (+ -6 (* col3653_3 col3653_5)) -6)
+(ite (<= (integer->real (ite (<= (+ -6 (* col3653_3 col3653_5)) -6) (+ -6 (* col3653_3 col3653_5)) -6)) -6) (integer->real (ite (<= (+ -6 (* col3653_3 col3653_5)) -6) (+ -6 (* col3653_3 col3653_5)) -6)) -6)
+(ite (<= (integer->real (ite (<= (+ -6 (* col3653_3 col3653_5)) -6) (+ -6 (* col3653_3 col3653_5)) -6)) -6) (integer->real (ite (<= (+ -6 (* col3653_3 col3653_5)) -6) (+ -6 (* col3653_3 col3653_5)) -6)) -6)
+{[(= 0 col3653_2) invalid] [(! (= 0 col3653_2)) (remainder (+ -6 (* col3653_3 col3653_5)) col3653_2)]}
+{[(= 0 col3653_2) invalid] [(! (= 0 col3653_2)) (remainder (+ -6 (* col3653_3 col3653_5)) col3653_2)]}
