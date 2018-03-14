@@ -80,7 +80,7 @@
 ((and (>= (in 1) 477600) (< (in 1) 477700)) ((columnName "col121975_1" primitiveTypes (1 )) ))
 ((and (< (in 1) 3612.73773873924) (> (in 1) 3595.3832882327424)) ((columnName "col146459_1" primitiveTypes (5 )) ))
 ("objectproductionpeoplegroup" ((columnName "col148103_1" primitiveTypes (1 )) (columnName "col148103_2" primitiveTypes (1 )) (columnName "col148103_3" primitiveTypes (3 )) ))
-((and (< (in 2) "12-31-2012") (> (in 2) "201211")) ((columnName "col40947_1" primitiveTypes (1 )) (columnName "col40947_2" primitiveTypes (2 )) ))
+((and (< (in 2) "12-31-2012") (> (in 2) "11-31-2012")) ((columnName "col40947_1" primitiveTypes (1 )) (columnName "col40947_2" primitiveTypes (2 )) ))
 ((now) ((columnName "col68032_1" primitiveTypes (6 )) (columnName "col68032_2" primitiveTypes (1 )) (columnName "col68032_3" primitiveTypes (1 )) (columnName "col68032_4" primitiveTypes (1 )) (columnName "col68032_5" primitiveTypes (1 )) ))
 ((and (is-null (in 1)) (= (in 2) (in 3))) ((columnName "col68032_1" primitiveTypes (6 )) (columnName "col68032_2" primitiveTypes (1 )) (columnName "col68032_3" primitiveTypes (1 )) (columnName "col68032_4" primitiveTypes (1 )) (columnName "col68032_5" primitiveTypes (1 )) ))
 ((= (in 1) 1770801408) ((columnName "col66009_1" primitiveTypes (1 )) ))

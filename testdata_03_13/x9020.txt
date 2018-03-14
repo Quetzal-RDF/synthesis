@@ -49,7 +49,7 @@
 ((and (>= (in 1) 285000) (< (in 1) 285100)) ((columnName "col120049_1" primitiveTypes (1 )) ))
 ((and (= (in 2) (in 3)) (= (in 4) 2)) ((columnName "col123355_1" primitiveTypes (6 )) (columnName "col123355_2" primitiveTypes (1 )) (columnName "col123355_3" primitiveTypes (1 )) (columnName "col123355_4" primitiveTypes (1 )) ))
 ((and (> (in 1) 134000) (< (in 1) 135001)) ((columnName "col56430_1" primitiveTypes (1 )) ))
-((and (> (in 1) "10-26-2014") (< (in 1) "2014102699")) ((columnName "col70281_1" primitiveTypes (2 )) ))
+((and (> (in 1) "10-26-2014") (< (in 1) "11-26-2014")) ((columnName "col70281_1" primitiveTypes (2 )) ))
 ((and (and (and (and (and (and (= (in 1) 1) (= (in 2) 1)) (or (= (in 3) "00000000000000") (<= (in 3) "20150930095941"))) (or (= (in 4) "00000000000000") (>= (in 4) "20150930095941"))) (in-list (in 5) (1 1 2 3 6 ))) (= (in 6) 1)) (or (= (in 7) 0) (<= (in 7) 0))) ((columnName "col62954_1" primitiveTypes (1 )) (columnName "col62954_2" primitiveTypes (1 )) (columnName "col62954_3" primitiveTypes (2 3 )) (columnName "col62954_4" primitiveTypes (2 3 )) (columnName "col62954_5" primitiveTypes (1 )) (columnName "col62954_6" primitiveTypes (1 )) (columnName "col62954_7" primitiveTypes (1 )) (columnName "col62954_8" primitiveTypes (1 )) (columnName "col62954_9" primitiveTypes (1 )) (columnName "col62954_10" primitiveTypes (1 )) ))
 ((not (in 1)) ((columnName "col74442_2" primitiveTypes (1 )) (columnName "col74442_3" primitiveTypes (1 )) ))
 ((and (>= (in 1) 480500) (< (in 1) 480600)) ((columnName "col122004_1" primitiveTypes (1 )) ))

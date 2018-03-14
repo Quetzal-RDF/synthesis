@@ -6,7 +6,7 @@
 ((and (and (and (= (in 8) (in 9)) (= (in 10) (in 11))) (= (in 12) 2002)) (< (in 13) 4)) ((columnName "col67435_1" primitiveTypes (1 )) (columnName "col67435_2" primitiveTypes (1 )) (columnName "col67435_3" primitiveTypes (1 )) (columnName "col67435_4" primitiveTypes (1 )) (columnName "col67435_5" primitiveTypes (1 )) (columnName "col67435_6" primitiveTypes (1 )) (columnName "col67435_7" primitiveTypes (1 )) (columnName "col67435_8" primitiveTypes (1 )) (columnName "col67435_9" primitiveTypes (1 )) (columnName "col67435_10" primitiveTypes (1 )) (columnName "col67435_11" primitiveTypes (1 )) (columnName "col67435_12" primitiveTypes (1 )) (columnName "col67435_13" primitiveTypes (1 )) (columnName "col67435_14" primitiveTypes (1 )) (columnName "col67435_15" primitiveTypes (1 )) (columnName "col67435_16" primitiveTypes (1 )) (columnName "col67435_17" primitiveTypes (1 )) ))
 ((and (>= (in 1) 129300) (< (in 1) 129400)) ((columnName "col118492_1" primitiveTypes (1 )) ))
 ((and (>= (in 1) 322200) (< (in 1) 322300)) ((columnName "col120421_1" primitiveTypes (1 )) ))
-((and (> (in 1) "10-27-2014") (< (in 1) "2014102799")) ((columnName "col70282_1" primitiveTypes (2 )) ))
+((and (> (in 1) "10-27-2014") (< (in 1) "11-27-2014")) ((columnName "col70282_1" primitiveTypes (2 )) ))
 ((and (and (< (in 1) 3463) (> (in 1) 834)) (and (< (in 2) 96.87155663144348) (> (in 2) 96.10523071134301))) ((columnName "col96730_1" primitiveTypes (1 )) (columnName "col96730_2" primitiveTypes (5 )) ))
 ((and (>= (in 1) 327400) (< (in 1) 327500)) ((columnName "col120473_1" primitiveTypes (1 )) ))
 ((and (>= (in 1) 406200) (< (in 1) 406300)) ((columnName "col121261_1" primitiveTypes (1 )) ))
