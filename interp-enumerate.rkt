@@ -759,7 +759,9 @@
                                           (if de3 extract-day-of-year extract-day-of-week)))))))
     
     (define/public (general-compare date-op number-op left right)
-     (date-case-op (left right) ((date-op left right)) ((number-op left right))))
+      (and (not (null? left))
+           (not (null? right))
+           (date-case-op (left right) ((date-op left right)) ((number-op left right)))))
 
     (define/public (date-to-epoch pos v)
       (date-op (v)

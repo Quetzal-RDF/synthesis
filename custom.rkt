@@ -199,12 +199,13 @@
            (list (append (car s1) (car i1) (car i2))
                  (list 'send 'p 'substr (cadr s1) (cadr i1) (cadr i2))
                  'string))]
-        [(=)
-         (let ((op (car form))
-               (l (to-custom-int (second form) (cons 1 nested-pos)))
-               (r (to-custom-int (third form) (cons 2 nested-pos))))
+        [(= !=)
+         (let* ((op (car form))
+                (l (to-custom-int (second form) (cons 1 nested-pos)))
+                (r (to-custom-int (third form) (cons 2 nested-pos)))
+                (o (if (equal? op '=) equal? (lambda (x y) (not (equal? x y))))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'general-compare equal? equal? (cadr l) (cadr r))
+                 (list 'send 'p 'general-compare o o (cadr l) (cadr r))
                  'boolean))]
         [(and or)
          (let ((op (car form))
