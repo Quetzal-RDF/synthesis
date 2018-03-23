@@ -10,4 +10,7 @@
     (string-replace colName " " "_" #:all? #t)
     (~v index))))
 
-(provide make-col-name make-col-name-for-date)
+(define (empty-heap? x)
+  (empty? x))
+
+(provide make-col-name make-col-name-for-date empty-heap?)

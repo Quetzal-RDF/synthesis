@@ -8,12 +8,19 @@
 (require racket/async-channel)
 (require rosette/solver/smt/z3)
 (require srfi/19)
+(require data/heap)
 
 (require "../rosette/rosette/solver/smt/server.rkt")
 (require "dates.rkt")
 
 (require "local-engine.rkt")
 (require "threads.rkt")
+(require "utils.rkt")
+
+(define (function-order l r)
+  (> (car l) (car r)))
+
+(define function-queue (make-heap function-order))
 
 (define vals (make-hash))
 
@@ -759,9 +766,7 @@
                                           (if de3 extract-day-of-year extract-day-of-week)))))))
     
     (define/public (general-compare date-op number-op left right)
-      (and (not (null? left))
-           (not (null? right))
-           (date-case-op (left right) ((date-op left right)) ((number-op left right)))))
+     (date-case-op (left right) ((date-op left right)) ((number-op left right))))
 
     (define/public (date-to-epoch pos v)
       (date-op (v)
@@ -1146,14 +1151,20 @@
   (lambda (size pos p f)
     (letrec ((rec (lambda (i sz cs args)
                     (when (>= sz 0)
+                      (println cs)
                       (if (null? cs)
                           (f sz (apply op p pos args))
-                          ((car cs)
-                           sz
-                           (cons i pos)
-                           p
-                           (lambda (new-size v)
-                             (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))
+                          (heap-add!
+                           function-queue
+                           (cons
+                            sz
+                            (lambda ()
+                              ((car cs)
+                               sz
+                               (cons i pos)
+                               p
+                               (lambda (new-size v)
+                                 (rec (+ i 1) new-size (cdr cs) (append args (list v)))))))))))))
       (rec 1 size children '()))))
 
 (define (do-unary-op do-arg op size pos p f)
@@ -1237,7 +1248,12 @@
      (- size 1) (cons 'agg pos) p
      (lambda (size expr)
        (when (> size 0)
-         (f (- size 1) (send p aggregate pos type expr)))))))
+         (heap-add!
+          function-queue
+          (cons
+           size
+           (lambda ()
+             (f (- size 1) (send p aggregate pos type expr))))))))))
 
 (define (do-int-aggregate size pos p f)
   (do-aggregate do-all-int-no-date 'integer size pos p f))
@@ -1268,8 +1284,7 @@
 (define (analyze extra white black limit outputs symbolic . inputs)
   ; goals - number of solutions wanted
   ; models - set of expressions returned by the search 
-  (letrec ((z3-engines (new local-engines% [n 5]))
-           (time-limit 30000)
+  (letrec ((time-limit 30000)
            (start-time (current-inexact-milliseconds))
            (results-channel (make-async-channel 10000))
            (goal 1)
@@ -1279,6 +1294,7 @@
     ; exception handler code checks if we have a list, and if so returns the list, lets other exceptions bubble up, see raise at the bottom
     ; the function where the result is raised as a list
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
+      (set! function-queue (make-heap function-order))
       ((let ((v (car outputs)))
          (cond ((boolean? v) do-all-bool)
                ((number? v) do-all-int)
@@ -1311,6 +1327,7 @@
                         ; line does not refer to the parameter passed into this function
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
+         (println (cadr y))
           (when (null? (apply append (hash-values extra)))
             ; (println (car y))
          (set! outstanding (+ outstanding 1))
@@ -1335,8 +1352,11 @@
                    (append
                     models
                     (list (list (car y) (remove-duplicates (cadr y)) (car (third y)) null null)))))
-           (send z3-engines solve formula x
-             (lambda (formula result)
+           (let ((solver (z3)))
+             (solver-clear solver)
+             (solver-assert solver (list formula))
+             (let ((result (solver-check solver)))
+               (solver-shutdown solver)
                ; (when (and (sat? result) (evaluate formula result)) - the  (evaluate formula result) should not be necessary but Z3
                ; has bugs so check.
                (when (and (not (exn? result)) (sat? result) (eq? #t (evaluate formula result)))
@@ -1376,8 +1396,18 @@
                                   ; result one example satisfiable synthesized model with variable bindings
                                   (list (list (car y) (remove-duplicates (cadr y)) (caddr y) result null)))))))))))
            (when (> (length models) goal)
-             (raise models)))))))
-    (send z3-engines drain)
+             (raise models))))))
+      (letrec ((drain
+                (lambda ()
+                  (when (not (empty-heap? function-queue))
+                    (println function-queue) 
+                    (let ((x (heap-min function-queue)))
+                      (heap-remove! function-queue x)
+                      ((cdr x))
+                      (when (> (length models) goal)
+                        (raise models))
+                      (drain))))))
+        (drain)))      
     models))
 
 (define (aggregate white black limit results symbolic . inputs)
