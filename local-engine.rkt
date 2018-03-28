@@ -2,7 +2,7 @@
 
 (require data/heap)
 
-(define balance-size 10)
+(define balance-size 100)
 
 (define problem%
   (class object%
@@ -24,7 +24,7 @@
       problem-priority)))
 
 (define (problem<? l r)
-  (< (send l get-priority) (send r get-priority)))
+  (> (send l get-priority) (send r get-priority)))
 
 (define (problem-heap)
   (make-heap problem<?))
@@ -42,6 +42,7 @@
         (heap-remove! problem-queue x)
         (let ((z3 (z3))
               (problem (send x get-problem)))
+          (println problem)
           (solver-clear z3)
           (solver-assert z3 (list problem))
           (let ((result (solver-check z3)))
@@ -50,8 +51,9 @@
 
     (define/public (solve formula priority hook)
       (heap-add! problem-queue (new problem% [smt formula] [priority priority] [hook hook]))
-      (when (> (heap-count problem-queue) balance-size)
-        (solve-one)))
+      ;(when (> (heap-count problem-queue) balance-size)
+      ;  (solve-one))
+      )
 
     (define/public (drain)
       (when (> (heap-count problem-queue) 0)

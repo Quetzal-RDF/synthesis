@@ -1113,11 +1113,6 @@
   (do-all-int size pos p f)
   (do-all-str size pos p f))
   
-(define (do-math-int size pos p f)
-  (do-all 'number
-   (list do-in-int do-int-aggregate do-if-then-int do-basic-math do-index-of do-length do-basic-num-functions)
-   size pos p f))
-
 (define (do-all-date size pos p f)
   (do-all 'vector
           ; (list do-in-date do-date-interval)
@@ -1169,15 +1164,15 @@
 
 (define (do-unary-op do-arg op size pos p f)
   ((custom (lambda (p pos new-expr) (dynamic-send p op pos new-expr)) do-arg)
-   (- size 2) pos p f))
+   (- size 1) pos p f))
 
 (define (do-binary-op do-arg1 do-arg2 op size pos p f)
   ((custom (lambda (p pos left-expr right-expr) (dynamic-send p op pos left-expr right-expr)) do-arg1 do-arg2)
-   (- size 3) pos p f))
+   (- size 1) pos p f))
 
 (define (do-ternary-op do-arg1 do-arg2 do-arg3 op size pos p f)
   ((custom (lambda (p pos str start end) (dynamic-send p op str start end)) do-arg1 do-arg2 do-arg3)
-   (- size 4) pos p f))
+   (- size 1) pos p f))
 
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
@@ -1189,7 +1184,7 @@
   (do-binary-op do-all-str do-all-str 'concat size pos p f))
 
 (define (do-basic-math size pos p f)
-  (do-binary-op do-math-int do-math-int 'basic-math size pos p f))
+  (do-binary-op do-all-int do-all-int 'basic-math size pos p f))
 
 (define (do-date-compare size pos p f)
   (do-binary-op do-all-date do-all-date 'date-compare size pos p f))
@@ -1399,8 +1394,8 @@
              (raise models))))))
       (letrec ((drain
                 (lambda ()
-                  (when (not (empty-heap? function-queue))
-                    (println function-queue) 
+                  (when (> (heap-count function-queue) 0)
+                    (println (heap-count function-queue))
                     (let ((x (heap-min function-queue)))
                       (heap-remove! function-queue x)
                       ((cdr x))
