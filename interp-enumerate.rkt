@@ -1390,7 +1390,7 @@
                                   ; caddr y the formula itself which is usually a guardian union
                                   ; result one example satisfiable synthesized model with variable bindings
                                   (list (list (car y) (remove-duplicates (cadr y)) (caddr y) result null)))))))))))
-           (when (> (length models) goal)
+           (when (>= (length models) goal)
              (raise models))))))
       (letrec ((drain
                 (lambda ()
@@ -1399,7 +1399,7 @@
                     (let ((x (heap-min function-queue)))
                       (heap-remove! function-queue x)
                       ((cdr x))
-                      (when (> (length models) goal)
+                      (when (>= (length models) goal)
                         (raise models))
                       (drain))))))
         (drain)))      
