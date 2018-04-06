@@ -9,6 +9,7 @@
 (require rosette/solver/smt/z3)
 (require srfi/19)
 (require data/heap)
+(require json)
 
 (require "../rosette/rosette/solver/smt/server.rkt")
 (require "dates.rkt")
@@ -1076,7 +1077,7 @@
     (override aggregate-op)
     (override aggregate)))
 
-(define (do-all type ops size pos p f)
+(define (do-all type ops size pos p f . order)
   (let ((extras (send p extra-f)))
     (let ((do-custom
            (lambda (type)
@@ -1088,42 +1089,42 @@
                    (hash-set! extras type fs)))))))
       (do-custom type)
       (do-custom 'any)
-      (for ([op ((send p get-ordering-function) ops)])
+      (for ([op (if (null? order) ((send p get-ordering-function) ops) (sort order ops))])
         (op size pos p f)))))
 
-(define (do-all-str size pos p f)
-  (do-all 'string
+(define (do-all-str size pos p f . order)
+  (apply do-all 'string
    (list do-in-str do-str-aggregate do-strv do-if-then-str do-concat do-substring do-get-digits do-trim)
-   size pos p f))
+   size pos p f order))
 
-(define (do-all-int-no-date size pos p f)
-  (do-all 'number
+(define (do-all-int-no-date size pos p f . order)
+  (apply do-all 'number
     (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions)
-   size pos p f))
+   size pos p f order))
 
-(define (do-all-int size pos p f)
-  (do-all 'number
+(define (do-all-int size pos p f . order)
+  (apply do-all 'number
      (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff do-date-extract do-date-to-epoch)
 ;    (list do-in-int do-intv do-basic-math do-if-then-int do-basic-num-functions do-date-diff do-date-extract do-date-to-epoch)
 ;    (list do-in-int do-int-aggregate do-intv do-basic-math do-if-then-int do-basic-num-functions)
-   size pos p f))
+   size pos p f order))
 
 (define (do-all-any size pos p f)
   (do-all-bool size pos p f)
   (do-all-int size pos p f)
   (do-all-str size pos p f))
   
-(define (do-all-date size pos p f)
-  (do-all 'vector
+(define (do-all-date size pos p f . order)
+  (apply do-all 'vector
           ; (list do-in-date do-date-interval)
           (list do-in-date do-date-from-epoch do-date-interval)
-          size pos p f))
+          size pos p f order))
 
 
-(define (do-all-bool size pos p f)
-  (do-all 'boolean
+(define (do-all-bool size pos p f . order)
+  (apply do-all 'boolean
    (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null? do-like do-date-compare)
-   size pos p f))
+   size pos p f order))
 
 (define (do-in-int size pos p f) (f size (send p in pos number?)))
 
@@ -1174,47 +1175,50 @@
   ((custom (lambda (p pos str start end) (dynamic-send p op str start end)) do-arg1 do-arg2 do-arg3)
    (- size 1) pos p f))
 
+(define (do-do do-operation from)
+  (lambda (size pos p f) (do-do size pos p f (compare-operations from))))
+
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
 
 (define (do-trim size pos p f)
-  (do-unary-op do-all-str 'trim size pos p f))
+  (do-unary-op (do-do do-all-str 'trim) 'trim size pos p f))
 
 (define (do-concat size pos p f)
-  (do-binary-op do-all-str do-all-str 'concat size pos p f))
+  (do-binary-op (do-do do-all-str 'concat) (do-do do-all-str 'concat) 'concat size pos p f))
 
 (define (do-basic-math size pos p f)
-  (do-binary-op do-all-int do-all-int 'basic-math size pos p f))
+  (do-binary-op (do-do do-all-int '+) (do-do do-all-int '+) 'basic-math size pos p f))
 
 (define (do-date-compare size pos p f)
-  (do-binary-op do-all-date do-all-date 'date-compare size pos p f))
+  (do-binary-op (do-do do-all-date '=) (do-do do-all-date '=) 'date-compare size pos p f))
 
 (define (do-date-diff size pos p f)
-  (do-binary-op do-all-date do-all-date 'date-diff size pos p f))
+  (do-binary-op (do-do do-all-date '-) (do-do do-all-date '-) 'date-diff size pos p f))
 
 (define (do-date-interval size pos p f)
-  (do-binary-op do-all-date do-all-int 'date-interval size pos p f))
+  (do-binary-op (do-do do-all-date '-) (do-do do-all-int '-) 'date-interval size pos p f))
 
 (define (do-date-extract size pos p f)
-  (do-unary-op do-all-date 'date-extract size pos p f))
+  (do-unary-op (do-do do-all-date 'extract-months) 'date-extract size pos p f))
 
 (define (do-date-to-epoch size pos p f)
-  (do-unary-op do-all-date 'date-to-epoch size pos p f))
+  (do-unary-op (do-do do-all-date 'date-to-epoch) 'date-to-epoch size pos p f))
 
 (define (do-date-from-epoch size pos p f)
-  (do-unary-op do-all-int 'date-from-epoch size pos p f))
+  (do-unary-op (do-do do-all-int 'date-from-epoch) 'date-from-epoch size pos p f))
 
 (define (do-basic-num-functions size pos p f)
-  (do-unary-op do-all-int 'basic-num-functions size pos p f))
+  (do-unary-op (do-do do-all-int 'abs) 'basic-num-functions size pos p f))
 
 (define (do-index-of size pos p f)
-  (do-binary-op do-all-str do-all-str 'index-of (- size 2) pos p f))
+  (do-binary-op (do-do do-all-str 'index-of) (do-do do-all-str 'index-of) 'index-of (- size 2) pos p f))
 
 (define (do-compare-to size pos p f)
-  (do-binary-op do-all-int do-all-int 'compare-to size pos p f))
+  (do-binary-op (do-do do-all-int '<) (do-do do-all-int '<) 'compare-to size pos p f))
 
 (define (do-compare-to-str size pos p f)
-  (do-binary-op do-all-str do-all-str 'compare-to-str size pos p f))
+  (do-binary-op (do-do do-all-str '=) (do-do do-all-str '=) 'compare-to-str size pos p f))
 
 (define (do-logic-op size pos p f)
   (do-binary-op do-all-bool do-all-bool 'logic-op size pos p f))
@@ -1223,16 +1227,16 @@
   (do-unary-op do-all-bool 'logic-op-not size pos p f))
 
 (define (do-if-then-str size pos p f)
-  (do-ternary-op do-all-bool do-all-str do-all-str 'if-then-else size pos p f))
+  (do-ternary-op do-all-bool (do-do do-all-str 'if) (do-do do-all-str 'if) 'if-then-else size pos p f))
 
 (define (do-if-then-int size pos p f)
-  (do-ternary-op do-all-bool do-all-int do-all-int 'if-then-else size pos p f))
+  (do-ternary-op do-all-bool (do-do do-all-int 'if) (do-do do-all-int 'if) 'if-then-else size pos p f))
 
 (define (do-length size pos p f)
-  (do-unary-op do-all-str 'strlength size pos p f))
+  (do-unary-op (do-do do-all-str 'length) 'strlength size pos p f))
 
 (define (do-substring size pos p f)
-  (do-ternary-op do-all-str do-all-int do-all-int 'substr size pos p f))
+  (do-ternary-op (do-do do-all-str 'substring) (do-do do-all-int 'substring) (do-do do-all-int 'substring) 'substr size pos p f))
 
 (define (do-like size pos p f)
   (do-binary-op do-all-str do-all-str 'like size pos p f))
@@ -1251,10 +1255,10 @@
              (f (- size 1) (send p aggregate pos type expr))))))))))
 
 (define (do-int-aggregate size pos p f)
-  (do-aggregate do-all-int-no-date 'integer size pos p f))
+  (do-aggregate (do-do do-all-int-no-date 'sum) 'integer size pos p f))
 
 (define (do-str-aggregate size pos p f)
-  (do-aggregate do-all-str 'string size pos p f))
+  (do-aggregate (do-do do-all-str 'string_append) 'string size pos p f))
 
 (define (symbolic? x) 
   (or (union? x) (term? x)))
@@ -1267,6 +1271,43 @@
             (/ (with-input-from-string (apply string-append parts) (lambda () (read)))
                (expt 10 (string-length (cadr parts))))))
       v))
+
+(define operation-mapping
+  (hash
+   do-in-int "in-v"
+   do-in-str "in-v"
+   do-in-date "in-v"
+   do-is-null? "is-null"
+   do-trim "trim"
+   do-concat "concat"
+   do-basic-math "+"
+   do-date-compare "<"
+   do-date-diff "-"
+   do-date-extract "extract-months"
+   do-date-to-epoch "date-to-epoch"
+   do-date-from-epoch "date-from-epoch"
+   do-basic-num-functions "abs"
+   do-index-of "index-of"
+   do-compare-to "="
+   do-compare-to-str "="
+   do-logic-op "="
+   do-logic-op-not "!="
+   do-if-then-int "if"
+   do-if-then-str "if"
+   do-length "length"
+   do-substring "substring"
+   do-int-aggregate "sum"
+   do-str-aggregate "string_append"))
+
+(define orderings
+  (with-input-from-file "dataflow.json" (lambda () (read-json))))
+
+(define (compare-operations from)
+  (let ((order (hash-ref orderings from)))
+    (lambda (x y)
+      (let ((xv (or (index-of order (hash-ref operation-mapping x)) 1000))
+            (yv (or (index-of order (hash-ref operation-mapping y)) 1000)))
+        (< xv yv)))))
 
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column

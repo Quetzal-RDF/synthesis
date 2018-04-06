@@ -63,6 +63,7 @@ public class GitHubSelects {
 		SQLToGraph.printEdgeCounts(SQLToGraph.dataflowEdgeCount);
 		System.out.println("ControlFlow:");
 		SQLToGraph.printEdgeCounts(SQLToGraph.controlflowEdgeCount);
+		SQLToGraph.printDataFlowForRacket(SQLToGraph.dataflowEdgeCount, "/tmp/dataflow");
 
 	}
 
