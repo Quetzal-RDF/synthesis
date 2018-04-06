@@ -1089,7 +1089,7 @@
                    (hash-set! extras type fs)))))))
       (do-custom type)
       (do-custom 'any)
-      (for ([op (if (null? order) ((send p get-ordering-function) ops) (sort order ops))])
+      (for ([op (if (null? order) ((send p get-ordering-function) ops) (sort ops (car order)))])
         (op size pos p f)))))
 
 (define (do-all-str size pos p f . order)
@@ -1176,7 +1176,7 @@
    (- size 1) pos p f))
 
 (define (do-do do-operation from)
-  (lambda (size pos p f) (do-do size pos p f (compare-operations from))))
+  (lambda (size pos p f) (do-operation size pos p f (compare-operations from))))
 
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
@@ -1305,8 +1305,8 @@
 (define (compare-operations from)
   (let ((order (hash-ref orderings from)))
     (lambda (x y)
-      (let ((xv (or (index-of order (hash-ref operation-mapping x)) 1000))
-            (yv (or (index-of order (hash-ref operation-mapping y)) 1000)))
+      (let ((xv (or (and (hash-has-key? operation-mapping x) (index-of order (hash-ref operation-mapping x))) 1000))
+            (yv (or (and (hash-has-key? operation-mapping y) (index-of order (hash-ref operation-mapping y))) 1000)))
         (< xv yv)))))
 
 ; limit - max size of expressions to search over in terms of primitive operations
