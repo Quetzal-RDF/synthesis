@@ -1178,6 +1178,18 @@
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
 
+(define (do-all-bool-root size pos p f)
+  ((do-do do-all-bool 'root) size pos p f))
+
+(define (do-all-int-root size pos p f)
+  ((do-do do-all-int 'root) size pos p f))
+
+(define (do-all-str-root size pos p f)
+  ((do-do do-all-str 'root) size pos p f))
+
+(define (do-all-date-root size pos p f)
+  ((do-do do-all-date 'root) size pos p f))
+
 (define (do-trim size pos p f)
   (do-unary-op (do-do do-all-str 'trim) 'trim size pos p f))
 
@@ -1331,10 +1343,10 @@
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
       (set! function-queue (make-heap function-order))
       ((let ((v (car outputs)))
-         (cond ((boolean? v) do-all-bool)
-               ((number? v) do-all-int)
-               ((vector? v) do-all-date)
-               (#t do-all-str)))
+         (cond ((boolean? v) do-all-bool-root)
+               ((number? v) do-all-int-root)
+               ((vector? v) do-all-date-root)
+               (#t do-all-str-root)))
        ; do-all-bool/do-all-int etc will be called with limit, an empty list (list) to indicate the root node of the expression tree we are developing
        ; a list of processors which include 1 for printing (doc-processor) and 1 expression processor initialized with inputs per row (cdr inputs discards
        ; first element which is the output), so we now have 1 expression processor per row.
