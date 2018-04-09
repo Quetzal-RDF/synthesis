@@ -131,7 +131,7 @@ public class SQLToGraph {
         for (int i = 0; i <= ir.getSymbolTable().getMaxValueNumber(); i++) {
           SSAInstruction d = du.getDef(i);
           if (d instanceof SSAInvokeInstruction || d instanceof SSAGetInstruction
-              || d instanceof SSABinaryOpInstruction) {
+              || d instanceof SSABinaryOpInstruction || d == null) {
             Set<SSAInstruction> uses = HashSetFactory.make();
             du.getUses(i).forEachRemaining((SSAInstruction x) -> {
               uses.add(x);
@@ -143,11 +143,11 @@ public class SQLToGraph {
                 String src = getSourceName(d);
                 String target = getTargetName(use);
 
-                if (src == null || target == null) {
+                if (target == null) {
                   continue;
                 }
 
-                record(dataflowGraph, dataflowEdgeCount, src, target);
+                record(dataflowGraph, dataflowEdgeCount, src==null? "constant": src, target);
               } else if (use instanceof SSAPhiInstruction) {
                 du.getUses(use.getDef()).forEachRemaining((SSAInstruction x) -> {
                   uses.add(x);
