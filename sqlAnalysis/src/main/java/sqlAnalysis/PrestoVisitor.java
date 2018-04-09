@@ -130,7 +130,7 @@ public class PrestoVisitor {
 
 		ExpressionGatherer exp = new ExpressionGatherer();
 		for (QuerySpecification q : querySpec) {
-			CAstNode n = exp.process(q, new Context());
+		    CAstNode n = exp.factory.makeNode(CAstNode.RETURN, exp.process(q, new Context()));
 			if (n != null) {
 				createEntity(l, n, exp.cfg());
 			}
@@ -557,7 +557,7 @@ public class PrestoVisitor {
 			if (context.isTop()) {
 				CAstNode query = null;	
 				if (where != null && select != null) {
-					query = factory.makeNode(CAstNode.IF_EXPR, where, select);
+					query = factory.makeNode(CAstNode.IF_EXPR, where, select, factory.makeConstant(null));
 				} else if (where != null && select == null) {
 					query = factory.makeNode(CAstNode.IF_EXPR, where, factory.makeConstant(true), factory.makeConstant(false));
 				} else if (select != null) {

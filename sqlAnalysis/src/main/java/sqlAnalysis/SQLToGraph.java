@@ -39,6 +39,7 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAPhiInstruction;
+import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.Graph;
@@ -121,7 +122,7 @@ public class SQLToGraph {
                   } else if (pred != null) {
                     record(controlflowGraph, controlflowEdgeCount, getSourceName(pred),
                         getSourceName(inst));
-                  }
+                  } 
                 }
               }
             }
@@ -139,11 +140,12 @@ public class SQLToGraph {
             while (!uses.isEmpty()) {
               SSAInstruction use = uses.iterator().next();
               uses.remove(use);
-              if (use instanceof SSAInvokeInstruction || use instanceof SSABinaryOpInstruction) {
+              if (use instanceof SSAInvokeInstruction || use instanceof SSABinaryOpInstruction || use instanceof SSAReturnInstruction) {
                 String src = getSourceName(d);
                 String target = getTargetName(use);
 
                 if (target == null) {
+                  System.out.println(src);
                   continue;
                 }
 
@@ -248,6 +250,8 @@ public class SQLToGraph {
           ((SSAInvokeInstruction) use).getCallSite().getDeclaredTarget().getName().toString());
     } else if (use instanceof SSABinaryOpInstruction) {
       target = getFunction(((SSABinaryOpInstruction) use).getOperator().toString());
+    } else if (use instanceof SSAReturnInstruction) {
+      target = "root";
     }
     return target;
   }
