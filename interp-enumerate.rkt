@@ -58,6 +58,9 @@
   (class object%
     (super-new)
 
+    (define/public (invalid v)
+      #f)
+    
     (define/public (constant v)
       '())
 
@@ -217,6 +220,9 @@
 (define doc-processor%
   (class object%
     (super-new)
+
+    (define/public (invalid v)
+      #f)
 
     (define/public (constant v)
       v)
@@ -517,7 +523,10 @@
     (super-new)
     
     (define input-vals inputs)
-    
+
+    (define/public (invalid v)
+      (eq? v 'invalid))
+
     (define/public (constant v)
       (let ((r
              (if (not (vector? v))
@@ -617,7 +626,7 @@
 
     (define/public (in-v pos v type-f)
       (let ((val (list-ref input-vals (- v 1))))
-        (if (type-f val)
+         (if (type-f val)
             (send this constant val)
             'invalid)))
     
@@ -837,6 +846,13 @@
     (init-field [extra-functions extras]
                 [processors children]
                 [ordering ordering-function])
+
+    (define/public (invalid vs)
+      (for/fold ([result #f])
+                ([p processors]
+                 [v vs])
+        (or result (send p invalid v))))
+     
 
     (define/public (extra-f)
       extra-functions)
@@ -1147,6 +1163,8 @@
   (lambda (size pos p f)
     (letrec ((rec (lambda (i sz cs args)
                     (when (>= sz 0)
+                      (print op)
+                      (print " -- ")
                       (println cs)
                       (if (null? cs)
                           (f sz (apply op p pos args))
@@ -1160,7 +1178,8 @@
                                (cons i pos)
                                p
                                (lambda (new-size v)
-                                 (rec (+ i 1) new-size (cdr cs) (append args (list v)))))))))))))
+                                 (unless (send p invalid v)
+                                   (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))))))
       (rec 1 size children '()))))
 
 (define (do-unary-op do-arg op size pos p f)
@@ -1246,7 +1265,7 @@
     (do-all-op
      (- size 1) (cons 'agg pos) p
      (lambda (size expr)
-       (when (> size 0)
+       (when (and (> size 0) (not (eq? expr 'invalid)))
          (heap-add!
           function-queue
           (cons
@@ -1364,6 +1383,8 @@
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
          (println (cadr y))
+         (println (car y))
+         (println (car (third y)))
           (when (null? (apply append (hash-values extra)))
             ; (println (car y))
          (set! outstanding (+ outstanding 1))
