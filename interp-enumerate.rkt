@@ -1160,9 +1160,7 @@
   (lambda (size pos p f)
     (letrec ((rec (lambda (i sz cs args)
                     (when (>= sz 0)
-                      (print op)
-                      (print " -- ")
-                      (println cs)
+                     ; (println cs)
                       (if (null? cs)
                           (f sz (apply op p pos args))
                           (heap-add!
@@ -1192,6 +1190,7 @@
    (- size 1) pos p f))
 
 (define (do-do do-operation from)
+  ; (println (string-append "CALLING: " (~v do-operation) " from " (~v from)))
   (lambda (size pos p f) (do-operation size pos p f (compare-operations from))))
 
 (define (do-get-digits size pos p f)
@@ -1394,9 +1393,7 @@
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
          (println (cadr y))
-         (println (car y))
-         (println (car (third y)))
-          (when (null? (apply append (hash-values extra)))
+         (when (null? (apply append (hash-values extra)))
             ; (println (car y))
          (set! outstanding (+ outstanding 1))
          (let ((formula
