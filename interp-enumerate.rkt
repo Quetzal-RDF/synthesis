@@ -257,12 +257,10 @@
             (m3 (val (cons 'm3 pos) boolean?)))
         (list
          (cond
-           [(and m1 m2 m3) quotient] 
-           [(and m1 m2 (not m3)) remainder]
            [(and m1 (not m2) m3) /]
            [(and m1 (not m2) (not m3)) *]
            [(and (not m1) m2 m3) -]
-           [#t +])
+           [(and m1 m2 m3) +])
          l r)))
 
     (define/public (basic-num-functions pos v)
@@ -270,8 +268,7 @@
             (m2 (val (cons 'm2 pos) boolean?))
             (m3 (val (cons 'm3 pos) boolean?)))
             (list
-             (if m1 (if m2 (if m3 'abs 'truncate) (if m3 'sign 'ceiling)) (if m2 'floor 'round))
-             v)))
+             (if m1 (if m2 (if m3 'abs 'truncate) (if m3 'sign 'ceiling)) (if m2 (if m3 'floor 'lifted-round) (if m3 'quotient 'remainder))) v)))
     
     (define/public (index-of pos l r)
       (list 'index-of l r))
@@ -438,16 +435,15 @@
                          (#t 'sum))))))
         (list 'agg op v)))))
 
-(define (basic-math-op r pos + - * / quotient remainder)
+(define (basic-math-op r pos + - * / )
   (let ((m1 (val (cons 'm1 pos) boolean?))
         (m2 (val (cons 'm2 pos) boolean?))
         (m3 (val (cons 'm3 pos) boolean?)))
-    (cond [(and m1 m2 m3) (if (and (integer? r) (not (= r 0))) quotient 'invalid)]
-          [(and m1 m2 (not m3)) (if (and (integer? r) (not (= r 0))) remainder 'invalid)]
+    (cond [(and m1 m2 m3) +]
           [(and m1 (not m2) m3) (if (not (= r 0)) / 'invalid)]
           [(and m1 (not m2) (not m3)) *]
           [(and (not m1) m2 m3) -]
-          [#t +])))
+          [#t 'invalid])))
 
 (define (lifted-round v)
   (truncate (+ v .5)))
@@ -635,7 +631,7 @@
 
     (define/public (basic-math pos l r)
       (if (and (number? l) (number? r))
-          (let ((op (basic-math-op r pos + - * / quotient remainder)))
+          (let ((op (basic-math-op r pos + - * /)))
             (if (eq? op 'invalid)
                 'invalid
                 (send this basic-binary op l r)))
@@ -646,7 +642,7 @@
           (let ((m1 (val (cons 'm1 pos) boolean?))
                 (m2 (val (cons 'm2 pos) boolean?))
                 (m3 (val (cons 'm3 pos) boolean?)))
-            (send this basic-unary (if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) (if m2 floor lifted-round)) v))
+            (send this basic-unary (if m1 (if m2 (if m3 abs truncate) (if m3 sign ceiling)) (if m2 (if m3 floor lifted-round) (if m3 quotient remainder))) v))
           'invalid))
     
     (define/public (index-of pos l r)
@@ -1142,6 +1138,7 @@
    (list do-compare-to do-compare-to-str do-logic-op do-logic-op-not do-is-null? do-like do-date-compare)
    size pos p f order))
 
+
 (define (do-in-int size pos p f) (f size (send p in pos number?)))
 
 (define (do-in-str size pos p f) (f size (send p in pos string?)))
@@ -1199,6 +1196,18 @@
 
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
+
+(define (do-all-bool-root size pos p f)
+  ((do-do do-all-bool 'root) size pos p f))
+
+(define (do-all-int-root size pos p f)
+  ((do-do do-all-int 'root) size pos p f))
+
+(define (do-all-str-root size pos p f)
+  ((do-do do-all-str 'root) size pos p f))
+
+(define (do-all-date-root size pos p f)
+  ((do-do do-all-date 'root) size pos p f))
 
 (define (do-trim size pos p f)
   (do-unary-op (do-do do-all-str 'trim) 'trim size pos p f))
@@ -1316,7 +1325,9 @@
    do-length "length"
    do-substring "substring"
    do-int-aggregate "sum"
-   do-str-aggregate "string_append"))
+   do-str-aggregate "string_append"
+   do-strv "constant"
+   do-intv "constant" ))
 
 (define orderings
   (with-input-from-file "dataflow.json" (lambda () (read-json))))
@@ -1351,10 +1362,10 @@
     (with-handlers ([(lambda (v) (pair? v)) (lambda (v) v)])
       (set! function-queue (make-heap function-order))
       ((let ((v (car outputs)))
-         (cond ((boolean? v) do-all-bool)
-               ((number? v) do-all-int)
-               ((vector? v) do-all-date)
-               (#t do-all-str)))
+         (cond ((boolean? v) do-all-bool-root)
+               ((number? v) do-all-int-root)
+               ((vector? v) do-all-date-root)
+               (#t do-all-str-root)))
        ; do-all-bool/do-all-int etc will be called with limit, an empty list (list) to indicate the root node of the expression tree we are developing
        ; a list of processors which include 1 for printing (doc-processor) and 1 expression processor initialized with inputs per row (cdr inputs discards
        ; first element which is the output), so we now have 1 expression processor per row.
