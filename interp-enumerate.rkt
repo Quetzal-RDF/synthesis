@@ -19,7 +19,7 @@
 (require "utils.rkt")
 
 (define (function-order l r)
-  (> (car l) (car r)))
+  (< (car l) (car r)))
 
 (define function-queue (make-heap function-order))
 
@@ -60,6 +60,10 @@
 
     (define/public (invalid v)
       #f)
+
+    (define/public (calculate-cost v)
+      (let ((l (map (lambda (q) (hash-ref func_to_costs q 1)) v)))
+        (* (apply max l) (length l))))
     
     (define/public (constant v)
       '())
@@ -226,6 +230,9 @@
 
     (define/public (invalid v)
       #f)
+
+    (define/public (calculate-cost v)
+     0)
 
     (define/public (constant v)
       v)
@@ -529,6 +536,9 @@
     (define/public (invalid v)
       (eq? v 'invalid))
 
+    (define/public (calculate-cost v)
+      0)
+    
     (define/public (constant v)
       (let ((r
              (if (not (vector? v))
@@ -853,7 +863,12 @@
                 ([p processors]
                  [v vs])
         (or result (send p invalid v))))
-     
+
+    (define/public (calculate-cost vs)
+      (for/fold ([result 0])
+                ([p processors]
+                 [v vs])
+        (apply max (list (send p calculate-cost v) result))))
 
     (define/public (extra-f)
       extra-functions)
@@ -1110,6 +1125,7 @@
                    (hash-set! extras type fs)))))))
       (do-custom type)
       (do-custom 'any)
+    ;  (println (if (null? order) ((send p get-ordering-function) ops) (sort ops (car order))))
       (for ([op (if (null? order) ((send p get-ordering-function) ops) (sort ops (car order)))])
         (op size pos p f)))))
 
@@ -1169,21 +1185,27 @@
   (lambda (size pos p f)
     (letrec ((rec (lambda (i sz cs args)
                     (when (>= sz 0)
-                     ; (println cs)
-                      (if (null? cs)
-                          (f sz (apply op p pos args))
-                          (heap-add!
-                           function-queue
-                           (cons
-                            sz
-                            (lambda ()
-                              ((car cs)
-                               sz
-                               (cons i pos)
-                               p
-                               (lambda (new-size v)
-                                 (unless (send p invalid v)
-                                   (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))))))
+                      (let ((cost (for/fold ([result 0])
+                                  ([arg args])
+                                    (let ((v (send p calculate-cost arg)))
+                            (max v result)))))
+                    ;    (when (= 0 cost) (print " COST IS ZERO "))
+                    ;    (when (= 0 cost) (print cost))
+                    ;    (when (= 0 cost) (println args))               
+                        (heap-add!
+                         function-queue
+                         (cons
+                          cost
+                          (lambda ()
+                            (if (null? cs) 
+                                (f cost (apply op p pos args))
+                                ((car cs)
+                                 sz
+                                 (cons i pos)
+                                 p
+                                 (lambda (new-size v)
+                                   (unless (send p invalid v)
+                                     (rec (+ i 1) new-size (cdr cs) (append args (list v)))))))))))))))
       (rec 1 size children '()))))
 
 (define (do-unary-op do-arg op size pos p f)
@@ -1283,12 +1305,13 @@
      (- size 1) (cons 'agg pos) p
      (lambda (size expr)
        (when (and (> size 0) (not (eq? expr 'invalid)))
-         (heap-add!
-          function-queue
-          (cons
-           size
-           (lambda ()
-             (f (- size 1) (send p aggregate pos type expr))))))))))
+         (let ((cost (send p calculate-cost expr)))
+           (heap-add!
+            function-queue
+            (cons
+             cost
+             (lambda ()
+               (f (- size 1) (send p aggregate pos type expr)))))))))))
 
 (define (do-int-aggregate size pos p f)
   (do-aggregate (do-do do-all-int-no-date 'sum) 'integer size pos p f))
@@ -1401,7 +1424,11 @@
                         ; line does not refer to the parameter passed into this function
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
+         (print "IN ANALYZE ")
+         (print x)
+         (print " ")
          (println (cadr y))
+       ;  (println (heap->vector function-queue))
          (when (null? (apply append (hash-values extra)))
             ; (println (car y))
          (set! outstanding (+ outstanding 1))
@@ -1474,7 +1501,7 @@
       (letrec ((drain
                 (lambda ()
                   (when (> (heap-count function-queue) 0)
-                    (println (heap-count function-queue))
+                    ; (println (heap-count function-queue))
                     (let ((x (heap-min function-queue)))
                       (heap-remove! function-queue x)
                       ((cdr x))
@@ -1622,6 +1649,20 @@
 (hash-set! func_to_procs 'in (list do-in-int do-in-str))
 (hash-set! func_to_procs 'is-null (list do-is-null?))
 (hash-set! func_to_procs 'is-not-null (list do-is-null?))
+
+(define func_to_costs (make-hash))
+
+(hash-set! func_to_costs do-date-to-epoch 10)
+(hash-set! func_to_costs do-date-interval 10)
+(hash-set! func_to_costs do-date-compare 10)
+(hash-set! func_to_costs do-date-diff 10)
+(hash-set! func_to_costs do-date-extract 10)
+(hash-set! func_to_costs do-date-from-epoch 10)
+(hash-set! func_to_costs do-like 3)
+(hash-set! func_to_costs do-substring 3)
+(hash-set! func_to_costs do-concat 3)
+
+
 
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
