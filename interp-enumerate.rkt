@@ -113,8 +113,11 @@
     (define/public (logic-op-not pos v)
       (merge (list do-logic-op-not) v))
 
-    (define/public (if-then-else case l r)
-      (cons (if (number? l) do-if-then-int do-if-then-str) (merge case l r)))
+    (define/public (if-then-else-str case l r)
+      (cons do-if-then-str (merge case l r)))
+
+    (define/public (if-then-else-int case l r)
+      (cons do-if-then-int (merge case l r)))
     
     (define/public (strlength pos str)
       (merge (list do-length) str))
@@ -288,7 +291,10 @@
     (define/public (logic-op-not pos v)
         (list 'not v))
 
-    (define/public (if-then-else case l r)
+    (define/public (if-then-else-str case l r)
+      (list 'if case l r))
+
+    (define/public (if-then-else-int case l r)
       (list 'if case l r))
     
     (define/public (strlength pos str)
@@ -671,13 +677,12 @@
             (send this basic-binary (lambda (l r) (if isand (and l r) (or l r))) l r))
            'invalid))
     
-    (define/public (if-then-else case l r)
-;      ; (println "IF_THEN_ELSE")
-;      ; (println case)
-;      ; (println l)
-;      ; (println r)
-;      ; (println "********")
- 
+    (define/public (if-then-else-str case l r)
+      (if (and (boolean? case))
+          (if case l r)
+           'invalid))
+    
+    (define/public (if-then-else-int case l r)
       (if (and (boolean? case))
           (if case l r)
            'invalid))
@@ -916,9 +921,13 @@
       (for/list ([p processors] [vs v])
         (send p logic-op-not pos vs)))
     
-    (define/public (if-then-else cases left right)
+    (define/public (if-then-else-str cases left right)
       (for/list ([p processors] [case cases] [l left] [r right])
-        (send p if-then-else case l r)))
+        (send p if-then-else-str case l r)))
+
+    (define/public (if-then-else-int cases left right)
+      (for/list ([p processors] [case cases] [l left] [r right])
+        (send p if-then-else-int case l r)))
     
     (define/public (logic-op pos left right)
       (for/list ([p processors] [l left] [r right])
@@ -1254,10 +1263,10 @@
   (do-unary-op do-all-bool 'logic-op-not size pos p f))
 
 (define (do-if-then-str size pos p f)
-  (do-ternary-op do-all-bool (do-do do-all-str 'if) (do-do do-all-str 'if) 'if-then-else size pos p f))
+  (do-ternary-op do-all-bool (do-do do-all-str 'if) (do-do do-all-str 'if) 'if-then-else-str size pos p f))
 
 (define (do-if-then-int size pos p f)
-  (do-ternary-op do-all-bool (do-do do-all-int 'if) (do-do do-all-int 'if) 'if-then-else size pos p f))
+  (do-ternary-op do-all-bool (do-do do-all-int 'if) (do-do do-all-int 'if) 'if-then-else-int size pos p f))
 
 (define (do-length size pos p f)
   (do-unary-op (do-do do-all-str 'length) 'strlength size pos p f))
