@@ -81,11 +81,11 @@
       (list do-is-null?))
     
     (define/public (in pos type-f)
-      (if (eq? type-f number?)
-          (list do-in-int)
-          (list do-in-str)))
+        (if (eq? type-f number?)
+            (list do-in-int)
+            (list do-in-str)))
       	    
-    (define/public (in-v pos v type-f)
+    (define/public (in-v pos v type-f) 
       (if (eq? type-f number?)
           (list do-in-int)
           (list do-in-str)))
@@ -638,7 +638,7 @@
 
     (define/public (in-v pos v type-f)
       (let ((val (list-ref input-vals (- v 1))))
-         (if (type-f val)
+        (if (type-f val)
             (send this constant val)
             'invalid)))
     
@@ -1370,6 +1370,22 @@
             (yv (or (and (hash-has-key? operation-mapping y) (index-of order (hash-ref operation-mapping y))) 1000)))
         (< xv yv)))))
 
+(define (count-occurrences a l)
+  (count (lambda (x) (equal? a x)) l))
+
+; optimization to eliminate a lot of useless solves.  Assumes that the formula
+; must contain at least as many reads of input columns as there are input columns and their types match.
+; we cannot check that each column is read because the specific column that is read is actually part of what the solver figures out.
+(define (has-expected-reads inputs logged-functions)
+  (let ((expected-reads
+         (for/fold ([reads '()])
+                   ([col (car inputs)])
+           (append reads (if (number? col) (list do-in-int) (list do-in-str))))))
+  ;  (println expected-reads)
+  ;  (println logged-functions)
+    (and (equal? (count-occurrences do-in-int expected-reads) (count-occurrences do-in-int logged-functions))
+         (equal? (count-occurrences do-in-str expected-reads) (count-occurrences do-in-str logged-functions)))))
+
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
 ; inputs -  a list of rows such as (6 3 3) (9 6 3)
@@ -1424,15 +1440,17 @@
                         ; line does not refer to the parameter passed into this function
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
-         (print "IN ANALYZE ")
-         (print x)
-         (print " ")
-         (println (cadr y))
        ;  (println (heap->vector function-queue))
-         (when (null? (apply append (hash-values extra)))
+         (when (and (null? (apply append (hash-values extra))) (has-expected-reads inputs (flatten (cadr y))))
+       ;   (when (null? (apply append (hash-values extra)))
+           (print "IN ANALYZE ")
+           (print x)
+           (print " ")
+           (println (cadr y))
+ 
             ; (println (car y))
-         (set! outstanding (+ outstanding 1))
-         (let ((formula
+           (set! outstanding (+ outstanding 1))
+           (let ((formula
                 (for/fold ([formula #t])
                           ([out outputs]
                            [in (cdr (third y))])
