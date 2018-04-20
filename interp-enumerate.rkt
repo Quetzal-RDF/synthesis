@@ -1161,19 +1161,19 @@
     (letrec ((rec (lambda (i sz cs args)
                     (when (>= sz 0)
                      ; (println cs)
-                      (if (null? cs)
-                          (f sz (apply op p pos args))
-                          (heap-add!
-                           function-queue
-                           (cons
-                            sz
-                            (lambda ()
+                      (heap-add!
+                       function-queue
+                       (cons
+                        sz
+                        (lambda ()
+                          (if (null? cs)
+                              (f sz (apply op p pos args))
                               ((car cs)
                                sz
                                (cons i pos)
                                p
                                (lambda (new-size v)
-                                 (unless (send p invalid v)
+                                 (unless (or (< new-size 0) (send p invalid v))
                                    (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))))))
       (rec 1 size children '()))))
 
