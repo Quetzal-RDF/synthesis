@@ -18,8 +18,14 @@
 (require "threads.rkt")
 (require "utils.rkt")
 
+(define timestep 0)
+
 (define (function-order l r)
-  (> (car l) (car r)))
+  (or
+   (< (caar l) (caar r))
+   (and (= (caar l) (caar r))
+        (< (cdar l) (cdar r)))))
+
 
 (define function-queue (make-heap function-order))
 
@@ -60,6 +66,10 @@
 
     (define/public (invalid v)
       #f)
+
+    (define/public (calculate-cost v)
+      (let ((l (map (lambda (q) (hash-ref func_to_costs q 1)) v)))
+        (* (apply max l) (length l))))
     
     (define/public (constant v)
       '())
@@ -77,11 +87,11 @@
       (list do-is-null?))
     
     (define/public (in pos type-f)
-      (if (eq? type-f number?)
-          (list do-in-int)
-          (list do-in-str)))
+        (if (eq? type-f number?)
+            (list do-in-int)
+            (list do-in-str)))
       	    
-    (define/public (in-v pos v type-f)
+    (define/public (in-v pos v type-f) 
       (if (eq? type-f number?)
           (list do-in-int)
           (list do-in-str)))
@@ -113,8 +123,11 @@
     (define/public (logic-op-not pos v)
       (merge (list do-logic-op-not) v))
 
-    (define/public (if-then-else case l r)
-      (cons (if (number? l) do-if-then-int do-if-then-str) (merge case l r)))
+    (define/public (if-then-else-str case l r)
+      (cons do-if-then-str (merge case l r)))
+
+    (define/public (if-then-else-int case l r)
+      (cons do-if-then-int (merge case l r)))
     
     (define/public (strlength pos str)
       (merge (list do-length) str))
@@ -224,6 +237,9 @@
     (define/public (invalid v)
       #f)
 
+    (define/public (calculate-cost v)
+     0)
+
     (define/public (constant v)
       v)
 
@@ -288,7 +304,10 @@
     (define/public (logic-op-not pos v)
         (list 'not v))
 
-    (define/public (if-then-else case l r)
+    (define/public (if-then-else-str case l r)
+      (list 'if case l r))
+
+    (define/public (if-then-else-int case l r)
       (list 'if case l r))
     
     (define/public (strlength pos str)
@@ -523,6 +542,9 @@
     (define/public (invalid v)
       (eq? v 'invalid))
 
+    (define/public (calculate-cost v)
+      0)
+    
     (define/public (constant v)
       (let ((r
              (if (not (vector? v))
@@ -622,7 +644,7 @@
 
     (define/public (in-v pos v type-f)
       (let ((val (list-ref input-vals (- v 1))))
-         (if (type-f val)
+        (if (type-f val)
             (send this constant val)
             'invalid)))
     
@@ -671,13 +693,12 @@
             (send this basic-binary (lambda (l r) (if isand (and l r) (or l r))) l r))
            'invalid))
     
-    (define/public (if-then-else case l r)
-;      ; (println "IF_THEN_ELSE")
-;      ; (println case)
-;      ; (println l)
-;      ; (println r)
-;      ; (println "********")
- 
+    (define/public (if-then-else-str case l r)
+      (if (and (boolean? case))
+          (if case l r)
+           'invalid))
+    
+    (define/public (if-then-else-int case l r)
       (if (and (boolean? case))
           (if case l r)
            'invalid))
@@ -848,7 +869,12 @@
                 ([p processors]
                  [v vs])
         (or result (send p invalid v))))
-     
+
+    (define/public (calculate-cost vs)
+      (for/fold ([result 0])
+                ([p processors]
+                 [v vs])
+        (apply max (list (send p calculate-cost v) result))))
 
     (define/public (extra-f)
       extra-functions)
@@ -916,9 +942,13 @@
       (for/list ([p processors] [vs v])
         (send p logic-op-not pos vs)))
     
-    (define/public (if-then-else cases left right)
+    (define/public (if-then-else-str cases left right)
       (for/list ([p processors] [case cases] [l left] [r right])
-        (send p if-then-else case l r)))
+        (send p if-then-else-str case l r)))
+
+    (define/public (if-then-else-int cases left right)
+      (for/list ([p processors] [case cases] [l left] [r right])
+        (send p if-then-else-int case l r)))
     
     (define/public (logic-op pos left right)
       (for/list ([p processors] [l left] [r right])
@@ -1101,7 +1131,10 @@
                    (hash-set! extras type fs)))))))
       (do-custom type)
       (do-custom 'any)
+    ;  (println (if (null? order) ((send p get-ordering-function) ops) (sort ops (car order))))
       (for ([op (if (null? order) ((send p get-ordering-function) ops) (sort ops (car order)))])
+        ;(unless (null? order)
+        ;  (print size) (print " ") (print (cadr order)) (print " ") (println op))
         (op size pos p f)))))
 
 (define (do-all-str size pos p f . order)
@@ -1160,21 +1193,25 @@
   (lambda (size pos p f)
     (letrec ((rec (lambda (i sz cs args)
                     (when (>= sz 0)
-                     ; (println cs)
-                      (heap-add!
-                       function-queue
-                       (cons
-                        sz
-                        (lambda ()
-                          (if (null? cs)
-                              (f sz (apply op p pos args))
-                              ((car cs)
-                               sz
-                               (cons i pos)
-                               p
-                               (lambda (new-size v)
-                                 (unless (or (< new-size 0) (send p invalid v))
-                                   (rec (+ i 1) new-size (cdr cs) (append args (list v))))))))))))))
+                      (let ((cost
+                             (for/fold ([result 0])
+                                       ([arg args])
+                               (max result (send p calculate-cost arg)))))
+                        (set! timestep (+ timestep 1))
+                        (heap-add!
+                         function-queue
+                         (cons
+                          (cons cost timestep)
+                          (lambda ()
+                            (if (null? cs) 
+                                (f cost (apply op p pos args))
+                                ((car cs)
+                                 sz
+                                 (cons i pos)
+                                 p
+                                 (lambda (new-size v)
+                                   (unless (send p invalid v)
+                                     (rec (+ i 1) new-size (cdr cs) (append args (list v)))))))))))))))
       (rec 1 size children '()))))
 
 (define (do-unary-op do-arg op size pos p f)
@@ -1191,7 +1228,7 @@
 
 (define (do-do do-operation from)
   ; (println (string-append "CALLING: " (~v do-operation) " from " (~v from)))
-  (lambda (size pos p f) (do-operation size pos p f (compare-operations from))))
+  (lambda (size pos p f) (do-operation size pos p f (compare-operations from) from)))
 
 (define (do-get-digits size pos p f)
   (do-unary-op do-all-str 'get-digits size pos p f))
@@ -1254,10 +1291,10 @@
   (do-unary-op do-all-bool 'logic-op-not size pos p f))
 
 (define (do-if-then-str size pos p f)
-  (do-ternary-op do-all-bool (do-do do-all-str 'if) (do-do do-all-str 'if) 'if-then-else size pos p f))
+  (do-ternary-op do-all-bool (do-do do-all-str 'if) (do-do do-all-str 'if) 'if-then-else-str size pos p f))
 
 (define (do-if-then-int size pos p f)
-  (do-ternary-op do-all-bool (do-do do-all-int 'if) (do-do do-all-int 'if) 'if-then-else size pos p f))
+  (do-ternary-op do-all-bool (do-do do-all-int 'if) (do-do do-all-int 'if) 'if-then-else-int size pos p f))
 
 (define (do-length size pos p f)
   (do-unary-op (do-do do-all-str 'length) 'strlength size pos p f))
@@ -1274,12 +1311,14 @@
      (- size 1) (cons 'agg pos) p
      (lambda (size expr)
        (when (and (> size 0) (not (eq? expr 'invalid)))
-         (heap-add!
-          function-queue
-          (cons
-           size
-           (lambda ()
-             (f (- size 1) (send p aggregate pos type expr))))))))))
+         (let ((cost (send p calculate-cost expr)))
+           (set! timestep (+ timestep 1))
+           (heap-add!
+            function-queue
+            (cons
+             (cons cost timestep)
+             (lambda ()
+               (f (- size 1) (send p aggregate pos type expr)))))))))))
 
 (define (do-int-aggregate size pos p f)
   (do-aggregate (do-do do-all-int-no-date 'sum) 'integer size pos p f))
@@ -1338,6 +1377,22 @@
             (yv (or (and (hash-has-key? operation-mapping y) (index-of order (hash-ref operation-mapping y))) 1000)))
         (< xv yv)))))
 
+(define (count-occurrences a l)
+  (count (lambda (x) (equal? a x)) l))
+
+; optimization to eliminate a lot of useless solves.  Assumes that the formula
+; must contain at least as many reads of input columns as there are input columns and their types match.
+; we cannot check that each column is read because the specific column that is read is actually part of what the solver figures out.
+(define (has-expected-reads inputs logged-functions)
+  (let ((expected-reads
+         (for/fold ([reads '()])
+                   ([col (car inputs)])
+           (append reads (if (number? col) (list do-in-int) (list do-in-str))))))
+  ;  (println expected-reads)
+  ;  (println logged-functions)
+    (and (equal? (count-occurrences do-in-int expected-reads) (count-occurrences do-in-int logged-functions))
+         (equal? (count-occurrences do-in-str expected-reads) (count-occurrences do-in-str logged-functions)))))
+
 ; limit - max size of expressions to search over in terms of primitive operations
 ; outputs - a list of values per row.  Assumption is output can be only one column
 ; inputs -  a list of rows such as (6 3 3) (9 6 3)
@@ -1348,7 +1403,8 @@
 
 (define (analyze extra white black limit outputs symbolic . inputs)
   ; goals - number of solutions wanted
-  ; models - set of expressions returned by the search 
+  ; models - set of expressions returned by the search
+  (set! timestep 0)
   (letrec ((time-limit 30000)
            (start-time (current-inexact-milliseconds))
            (results-channel (make-async-channel 10000))
@@ -1392,11 +1448,17 @@
                         ; line does not refer to the parameter passed into this function
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
-         (println (cadr y))
-         (when (null? (apply append (hash-values extra)))
+       ;  (println (heap->vector function-queue))
+         (when (and (null? (apply append (hash-values extra))) (has-expected-reads inputs (flatten (cadr y))))
+       ;   (when (null? (apply append (hash-values extra)))
+           (print "IN ANALYZE ")
+           (print x)
+           (print " ")
+           (println (cadr y))
+ 
             ; (println (car y))
-         (set! outstanding (+ outstanding 1))
-         (let ((formula
+           (set! outstanding (+ outstanding 1))
+           (let ((formula
                 (for/fold ([formula #t])
                           ([out outputs]
                            [in (cdr (third y))])
@@ -1465,7 +1527,7 @@
       (letrec ((drain
                 (lambda ()
                   (when (> (heap-count function-queue) 0)
-                    (println (heap-count function-queue))
+                    ; (println (heap-count function-queue))
                     (let ((x (heap-min function-queue)))
                       (heap-remove! function-queue x)
                       ((cdr x))
@@ -1613,6 +1675,22 @@
 (hash-set! func_to_procs 'in (list do-in-int do-in-str))
 (hash-set! func_to_procs 'is-null (list do-is-null?))
 (hash-set! func_to_procs 'is-not-null (list do-is-null?))
+
+(define func_to_costs (make-hash))
+
+(hash-set! func_to_costs do-intv 0)
+(hash-set! func_to_costs do-basic-num-functions 5)
+(hash-set! func_to_costs do-date-to-epoch 10)
+(hash-set! func_to_costs do-date-interval 10)
+(hash-set! func_to_costs do-date-compare 10)
+(hash-set! func_to_costs do-date-diff 10)
+(hash-set! func_to_costs do-date-extract 10)
+(hash-set! func_to_costs do-date-from-epoch 10)
+(hash-set! func_to_costs do-like 3)
+(hash-set! func_to_costs do-substring 3)
+(hash-set! func_to_costs do-concat 3)
+
+
 
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
