@@ -32,7 +32,7 @@
                   (else (gensym 'p)))
               ; car cond refers to the parameters for the cond expression if if x
               (list (append (car cond) (list (list then 'any) (list else 'any)))
-                    (list 'send 'p 'if-then-else (cadr cond) then else)
+                    (list 'send 'p 'if-then-else-any (cadr cond) then else)
                     'any))]
            [(3)
             (let* ((cond (to-custom-int (second form) (cons 1 nested-pos)))
@@ -40,7 +40,7 @@
                    (then-type (third then))
                    (else (gensym 'p)))
               (list (append (car cond) (car then) (list (list else then-type)))
-                    (list 'send 'p 'if-then-else (cadr cond) (cadr then) else)
+                    (list 'send 'p 'if-then-else-any (cadr cond) (cadr then) else)
                     then-type))]
            [(4)
             (let* ((cond (to-custom-int (second form) (cons 1 nested-pos)))
@@ -49,7 +49,7 @@
                    (else (to-custom-int (fourth form) (cons 3 nested-pos)))
                    (type (if (eq? then-type 'any) (third else) then-type)))
               (list (append (car cond) (car then) (car else))
-                    (list 'send 'p 'if-then-else (cadr cond) (cadr then) (cadr else))
+                    (list 'send 'p 'if-then-else-any (cadr cond) (cadr then) (cadr else))
                     type))])]
         [(not)
          (let ((op (car form))
@@ -212,7 +212,7 @@
                (l (to-custom-int (second form) (cons 1 nested-pos)))
                (r (to-custom-int (third form) (cons 2 nested-pos))))
            (list (append (car l) (car r))
-                 (list 'send 'p 'if-then-else (cadr l)
+                 (list 'send 'p 'if-then-else-any (cadr l)
                        (if (eq? op 'and) (cadr r) (list 'send 'p 'constant #t))
                        (if (eq? op 'and) (list 'send 'p 'constant #f) (cadr r)))
                  'boolean))]
@@ -274,10 +274,20 @@
     (define/public (controls)
       conditionals)
 
-    (define (if-then-else case l r)
+   (define (if-then-else-int case l r)
       (set! conditionals (cons case conditionals))
-      (super if-then-else case l r))    
-    (override if-then-else)))
+      (super if-then-else-int case l r))    
+    (override if-then-else-int)
+
+    (define (if-then-else-any case l r)
+      (set! conditionals (cons case conditionals))
+      (super if-then-else-any case l r))    
+    (override if-then-else-any)
+
+    (define (if-then-else-str case l r)
+      (set! conditionals (cons case conditionals))
+      (super if-then-else-str case l r))    
+    (override if-then-else-str)))
 
 (define tracing-aggregating-processor%
   (class aggregating-processor%
@@ -325,7 +335,7 @@
                   (expr '())
                   (doc '()))
              (f 5 '() p (lambda (x y)
-                          ; ; (println y)
+                          ; (println y)
                           (set! expr (cadr y)) (set! doc (car y))))
              (list doc expr (send trace controls) (cons columns cols))))
           (map car
@@ -447,10 +457,11 @@
                       #t)))))
       ; (println "guard")
       ; (println guard)
+      ; (println models)
       (models guard controlss))))
 
 (define (non-default-answer answers)
-  ; (println answers)
+  (println "IN NON DEFAULT ANSWERS")
   (for/fold ([x #f])
             ([answer answers])
     (or x
@@ -472,14 +483,15 @@
        #t)))
   
 (define (to-table f extra)
+  (println f)
   (let* ((diff (diversify (cdar (cdr (cddr f)))))
          (answers (non-default-answer (cdr (cadr f))))
          (m (generate-models (cdr (cadr f)) (cdr (caddr f)) (and extra diff answers)))
          (models (if (and m (>= (length m) 1)) m (generate-models (cdr (cadr f)) (cdr (caddr f)) extra))))
-    ; (println "DEBUG")
-    ; (println models)
-    ; (println m)
-    ; (println answers)
+   ; (println "DEBUG")
+   ; (println models)
+   ; (println m)
+   ; (println answers)
 
     (if models
         (begin

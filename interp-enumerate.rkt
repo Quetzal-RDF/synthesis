@@ -128,6 +128,9 @@
 
     (define/public (if-then-else-int case l r)
       (cons do-if-then-int (merge case l r)))
+
+    (define/public (if-then-else-any case l r)
+      (cons do-if-then-any (merge case l r)))
     
     (define/public (strlength pos str)
       (merge (list do-length) str))
@@ -308,6 +311,9 @@
       (list 'if case l r))
 
     (define/public (if-then-else-int case l r)
+      (list 'if case l r))
+
+    (define/public (if-then-else-any case l r)
       (list 'if case l r))
     
     (define/public (strlength pos str)
@@ -702,6 +708,11 @@
       (if (and (boolean? case))
           (if case l r)
            'invalid))
+    
+    (define/public (if-then-else-any case l r)
+      (if (and (boolean? case))
+          (if case l r)
+           'invalid))
 
     (define/public (strlength pos str)
       (if (string? str)
@@ -949,6 +960,10 @@
     (define/public (if-then-else-int cases left right)
       (for/list ([p processors] [case cases] [l left] [r right])
         (send p if-then-else-int case l r)))
+
+    (define/public (if-then-else-any cases left right)
+      (for/list ([p processors] [case cases] [l left] [r right])
+        (send p if-then-else-any case l r)))
     
     (define/public (logic-op pos left right)
       (for/list ([p processors] [l left] [r right])
@@ -1295,6 +1310,9 @@
 
 (define (do-if-then-int size pos p f)
   (do-ternary-op do-all-bool (do-do do-all-int 'if) (do-do do-all-int 'if) 'if-then-else-int size pos p f))
+
+(define (do-if-then-any size pos p f)
+  (do-ternary-op do-all-bool (do-do do-all-any 'if) (do-do do-all-any 'if) 'if-then-else-any size pos p f))
 
 (define (do-length size pos p f)
   (do-unary-op (do-do do-all-str 'length) 'strlength size pos p f))

@@ -22,7 +22,7 @@
 ;; given the current benchmark5.txt file, if you run this you will sometimes see it generate (- (in 1) (sign (in 1)))
 ;; because all the generated data uses negative numbers.  It can then find a counterexample.  For other function that
 ;; get generated, they are correct (if overly complex) and so no counterexample exists
-(define (benchmark-synthesis infile)
+(define (benchmark-synthesis infile use-subexp)
   (when (file-exists? (string-append infile ".out")) (delete-file (string-append infile ".out")))
   (let ((lines (file->lines infile #:mode 'text)))
     (for/list ([line lines])
@@ -38,9 +38,9 @@
                           (lambda (e) '())])
                     (test-custom (list exp) symbolics))))
         (println exp)
-        (println (arg-in-expression? exp (lambda(x) (equal? x 'in))))
-       ; (println "FINISHED CUSTOM CREATION")
-       ; (println fs)
+        ; (println (arg-in-expression? exp (lambda(x) (equal? x 'in))))
+        ; (println "FINISHED CUSTOM CREATION")
+        ; (println fs)
         (if (not (arg-in-expression? exp (lambda(x) (equal? x 'in))))
             #f
             (if (null? fs)
@@ -54,7 +54,7 @@
                              (outputs
                               (for/list ([row table])
                                 (list-ref row (- (length row) 2))))
-                             (custom (make-custom-table (list exp) cols)))
+                             (custom (if use-subexp (make-custom-table (list exp) cols) (hash))))
                         ; (println exp)
                         ; (println custom)
                         (let ((xsynthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
@@ -70,7 +70,7 @@
                                        (write-to-file  (string-append infile ".out") (if (not (null? (cadddr s)))
                                                                                          (~v (evaluate (caddr s) (cadddr s))) "model is null"))
                                        (write-to-file (string-append infile ".out") (~v x))
-                                       ;    (println (car (cadr f)))
+                                       (println (car (cadr f)))
                                        (or v
                                            (with-handlers ([exn:fail? (lambda (e) #f)])
                                              (unsat? (solve (assert (not (equal? x (car (cadr f)))))))))))))
