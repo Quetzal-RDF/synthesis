@@ -34,13 +34,12 @@
              (columnMetadata (cadr exp-types))
              (cols (map cadr columnMetadata))
              (symbolics (parse-column-metadata (cadr exp-types)))
-             (fs  (with-handlers ([exn:fail?
-                          (lambda (e) '())])
-                    (test-custom (list exp) symbolics))))
+             (fs (test-custom (list exp) symbolics)))
         (println exp)
+        (println symbolics)
         ; (println (arg-in-expression? exp (lambda(x) (equal? x 'in))))
         ; (println "FINISHED CUSTOM CREATION")
-        ; (println fs)
+        (println fs)
         (if (not (arg-in-expression? exp (lambda(x) (equal? x 'in))))
             #f
             (if (null? fs)
@@ -57,7 +56,7 @@
                              (custom (if use-subexp (make-custom-table (list exp) cols) (hash))))
                         ; (println exp)
                         ; (println custom)
-                        (let ((xsynthesized (apply analyze custom '() '() 5 outputs symbolics inputs)))
+                        (let ((xsynthesized (apply analyze custom '() '() 3 outputs symbolics inputs)))
                           (for/all ([synthesized xsynthesized]) 
                             ; (println outputs)
                             (let ((result

@@ -13,6 +13,9 @@
 (define-namespace-anchor anc)
 (define ns (namespace-anchor->namespace anc))
 
+(define custom
+  (make-custom (lambda (x) ((cdr x)))))
+
 (define (safe-divide left right)
   (if (= right 0) 'invalid (/ left right)))
 
@@ -239,7 +242,7 @@
 
 (define (to-custom form)
   (let ((x (to-custom-int form '())))
-   ; (println x)
+    (println x)
     (values
      (map cadr (car x))
      (eval (quasiquote (lambda (unquote (append (list 'p 'pos) (map car (car x)))) (unquote (cadr x)))) ns)

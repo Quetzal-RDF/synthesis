@@ -5,9 +5,16 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
+import com.ibm.wala.cfg.InducedCFG;
+import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Language;
+import com.ibm.wala.ipa.callgraph.AnalysisOptions;
+import com.ibm.wala.ipa.callgraph.Context;
+import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
+import com.ibm.wala.ipa.callgraph.impl.AbstractRootMethod;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
@@ -172,6 +179,19 @@ public class SQL implements Language {
 	public boolean methodsHaveDeclaredParameterTypes() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public AbstractRootMethod getFakeRootMethod(IClassHierarchy cha, AnalysisOptions options,
+			IAnalysisCacheView cache) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InducedCFG makeInducedCFG(SSAInstruction[] instructions, IMethod method, Context context) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

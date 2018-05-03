@@ -700,19 +700,19 @@
            'invalid))
     
     (define/public (if-then-else-str case l r)
-      (if (and (boolean? case))
+      (if (and (boolean? case) (string? l) (string? r))
           (if case l r)
-           'invalid))
+          'invalid))
     
     (define/public (if-then-else-int case l r)
-      (if (and (boolean? case))
+      (if (and (boolean? case) (number? l) (number? r))
           (if case l r)
-           'invalid))
+          'invalid))
     
     (define/public (if-then-else-any case l r)
-      (if (and (boolean? case))
+      (if (boolean? case)
           (if case l r)
-           'invalid))
+          'invalid))
 
     (define/public (strlength pos str)
       (if (string? str)
@@ -1142,6 +1142,7 @@
                (let ((fs (hash-ref extras type)))
                  (for ([op fs])
                    (hash-set! extras type (remove op fs))
+                   (println "trying custom")
                    (op size pos p f)
                    (hash-set! extras type fs)))))))
       (do-custom type)
@@ -1204,30 +1205,35 @@
   (when (>= size 0)
     (f (- size 1) (send p is-null? pos))))
 
-(define (custom op . children)
-  (lambda (size pos p f)
-    (letrec ((rec (lambda (i sz cs args)
-                    (when (>= sz 0)
-                      (let ((cost
-                             (for/fold ([result 0])
-                                       ([arg args])
-                               (max result (send p calculate-cost arg)))))
-                        (set! timestep (+ timestep 1))
-                        (heap-add!
-                         function-queue
-                         (cons
-                          (cons cost timestep)
-                          (lambda ()
-                            (if (null? cs) 
-                                (f cost (apply op p pos args))
-                                ((car cs)
-                                 sz
-                                 (cons i pos)
-                                 p
-                                 (lambda (new-size v)
-                                   (unless (send p invalid v)
-                                     (rec (+ i 1) new-size (cdr cs) (append args (list v)))))))))))))))
-      (rec 1 size children '()))))
+(define (make-custom step)
+  (lambda (op . children)
+    (lambda (size pos p f)
+      (letrec ((rec (lambda (i sz cs args)
+                      (when (>= sz 0)
+                        (let ((cost
+                               (for/fold ([result 0])
+                                         ([arg args])
+                                 (max result (send p calculate-cost arg)))))
+                          (set! timestep (+ timestep 1))
+                          (step
+                           (cons
+                            (cons cost timestep)
+                            (lambda ()
+                              (if (null? cs) 
+                                  (f cost (apply op p pos args))
+                                  ((car cs)
+                                   sz
+                                   (cons i pos)
+                                   p
+                                   (lambda (new-size v)
+                                     (unless (send p invalid v)
+                                       (rec (+ i 1) new-size (cdr cs) (append args (list v)))))))))))))))
+        (rec 1 size children '())))))
+
+(define custom
+  (make-custom
+   (lambda (x)
+     (heap-add! function-queue x))))
 
 (define (do-unary-op do-arg op size pos p f)
   ((custom (lambda (p pos new-expr) (dynamic-send p op pos new-expr)) do-arg)
@@ -1467,7 +1473,10 @@
                         (new expr-processor% [inputs input])))])))])
        (lambda (x y)
        ;  (println (heap->vector function-queue))
-         (when (and (null? (apply append (hash-values extra))) (has-expected-reads inputs (flatten (cadr y))))
+         (when (and
+                (null? (apply append (hash-values extra)))
+                ;(has-expected-reads inputs (flatten (cadr y)))
+                )
        ;   (when (null? (apply append (hash-values extra)))
            (print "IN ANALYZE ")
            (print x)
@@ -1713,4 +1722,4 @@
 (define (get-function-mappings func)
   (hash-ref func_to_procs func))
 
-(provide aggregating-processor% doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-trim do-length do-compare-to clear-vals!)
+(provide aggregating-processor% doc-processor% compound-processor% expr-processor% analyze render aggregate test test-int val custom make-custom do-basic-num-functions do-logic-op-not do-in-str do-concat do-logic-op do-all-any do-all-int do-all-str do-all-bool do-strv do-if-then-int do-intv do-basic-num-functions do-index-of do-basic-math do-substring do-get-digits do-trim do-length do-compare-to clear-vals!)
