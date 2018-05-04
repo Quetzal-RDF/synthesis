@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import com.facebook.presto.sql.tree.ArithmeticExpression;
 import com.facebook.presto.sql.tree.BetweenPredicate;
 import com.facebook.presto.sql.tree.BooleanLiteral;
@@ -341,7 +342,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
     l.add(2);
     functionNamesToTypes.put("datediff", l);
     functionNameMap.put("datediff", "datediff");
-    functionNameNormalizedMap.put("date_diff", NI + "_date_diff");
+    functionNameNormalizedMap.put("datediff", NI + "_date_diff");
 
 
     l = new LinkedList<Integer>();
@@ -841,6 +842,8 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
     StringBuffer types = new StringBuffer("(");
     Iterator<TypedNode> nodes = graph.iterator();
     boolean addedCols = false;
+
+    int prev = 0;
     while (nodes.hasNext()) {
       TypedNode n = nodes.next();
       StringBuffer t = new StringBuffer("(");
@@ -848,13 +851,27 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
         t.append(q).append(" ");
       }
       t.append(")");
-
       if (n.name.startsWith("(in ")) {
         String str = n.name.substring(4, n.name.length() - 1);
-        str = "col" + expressionNumber + "_" + str;
+        int curr = Integer.parseInt(str);
+        
+        // dealing with missing variable names
+        if (curr != prev + 1) {
+          String typ = "( 1 )";
+          for (int i = prev + 1; i < curr; i++) {
+            str = "col" + expressionNumber + "_" + i;
+            types.append("(").append("columnName").append(" ").append("\"").append(str).append("\"")
+                .append(" ").append("primitiveTypes").append(" ").append(typ).append(")")
+                .append(" ");
+          }
+        }
+
+        str = "col" + expressionNumber + "_" + curr;
         types.append("(").append("columnName").append(" ").append("\"").append(str).append("\"")
             .append(" ").append("primitiveTypes").append(" ").append(t).append(")").append(" ");
         addedCols = true;
+
+        prev = curr;
       }
     }
     if (!addedCols) {
@@ -864,7 +881,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
 
 
     for (String s : expressions) {
-      if (s == null || s.indexOf("notImplemented") != -1) {
+      if (s == null || s.indexOf("notImplemented") != -1 || s.indexOf("in-list") != -1) {
         continue;
       }
       ret.add(Pair.make(s, types.toString()));
@@ -1309,11 +1326,11 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
       buf.append(d.getYear()).append("\"");
       ret = buf.toString();
     } else {
-      String n = node.getValue().replaceAll("[^a-zA-Z0-9]", "");
-      /**
-       * if (!n.equals(node.getValue())) { System.out.println(n);
-       * System.out.println(node.getValue()); }
-       */
+      String n = node.getValue().replaceAll("[^a-zA-Z0-9]",
+          "");/**
+               * if (!n.equals(node.getValue())) { System.out.println(n);
+               * System.out.println(node.getValue()); }
+               */
       ret = "\"" + n + "\"";
     }
     return ret;
