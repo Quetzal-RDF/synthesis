@@ -1474,8 +1474,8 @@
        (lambda (x y)
        ;  (println (heap->vector function-queue))
          (when (and
-                (null? (apply append (hash-values extra)))
-                ;(has-expected-reads inputs (flatten (cadr y)))
+                ; (null? (apply append (hash-values extra)))
+                ; (has-expected-reads inputs (flatten (cadr y)))
                 )
        ;   (when (null? (apply append (hash-values extra)))
            (print "IN ANALYZE ")

@@ -8,6 +8,9 @@
 (require "expression-writer.rkt")
 (require "dates.rkt")
 (require "utils.rkt")
+(require "util.rkt")
+(require "maxsmt.rkt")
+(require "racket-util.rkt")
 (require rosette/solver/smt/z3)
 
 (define-namespace-anchor anc)
@@ -301,7 +304,7 @@
     (define/public (controls)
       (map (lambda (p) (send p controls)) processors))))
 
-(define row-count 5)
+(define row-count 9)
 
 (define (test-custom fragments columns)
   (let* ((pair (lambda (x) (list x (for/list ([i (range 0 (+ row-count 1))]) x))))

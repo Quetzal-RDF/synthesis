@@ -5,8 +5,8 @@
 (require "interp-enumerate.rkt")
 (require "utils.rkt")
 (require "parse.rkt")
-
-
+(require "maxsmt.rkt")
+(require "racket-util.rkt")
 
 (define-symbolic s1 string?)
 
@@ -16,6 +16,9 @@
 (define-symbolic i4 integer?)
 (define-symbolic i5 integer?)
 
+(define-symbolic r1 real?)
+(define-symbolic r2 real?)
+(define-symbolic r3 real?)
 
 (define (test1)
   (let* ((columns (list s1 i2 i3))
@@ -419,4 +422,29 @@
       (println inputstr)
       (println outputstr)
       (apply analyze-custom text outputstr header syb inputstr))))
- 
+
+(define (test27)
+  (let* ((columns (list i1 i2 i3))
+         (parse (apply make-parser (map ~a columns)))
+         (stuff (parse '("if" "i1" ">" "5" "then" "if" "i3" ">" "i2" "then" "i2" "else" "i3" "else" "i1")))
+         (x (car (test-custom stuff columns))))
+      (let ((solver (z3)))
+    (solver-clear solver)
+    (solver-minimize solver (append (balance (third x)) (minimize-row-differences (fourth x))))
+    (solver-assert solver (cross (lambda (x y) (not (equal? x y))) (second x)))
+    (let ((x (solver-check solver)))
+      (solver-shutdown solver)
+      x))))
+
+(define (test28)
+  (let* ((columns (list r1 r2 r3))
+         (parse (apply make-parser (map ~a columns)))
+         (stuff (parse '("if" "r1" ">" "5" "then" "if" "r3" ">" "r2" "then" "r2" "else" "r3" "else" "r1")))
+         (x (car (test-custom stuff columns))))
+      (let ((solver (z3)))
+    (solver-clear solver)
+    (solver-minimize solver (append (balance (third x)) (minimize-row-differences (fourth x))))
+    (solver-assert solver (cross (lambda (x y) (not (equal? x y))) (second x)))
+    (let ((x (solver-check solver)))
+      (solver-shutdown solver)
+      x))))

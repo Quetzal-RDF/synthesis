@@ -56,7 +56,7 @@
                              (custom (if use-subexp (make-custom-table (list exp) cols) (hash))))
                         ; (println exp)
                         ; (println custom)
-                        (let ((xsynthesized (apply analyze custom '() '() 3 outputs symbolics inputs)))
+                        (let ((xsynthesized (apply analyze custom '() '() 4 outputs symbolics inputs)))
                           (for/all ([synthesized xsynthesized]) 
                             ; (println outputs)
                             (let ((result
@@ -70,9 +70,17 @@
                                                                                          (~v (evaluate (caddr s) (cadddr s))) "model is null"))
                                        (write-to-file (string-append infile ".out") (~v x))
                                        (println (car (cadr f)))
+                                       (println x)
+                                       (println inputs)
+                                       (println outputs)
                                        (or v
                                            (with-handlers ([exn:fail? (lambda (e) #f)])
-                                             (unsat? (solve (assert (not (equal? x (car (cadr f)))))))))))))
+                                             (let ((solver (z3)))
+                                               (solver-clear solver)
+                                               (solver-assert solver (list (not (equal? x (car (cadr f))))))
+                                               (let ((result (solver-check solver)))
+                                                 (solver-shutdown solver)
+                                                 (unsat? result)))))))))
                               (if result (write-to-file (string-append infile ".out") (string-append "solved: " (~v exp))) (write-to-file (string-append infile ".out") (string-append "failed synthesis: " (~v exp))))
                               result)))))))))))))
 
