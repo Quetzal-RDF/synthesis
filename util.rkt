@@ -35,11 +35,32 @@
          '())]
     [(_) '()])
 
+(define/match (ite-case e)
+    [((expression op child ...))
+     (if (string=? "⊢" (~v op))
+         (cadr child)
+         '())]
+    [(_) '()])
+
 (define/match (ite-preds e)
     [((expression op child ...))
-     (if (or (string=? "ite" (~v op)) (string=? "ite*" (~v op)))
-         (map ite-pred child)
-         '())]
+     (cond ((string=? "ite" (~v op))
+            (let ((p (first child)))
+              (append
+               (let ((l (ite-preds (second child))))
+                 (if (null? l) (list p) (map (lambda (lp) (and p lp)) l)))
+               (let ((r (ite-preds (third child))))
+                 (if (null? r) (list (not p)) (map (lambda (rp) (and (not p) rp)) r))))))
+           ((string=? "ite*" (~v op))
+            (apply append
+                   (map (lambda (c)
+                          (let ((ps (ite-preds (second child))))
+                            (if (null? ps)
+                                (list (ite-pred c))
+                                (map (lambda (p) (and (ite-pred c) p))
+                                     (ite-preds (ite-case c))))))
+                        child)))
+           (#t (apply append (map ite-preds child))))]
     [(_) '()])
 
 (define (get-cases x)
@@ -55,4 +76,4 @@
              (apply append (map (lambda (c) (constraints vars c)) child))))]
       [_ (list)])))
 
-(provide ite? for/all/* get-cases)
+(provide ite? for/all/* get-cases ite-preds)
