@@ -466,9 +466,9 @@
     (solver-assert solver
        (append (get-constraints (map get-cases (second x)))
              (cross (lambda (x y) (not (equal? x y))) (second x))))
-    (let ((x (solver-check solver)))
+    (let ((xx (solver-check solver)))
       (solver-shutdown solver)
-      x))))
+      (evaluate x xx)))))
 
 (define (test30)
   (let* ((columns (list r1 r2 r3))
