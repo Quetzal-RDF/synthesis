@@ -465,7 +465,7 @@
     (solver-minimize solver (minimize-row-differences (fourth x)))
     (solver-assert solver
        (append (get-constraints (map get-cases (second x)))
-             (cross (lambda (x y) (not (equal? x y))) (second x))))
+             (cross (lambda (x y) (> (abs (- x y)) .1)) (second x))))
     (let ((xx (solver-check solver)))
       (solver-shutdown solver)
       (evaluate x xx)))))
@@ -473,17 +473,22 @@
 (define (test30)
   (let* ((columns (list r1 r2 r3))
          (parse (apply make-parser (map ~a columns)))
-         (stuff (parse '("if" "r1" ">" "5.0" "then" "if" "r3" ">" "r2" "then" "r2" "else" "r3" "else" "r1")))
+         (stuff (parse '("if" "r1" ">" "5" "then" "if" "r3" ">" "r2" "then" "r2" "else" "r3" "else" "r1")))
          (x (car (test-custom stuff columns))))
       (let ((solver (z3)))
     (solver-clear solver)
     (solver-minimize solver (minimize-row-differences (fourth x)))
-    (solver-assert solver
-       (append (get-constraints (map ite-preds (second x)))
-               (cross (lambda (x y) (> (abs (- x y)) .01)) (second x))))
-    (let ((xx (solver-check solver)))
-      (solver-shutdown solver)
-      (evaluate x xx)))))
+        (let ((hard-constraints
+               (append (get-constraints (map ite-preds (second x)))
+                       (cross
+                        (lambda (x y) (> (abs (- x y)) .1))
+                        (second x)))))
+          (solver-assert solver hard-constraints)
+          (let ((xx (solver-check solver)))
+            (solver-shutdown solver)
+            (for ([hc hard-constraints])
+              (assert (evaluate hc xx)))
+           (map (lambda (row) (append (evaluate row xx) (list (car x)))) (fourth x)))))))
 
 (define (test30a)
   (let* ((columns  (list r1 r2 r3))

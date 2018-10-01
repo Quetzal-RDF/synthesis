@@ -20,8 +20,8 @@
   (constrain
    rows
    append
-   (lambda (c1 c2) (if (list? c2) (cons c1 c2) (list c1 c2)))
-   (lambda (c1 c2) (if (number? c1) (abs (- c1 c2)) 0))))
+   (lambda (c1 c2) (if (number? c1) (if (list? c2) (cons c1 c2) (list c1 c2)) c2))
+   (lambda (c1 c2) (if (number? c1) (abs (- c1 c2)) '()))))
 
 (define (make-row-conditions-different rows)
   (constrain

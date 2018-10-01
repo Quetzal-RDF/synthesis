@@ -8,6 +8,7 @@ import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
 import com.ibm.wala.cast.util.CAstPrinter;
@@ -187,6 +188,12 @@ public class SQLCAstToIRTranslator extends AstTranslator {
 		} else {
 			super.translate(N, context);
 		}
+	}
+
+	@Override
+	protected Position[] getParameterPositions(CAstEntity e) {
+		assert false;
+		return null;
 	}
 
 }

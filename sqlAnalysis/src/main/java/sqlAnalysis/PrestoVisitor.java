@@ -295,6 +295,12 @@ public class PrestoVisitor {
 				return null;
 			}
 
+			@Override
+			public Position getPosition(int arg) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
 		};
 	}
 
@@ -384,6 +390,12 @@ public class PrestoVisitor {
 			@Override
 			public CAstNode getAST() {
 				return n;
+			}
+
+			@Override
+			public Position getPosition(int arg) {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		});
 	}

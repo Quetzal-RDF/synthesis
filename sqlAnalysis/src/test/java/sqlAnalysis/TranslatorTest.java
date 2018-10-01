@@ -3,7 +3,6 @@ package sqlAnalysis;
 import org.junit.Test;
 
 import com.ibm.wala.classLoader.ClassLoaderFactory;
-import com.ibm.wala.util.WalaException;
 
 public class TranslatorTest {
 	private ClassLoaderFactory loaders = new SQLClassLoaderFactory();
