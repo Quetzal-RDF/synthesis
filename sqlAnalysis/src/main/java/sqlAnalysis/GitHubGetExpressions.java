@@ -9,6 +9,9 @@ import java.util.Map;
 import com.facebook.presto.sql.parser.SqlParser;
 import com.facebook.presto.sql.tree.Statement;
 import com.ibm.wala.util.collections.Pair;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 
 public class GitHubGetExpressions {
 	
@@ -18,7 +21,7 @@ public class GitHubGetExpressions {
 		int i = 0;
 		int numParses = 0;
 
-		Map<String, String> expressions = new HashMap<String, String>();
+		JSONArray expressions = new JSONArray();
 		Map<String, Integer> functions = new HashMap<String, Integer>();
 		Map<String, Integer> opsToCounts = new HashMap<String, Integer>();
 		
@@ -52,13 +55,17 @@ public class GitHubGetExpressions {
 						
 						List<Pair<String, String>> exps = writer.getExpressionsAndTypes();
 //						System.out.println("GRAPH:" + writer.graph);
-						
-						for (Pair<String, String> p : exps) {
-							if (!expressions.containsKey(p.fst)) {
-							    // System.out.println("SQL:" + sql);
-							    // System.out.println("Expression:" + p.fst + " " + p.snd);
-								expressions.put(p.fst, p.snd);
-							}
+                        JSONObject obj =  new JSONObject();
+                        obj.put("sql", sql);
+
+                        JSONArray arr = new JSONArray();
+                        obj.put("expressions", arr);
+
+                        for (Pair<String, String> p : exps) {
+                            JSONObject e = new JSONObject();
+							e.put("expression", p.fst);
+							e.put("type", p.snd);
+							arr.put(e);
 						}
 						for (String f : writer.functions) {
 							if (!functions.containsKey(f)) {
@@ -68,6 +75,7 @@ public class GitHubGetExpressions {
 								functions.put(f, j);
 							}
 						}
+						expressions.put(obj);
 						
 						for (Map.Entry<String, Integer> e : writer.getOpsToCounts().entrySet()) {
 							if (!opsToCounts.containsKey(e.getKey())) {
@@ -92,25 +100,8 @@ public class GitHubGetExpressions {
 				buf.append(line).append("\n");
 			}
 		}
-		/*
-		System.out.println("num of expressions:" + expressions.size());
-		System.out.println("num of statements:" + i);
-		System.out.println("num of statements parsed:" + numParses);
-		
-		System.out.println("Functions");
-		
-		functions.entrySet().stream()
-        .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()) 
-        .forEach(System.out::println); 
-
-		System.out.println("Expressions");
-		*/
-		expressions.forEach((k, v) -> System.out.println("(" + k + " " + v + ")")); 
-		/*
-		System.out.println("OpsToCounts");
-		opsToCounts.entrySet().stream()
-        .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()) 
-        .forEach(System.out::println); */
+		System.out.println(expressions.toString(4));
+        System.out.println("changed again");
 	}
 
 }
