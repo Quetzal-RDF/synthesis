@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
+
 import com.facebook.presto.sql.tree.ArithmeticExpression;
 import com.facebook.presto.sql.tree.BetweenPredicate;
 import com.facebook.presto.sql.tree.BooleanLiteral;
@@ -30,6 +30,7 @@ import com.facebook.presto.sql.tree.IfExpression;
 import com.facebook.presto.sql.tree.InListExpression;
 import com.facebook.presto.sql.tree.InPredicate;
 import com.facebook.presto.sql.tree.IntervalLiteral;
+import com.facebook.presto.sql.tree.IntervalLiteral.IntervalField;
 import com.facebook.presto.sql.tree.IsNotNullPredicate;
 import com.facebook.presto.sql.tree.IsNullPredicate;
 import com.facebook.presto.sql.tree.Join;
@@ -60,7 +61,6 @@ import com.facebook.presto.sql.tree.TimeLiteral;
 import com.facebook.presto.sql.tree.TimestampLiteral;
 import com.facebook.presto.sql.tree.WhenClause;
 import com.google.common.base.Optional;
-import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 
@@ -627,7 +627,6 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
   @Override
   protected String visitQuerySpecification(QuerySpecification node, Void context) {
     List<SelectItem> items = node.getSelect().getSelectItems();
-    List<CAstNode> l = new LinkedList<CAstNode>();
 
     for (SelectItem i : items) {
       if (i instanceof SingleColumn) {
@@ -727,8 +726,10 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
   protected String visitQuery(Query node, Void context) {
     List<QuerySpecification> querySpec = new LinkedList<QuerySpecification>();
     PrestoVisitor.getQuerySpecifications(node, querySpec);
-    assert querySpec.size() == 1;
-    return visitQuerySpecification(querySpec.get(0), context);
+    for(QuerySpecification sq : querySpec) {
+    	visitQuerySpecification(sq, context);
+    }
+    return null;
   }
 
   @Override
@@ -804,7 +805,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
                                   t.nextToken();
                                   String m = t.nextToken();
 
-                                  List months = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May",
+                                  List<String> months = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May",
                                       "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
                                   int mth = months.indexOf(m) + 1;
                                   int day = Integer.parseInt(t.nextToken());
@@ -1096,22 +1097,35 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
     IntervalLiteral interval = (IntervalLiteral) ((BetweenPredicate) l.get(1)).getValue();
     String t = interval.getValue();
     String str = null;
-    if (interval.getStartField() == interval.getStartField().DAY) {
+    interval.getStartField();
+	if (interval.getStartField() == IntervalField.DAY) {
       str = "(" + type + "-days " + process(d, context) + " " + t + ")";
       putInOps(type + "-days");
-    } else if (interval.getStartField() == interval.getStartField().HOUR) {
-      str = "(" + type + "-hours " + process(d, context) + " " + t + ")";
-      putInOps(type + "-hours");
-    } else if (interval.getStartField() == interval.getStartField().MINUTE) {
-      str = "(" + type + "-minutes " + process(d, context) + " " + t + ")";
-      putInOps(type + "-minutes");
-    } else if (interval.getStartField() == interval.getStartField().SECOND) {
-      str = "(" + type + "-seconds " + process(d, context) + " " + t + ")";
-      putInOps(type + "-seconds");
-    } else if (interval.getStartField() == interval.getStartField().YEAR) {
-      str = "(" + type + "-years " + process(d, context) + " " + t + ")";
-      putInOps(type + "-years");
-    }
+    } else {
+		interval.getStartField();
+		if (interval.getStartField() == IntervalField.HOUR) {
+		  str = "(" + type + "-hours " + process(d, context) + " " + t + ")";
+		  putInOps(type + "-hours");
+		} else {
+			interval.getStartField();
+			if (interval.getStartField() == IntervalField.MINUTE) {
+			  str = "(" + type + "-minutes " + process(d, context) + " " + t + ")";
+			  putInOps(type + "-minutes");
+			} else {
+				interval.getStartField();
+				if (interval.getStartField() == IntervalField.SECOND) {
+				  str = "(" + type + "-seconds " + process(d, context) + " " + t + ")";
+				  putInOps(type + "-seconds");
+				} else {
+					interval.getStartField();
+					if (interval.getStartField() == IntervalField.YEAR) {
+					  str = "(" + type + "-years " + process(d, context) + " " + t + ")";
+					  putInOps(type + "-years");
+					}
+				}
+			}
+		}
+	}
     if (d instanceof QualifiedNameReference) {
       record(d, getLiteralForType(2), context);
     }
