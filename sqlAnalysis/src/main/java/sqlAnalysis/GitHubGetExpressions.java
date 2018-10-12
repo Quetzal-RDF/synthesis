@@ -54,6 +54,13 @@ public class GitHubGetExpressions {
 						writer.process(st, null);
 						
 						List<Pair<String, String>> exps = writer.getExpressionsAndTypes();
+
+						if (exps == null || exps.isEmpty()) {
+							buf = new StringBuffer(); // need to reinitialize buf so we can handle the next select
+													  // since this one failed.
+							continue;
+						}
+
 //						System.out.println("GRAPH:" + writer.graph);
                         JSONObject obj =  new JSONObject();
                         obj.put("sql", sql);
@@ -75,6 +82,7 @@ public class GitHubGetExpressions {
 								functions.put(f, j);
 							}
 						}
+
 						expressions.put(obj);
 						
 						for (Map.Entry<String, Integer> e : writer.getOpsToCounts().entrySet()) {
