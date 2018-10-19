@@ -109,7 +109,6 @@ public class GitHubGetExpressions {
 			}
 		}
 		System.out.println(expressions.toString(4));
-        System.out.println("changed again");
 	}
 
 }

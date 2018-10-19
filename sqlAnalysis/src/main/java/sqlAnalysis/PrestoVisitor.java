@@ -204,6 +204,11 @@ public class PrestoVisitor {
 			}
 
 			@Override
+			public Position getNamePosition() {
+				return null;
+			}
+
+			@Override
 			public String getName() {
 				return "statement" + myStatement;
 			}
@@ -335,6 +340,12 @@ public class PrestoVisitor {
 
 			@Override
 			public Position getPosition() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Position getNamePosition() {
 				// TODO Auto-generated method stub
 				return null;
 			}

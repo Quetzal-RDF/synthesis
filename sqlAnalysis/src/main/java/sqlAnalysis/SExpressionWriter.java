@@ -78,6 +78,7 @@ public class SExpressionWriter extends DefaultTraversalVisitor<String, Void> {
     private Map<String, Integer> opsToCounts = new HashMap<String, Integer>();
     public static String NI = "notImplemented";
 
+
     public Map<String, Integer> getOpsToCounts() {
         return opsToCounts;
     }
